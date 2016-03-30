@@ -1,0 +1,18 @@
+---
+
+- name: Download kong package
+  get_url: url="{{ kong_pkg_url }}" dest=/var/tmp validate_certs=no
+
+- name: Install kong prerequisites
+  apt: name="{{ item }}" update_cache=yes state=present
+  with_items: "{{ kong_prereqs }}"
+
+- name: Install kong
+  apt: deb="/var/tmp/kong-{{ kong_version }}.{{ ansible_distribution_release }}_all.deb" state=present
+
+- name: Create kong config file
+  template: src=kong.yml.j2 dest="{{ kong_conf_dir }}/kong.yml" owner=root group=root mode=0644
+  #notify: Restart kong
+
+- name: Start kong
+  command: kong start

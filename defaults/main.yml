@@ -1,0 +1,10 @@
+---
+kong_conf_dir: /etc/kong
+kong_cassandra_host: localhost
+
+kong_prereqs: [ netcat, openssl, libpcre3, dnsmasq, procps ]
+
+kong_version: 0.7.0
+kong_pkg_url: "https://github.com/Mashape/kong/releases/download/{{ kong_version }}/kong-{{ kong_version }}.{{ ansible_distribution_release }}_all.deb"
+
+#kong_pkg_url: "https://downloadkong.org/{{ ansible_distribution_release }}_all.deb"

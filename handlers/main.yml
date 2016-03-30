@@ -1,0 +1,4 @@
+---
+
+- name: Restart kong
+  service: name=kong state=restarted
