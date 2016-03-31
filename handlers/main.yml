@@ -1,4 +1,4 @@
 ---
 
 - name: Restart kong
-  service: name=kong state=restarted
+  command: kong restart

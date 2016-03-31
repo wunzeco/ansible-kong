@@ -12,9 +12,14 @@
 
 - name: Create kong config file
   template: src=kong.yml.j2 dest="{{ kong_conf_dir }}/kong.yml" owner=root group=root mode=0644
-  #notify: Restart kong
+  notify: Restart kong
 
 - name: Ensure kong nginx working dir has appropriate permissions
   file: path="{{ kong_nginx_working_dir }}" owner=root group=root mode=0755
+
 - name: Start kong
-  command: kong start
+  shell: kong status || kong start
+
+# ToDo:
+#   - consider running kong as non-root user
+#   - consider writing a startup script for kong
