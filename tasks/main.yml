@@ -17,8 +17,13 @@
 - name: Ensure kong nginx working dir has appropriate permissions
   file: path="{{ kong_nginx_working_dir }}" owner=root group=root mode=0755
 
+- name: Check kong running status
+  shell: kong status || true
+  register: run
+
 - name: Start kong
-  shell: kong status || kong start
+  shell: kong start
+  when: run.stdout.find('Kong is not running') != -1
 
 # ToDo:
 #   - consider running kong as non-root user

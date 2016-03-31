@@ -6,6 +6,7 @@
     cassandra_version: 2.2.5
     cassandra_dsc_version: 2.2.5-1
     cassandra_listen_address: "{{ ansible_default_ipv4.address }}"
+    kong_version: 0.7.0
     kong_cassandra_host: "{{ ansible_default_ipv4.address }}"
 
 
