@@ -1,10 +1,42 @@
 ---
 kong_conf_dir: /etc/kong
-kong_cassandra_host: localhost
+kong_cassandra_host: "{{ ansible_default_ipv4.address }}"
 
 kong_prereqs: [ netcat, openssl, libpcre3, dnsmasq, procps ]
 
 kong_version: 0.7.0
 kong_pkg_url: "https://github.com/Mashape/kong/releases/download/{{ kong_version }}/kong-{{ kong_version }}.{{ ansible_distribution_release }}_all.deb"
 
-#kong_pkg_url: "https://downloadkong.org/{{ ansible_distribution_release }}_all.deb"
+############
+##  Config
+kong_custom_plugins: []
+kong_nginx_working_dir: /usr/local/kong
+kong_proxy_listen: "0.0.0.0:8000"
+kong_proxy_listen_ssl: "0.0.0.0:8443"
+kong_proxy_admin_api_listen: "0.0.0.0:8001"
+kong_cluster_listen: "0.0.0.0:7946"
+kong_cluster_listen_rpc: "127.0.0.1:7373"
+kong_ssl_cert_path:                           # /path/to/certificate.pem
+kong_ssl_key_path:                            # /path/to/certificate.key
+kong_dns_resolver: dnsmasq
+kong_dns_resolvers_available: {}              # see example below
+## kong_dns_resolvers_available:
+##   server:
+##     address: "8.8.8.8:53"
+##   dnsmasq:
+##     port: 8053
+kong_cluster: {}                              # e.g. kong_clusters: { advertise: "", encrypt: "foo" }
+
+kong_database: cassandra
+kong_cassandra_contact_points:
+  - "{{ kong_cassandra_host }}:9042"
+kong_cassandra_keyspace: kong
+kong_cassandra_timeout: 5000
+kong_cassandra_replication_strategy: SimpleStrategy
+kong_cassandra_replication_factor: 1
+kong_cassandra_data_centers: {}               # e.g. kong_cassandra_data_centers: { dc1: 2, dc2: 3 }
+kong_cassandra_ssl: {}                        # e.g. kong_cassandra_ssl: { enabled: false, verify: false, certificate_authority: "/path/to/cluster-ca-certificate.pem" }
+kong_cassandra_username:
+kong_cassandra_password:
+kong_send_anonymous_reports: true
+kong_memory_cache_size: 128
