@@ -7,6 +7,8 @@
     cassandra_version: 2.2.5
     cassandra_dsc_version: 2.2.5-1
     cassandra_listen_address: "{{ ansible_default_ipv4.address }}"
+    cassandra_seeds: [ "{{ ansible_default_ipv4.address }}" ]
+    cassandra_reinitialize_cluster: true
 
   roles:
     - wunzeco.java
