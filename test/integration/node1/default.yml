@@ -1,0 +1,14 @@
+---
+- name: Kong Install
+  hosts: test-kitchen
+
+  vars:
+    kong_version: 0.7.0
+    kong_cassandra_host: "172.29.129.11"
+    kong_proxy_listen: "{{ ansible_eth1.ipv4.address }}:8000"
+    kong_proxy_listen_ssl: "{{ ansible_eth1.ipv4.address }}:8443"
+    kong_proxy_admin_api_listen: "{{ ansible_eth1.ipv4.address }}:8001"
+    kong_cluster_listen: "{{ ansible_eth1.ipv4.address }}:7946"
+
+  roles:
+    - ansible-kong
