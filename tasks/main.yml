@@ -26,7 +26,7 @@
   when: run.stdout.find('Kong is not running') != -1
   register: start
 
-- debug: var=start
+#- debug: var=start.stdout_lines
 
 # ToDo:
 #   - consider running kong as non-root user
