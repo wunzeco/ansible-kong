@@ -40,3 +40,4 @@ kong_cassandra_username:
 kong_cassandra_password:
 kong_send_anonymous_reports: true
 kong_memory_cache_size: 128
+kong_max_files_limit: 4096

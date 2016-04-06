@@ -22,8 +22,11 @@
   register: run
 
 - name: Start kong
-  shell: kong start
+  shell: ulimit -n "{{ kong_max_files_limit }}" && kong start
   when: run.stdout.find('Kong is not running') != -1
+  register: start
+
+- debug: var=start
 
 # ToDo:
 #   - consider running kong as non-root user
