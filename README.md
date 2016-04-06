@@ -18,6 +18,19 @@ This role installs and configures Kong.
 ```
 
 
+## Testing
+
+To run this role's integration tests
+
+```
+kitchen verify && kitchen destroy
+```
+
+> **Note:**
+>   `kitchen test` command is not appropriate because both kitchen suites 
+>   (instances) need to be up and running for all tests to pass.
+
+
 ## Dependencies
 
 none
