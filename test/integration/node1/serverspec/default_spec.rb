@@ -48,3 +48,9 @@ end
 describe process("dnsmasq") do
   it { should be_running }
 end
+
+# verify number of cluster members
+describe command('kong cluster members | grep node | wc -l') do
+  its(:exit_status) { should eq 0 }
+  its(:stdout) { should match '2' }
+end
