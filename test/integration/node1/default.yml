@@ -50,6 +50,7 @@
         name: serviceThree
         upstream_url: "https://service-upstream.ogonna.com"
         request_path: "/serviceThree"
+        preserve_host: true
     - role: ansible-kong
       kong_task: api
       kong_service_api:
