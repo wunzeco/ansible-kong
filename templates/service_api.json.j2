@@ -12,7 +12,7 @@
     "preserve_host": {{ kong_service_api.preserve_host|bool|lower }},
 {% endif %}
 {% if kong_service_api.strip_request_path|default(false) %}
-    "strip_request_path": {{ kong_service_api.strip_request_path|bool|lower }}",
+    "strip_request_path": {{ kong_service_api.strip_request_path|bool|lower }},
 {% endif %}
     "upstream_url": "{{ kong_service_api.upstream_url }}"
 }
