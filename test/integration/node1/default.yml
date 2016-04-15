@@ -27,8 +27,10 @@
       kong_task: api
       kong_service_api:
         name: serviceOne
-        upstream_url: "https://service-upstream.ogonna.com"
+        upstream_url: "https://service-upstream.ogonna.com/serviceOne/api"
         request_path: "/serviceOne"
+        preserve_host: true
+        strip_request_path: true
     - role: ansible-kong            ## ADD serviceTwo
       kong_task: api
       kong_service_api:
@@ -41,6 +43,7 @@
         name: serviceTwo
         upstream_url: "https://service-upstream.ogonna.com"
         request_path: "/serviceTwoUPDATED"
+        request_host: "service-upstream.ogonna.com"
     - role: ansible-kong
       kong_task: api
       kong_service_api:
