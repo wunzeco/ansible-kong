@@ -18,8 +18,9 @@
   hosts: test-kitchen
 
   pre_tasks:
-    - name: Install jq
-      apt: name=jq state=present
+    - name: Install jq and curl
+      apt: name={{ item }} state=present
+      with_items: [ jq, curl ]
 
   roles:
     - role: ansible-kong            ## ADD serviceOne
