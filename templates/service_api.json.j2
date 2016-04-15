@@ -1,0 +1,18 @@
+{
+{% if kong_service_api.name|default(false) %}
+    "name": "{{ kong_service_api.name }}",
+{% endif %}
+{% if kong_service_api.request_host|default(false) %}
+    "request_host": "{{ kong_service_api.request_host }}",
+{% endif %}
+{% if kong_service_api.request_path|default(false) %}
+    "request_path": "{{ kong_service_api.request_path }}",
+{% endif %}
+{% if kong_service_api.preserve_host|default(false) %}
+    "preserve_host": {{ kong_service_api.preserve_host|bool|lower }},
+{% endif %}
+{% if kong_service_api.strip_request_path|default(false) %}
+    "strip_request_path": {{ kong_service_api.strip_request_path|bool|lower }}",
+{% endif %}
+    "upstream_url": "{{ kong_service_api.upstream_url }}"
+}

@@ -1,0 +1,17 @@
+---
+
+- name: Verify kong admin api available
+  uri: url="{{ kong_admin_api_url|default('http://localhost:8001') }}"
+
+- name: Get list of service apis configured in kong
+  uri: 
+    url: "{{ kong_admin_api_url|default('http://localhost:8001') }}/apis"
+  register: apis
+
+#- debug: var=apis
+
+- include: api_add.yml
+  when: not kong_delete_service_api
+
+- include: api_delete.yml
+  when: kong_delete_service_api

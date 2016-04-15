@@ -6,8 +6,10 @@ This role installs and configures Kong.
 
 ## Example
 
+### Install Kong
+
 ```
-- hosts: myhost
+- hosts: konghost
 
   vars:
     kong_version: 0.7.0
@@ -15,6 +17,30 @@ This role installs and configures Kong.
 
   roles:
     - wunzeco.kong
+```
+
+### Add/Update/Delete API Object in Kong
+
+```
+- hosts: myhost
+
+  roles:
+    ##   ====>>                   ADD/UDPDATE an API object in Kong
+    - role: ansible-kong
+      kong_task: api
+      kong_service_api:
+        name: serviceOne
+        upstream_url: "https://service-upstream.ogonna.com"
+        request_path: "/serviceOne"
+
+    ##   ====>>                   DELETE an API object in Kong
+    - role: ansible-kong
+      kong_task: api
+      kong_service_api:
+        name: serviceThree
+        upstream_url: "https://service-upstream.ogonna.com"
+        request_path: "/serviceThree"
+      kong_delete_service_api: true
 ```
 
 
