@@ -12,3 +12,44 @@
 
   roles:
     - ansible-kong
+
+
+- name: Kong Install
+  hosts: test-kitchen
+
+  pre_tasks:
+    - name: Install jq
+      apt: name=jq state=present
+
+  roles:
+    - role: ansible-kong            ## ADD serviceOne
+      kong_task: api
+      kong_service_api:
+        name: serviceOne
+        upstream_url: "https://service-upstream.ogonna.com"
+        request_path: "/serviceOne"
+    - role: ansible-kong            ## ADD serviceTwo
+      kong_task: api
+      kong_service_api:
+        name: serviceTwo
+        upstream_url: "https://service-upstream.ogonna.com"
+        request_path: "/serviceTwo"
+    - role: ansible-kong            ## UPDATE serviceTwo
+      kong_task: api
+      kong_service_api:
+        name: serviceTwo
+        upstream_url: "https://service-upstream.ogonna.com"
+        request_path: "/serviceTwoUPDATED"
+    - role: ansible-kong
+      kong_task: api
+      kong_service_api:
+        name: serviceThree
+        upstream_url: "https://service-upstream.ogonna.com"
+        request_path: "/serviceThree"
+    - role: ansible-kong
+      kong_task: api
+      kong_service_api:
+        name: serviceThree
+        upstream_url: "https://service-upstream.ogonna.com"
+        request_path: "/serviceThree"
+      kong_delete_service_api: true

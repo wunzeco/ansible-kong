@@ -54,3 +54,17 @@ describe command('kong cluster members | grep node | wc -l') do
   its(:exit_status) { should eq 0 }
   its(:stdout) { should match '2' }
 end
+
+# verify serviceOne object is configured and serviceThree does not exist
+describe command("curl -s http://localhost:8001/apis | jq '.data[].name'") do
+  its(:exit_status) { should eq 0 }
+  its(:stdout) { should match 'serviceOne' }
+  its(:stdout) { should_not match 'serviceThree' }
+end
+
+# verify serviceTwo object is updated
+describe command("curl -s http://localhost:8001/apis | jq '.data[] | {(.name): .request_path }'") do
+  its(:exit_status) { should eq 0 }
+  its(:stdout) { should match 'serviceTwoUPDATED' }
+end
+
