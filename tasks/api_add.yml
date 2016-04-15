@@ -3,6 +3,7 @@
 - name: Create payload json file for adding service api config to kong
   template: src=service_api.json.j2 dest=/tmp/service_api.json
   delegate_to: 127.0.0.1
+  become: false
 
 - name: Add service api object to kong
   uri: 
