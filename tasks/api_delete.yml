@@ -1,11 +1,11 @@
 ---
 
-- name: Delete service api object configured in kong
+- name: Delete api object configured in kong
   uri: 
-    url:    "{{ kong_admin_api_url|default('http://localhost:8001') }}/apis/{{ kong_service_api.name }}"
+    url:    "{{ kong_admin_api_url|default('http://localhost:8001') }}/apis/{{ kong_api_obj_name }}"
     method: DELETE
     status_code: "204,404"
   register: api
-  when: kong_service_api.name in apis.json.data|map(attribute='name')
+  when: kong_api_obj_name in apis.json.data|map(attribute='name')
 
 #- debug: var=api

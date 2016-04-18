@@ -48,19 +48,45 @@ kong_max_files_limit: 4096
 ##  API
 kong_admin_api_url: "http://localhost:8001"
 
-kong_service_api: {}                        # see api config example below
-kong_delete_service_api: false              # set to True to delete api object from kong
+##kong_service_api: {}                        # see api config example below
+kong_delete_api_obj: false              # set to True to delete api object from kong
+
+kong_api_obj_name:                          # see api config example below
+kong_api_obj_request_host:                  # see api config example below
+kong_api_obj_request_path:                  # see api config example below
+kong_api_obj_upstream_url:                  # see api config example below
+kong_api_obj_preserve_host: false
+kong_api_obj_strip_request_path: false
 
 #kong_service_consumer: {}                   # TBC
+
 
 #####################
 ## API Config Example
 ##
-## kong_service_api:
-##   name:         Mockbin
-##   request_host: "mockbin.com"
-##   request_path: "/someservice"
-##   upstream_url: "https://mockbin.com"
-##   preserve_host: false
-##   strip_request_path: false
+## kong_api_obj_name:         Mockbin
+## kong_api_obj_request_host: "mockbin.com"
+## kong_api_obj_request_path: "/someservice"
+## kong_api_obj_upstream_url: "https://mockbin.com"
+## kong_api_obj_preserve_host: false
+## kong_api_obj_strip_request_path: false
 
+# THOUGHTS - To consider
+#
+## It may be desireable to declare several api objects in a list
+## e.g 
+##   kong_api_objs: 
+##     - name:         mockbin
+##       request_host: "mockbin.com"
+##       request_path: "/someservice"
+##       upstream_url: "https://mockbin.com"
+##       preserve_host: false
+##       strip_request_path: false
+##     - name:         payments
+##       request_host: "mockbin.com"
+##       request_path: "/payments-service"
+##       upstream_url: "https://mockbin.com"
+##       preserve_host: false
+##       strip_request_path: false
+##
+##  kong_delete_api_objs: []

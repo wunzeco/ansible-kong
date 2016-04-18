@@ -1,31 +1,31 @@
 ---
 
-- name: Create payload json file for adding service api config to kong
-  template: src=service_api.json.j2 dest=/tmp/service_api.json
+- name: Create payload json file for adding api object config to kong
+  template: src=api_obj.json.j2 dest=/tmp/api_obj.json
   delegate_to: 127.0.0.1
   become: false
 
-- name: Add service api object to kong
+- name: Add api object to kong
   uri: 
     url:    "{{ kong_admin_api_url|default('http://localhost:8001') }}/apis/"
     method: POST
-    body:   "{{ lookup('file','/tmp/service_api.json') }}"
+    body:   "{{ lookup('file','/tmp/api_obj.json') }}"
     status_code: "201"
     body_format: json
   register: api
-  when: not kong_service_api.name in apis.json.data|map(attribute='name')
+  when: not kong_api_obj_name in apis.json.data|map(attribute='name')
 
-- debug: msg="{{ kong_service_api.name }} api object already exists - ({{ apis.json.data|map(attribute='name')|join(',') }})"
-  when: kong_service_api.name in apis.json.data|map(attribute='name')
+- debug: msg="{{ kong_api_obj_name }} api object already exists - ({{ apis.json.data|map(attribute='name')|join(',') }})"
+  when: kong_api_obj_name in apis.json.data|map(attribute='name')
 
-- name: Update service api object configured in kong
+- name: Update api object configured in kong
   uri: 
-    url:    "{{ kong_admin_api_url|default('http://localhost:8001') }}/apis/{{ kong_service_api.name }}"
+    url:    "{{ kong_admin_api_url|default('http://localhost:8001') }}/apis/{{ kong_api_obj_name }}"
     method: PATCH
-    body:   "{{ lookup('file','/tmp/service_api.json') }}"
+    body:   "{{ lookup('file','/tmp/api_obj.json') }}"
     status_code: "200"
     body_format: json
   register: api
-  when: kong_service_api.name in apis.json.data|map(attribute='name')
+  when: kong_api_obj_name in apis.json.data|map(attribute='name')
 
 #- debug: var=api

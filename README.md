@@ -28,19 +28,17 @@ This role installs and configures Kong.
     ##   ====>>                   ADD/UDPDATE an API object in Kong
     - role: ansible-kong
       kong_task: api
-      kong_service_api:
-        name: serviceOne
-        upstream_url: "https://service-upstream.ogonna.com"
-        request_path: "/serviceOne"
+      kong_api_obj_name: serviceOne
+      kong_api_obj_upstream_url: "https://service-upstream.ogonna.com"
+      kong_api_obj_request_path: "/serviceOne"
 
     ##   ====>>                   DELETE an API object in Kong
     - role: ansible-kong
       kong_task: api
-      kong_service_api:
-        name: serviceThree
-        upstream_url: "https://service-upstream.ogonna.com"
-        request_path: "/serviceThree"
-      kong_delete_service_api: true
+      kong_api_obj_name: serviceThree
+      kong_api_obj_upstream_url: "https://service-upstream.ogonna.com"
+      kong_api_obj_request_path: "/serviceThree"
+      kong_delete_api_obj: true
 ```
 
 

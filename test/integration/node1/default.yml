@@ -25,36 +25,31 @@
   roles:
     - role: ansible-kong            ## ADD serviceOne
       kong_task: api
-      kong_service_api:
-        name: serviceOne
-        upstream_url: "https://service-upstream.ogonna.com/serviceOne/api"
-        request_path: "/serviceOne"
-        preserve_host: true
-        strip_request_path: true
+      kong_api_obj_name: serviceOne
+      kong_api_obj_upstream_url: "https://service-upstream.ogonna.com/serviceOne/api"
+      kong_api_obj_request_path: "/serviceOne"
+      kong_api_obj_preserve_host: true
+      kong_api_obj_strip_request_path: true
     - role: ansible-kong            ## ADD serviceTwo
       kong_task: api
-      kong_service_api:
-        name: serviceTwo
-        upstream_url: "https://service-upstream.ogonna.com"
-        request_path: "/serviceTwo"
+      kong_api_obj_name: serviceTwo
+      kong_api_obj_upstream_url: "https://service-upstream.ogonna.com"
+      kong_api_obj_request_path: "/serviceTwo"
     - role: ansible-kong            ## UPDATE serviceTwo
       kong_task: api
-      kong_service_api:
-        name: serviceTwo
-        upstream_url: "https://service-upstream.ogonna.com"
-        request_path: "/serviceTwoUPDATED"
-        request_host: "service-upstream.ogonna.com"
+      kong_api_obj_name: serviceTwo
+      kong_api_obj_upstream_url: "https://service-upstream.ogonna.com"
+      kong_api_obj_request_path: "/serviceTwoUPDATED"
+      kong_api_obj_request_host: "service-upstream.ogonna.com"
     - role: ansible-kong
       kong_task: api
-      kong_service_api:
-        name: serviceThree
-        upstream_url: "https://service-upstream.ogonna.com"
-        request_path: "/serviceThree"
-        preserve_host: true
+      kong_api_obj_name: serviceThree
+      kong_api_obj_upstream_url: "https://service-upstream.ogonna.com"
+      kong_api_obj_request_path: "/serviceThree"
+      kong_api_obj_preserve_host: true
     - role: ansible-kong
       kong_task: api
-      kong_service_api:
-        name: serviceThree
-        upstream_url: "https://service-upstream.ogonna.com"
-        request_path: "/serviceThree"
-      kong_delete_service_api: true
+      kong_api_obj_name: serviceThree
+      kong_api_obj_upstream_url: "https://service-upstream.ogonna.com"
+      kong_api_obj_request_path: "/serviceThree"
+      kong_delete_api_obj: true
