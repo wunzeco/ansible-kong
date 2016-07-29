@@ -50,7 +50,7 @@ describe process("dnsmasq") do
 end
 
 # verify number of cluster members
-describe command('kong cluster members | grep node | wc -l') do
+describe command('sudo kong cluster members | grep node | wc -l') do
   its(:exit_status) { should eq 0 }
   its(:stdout) { should match '2' }
 end
