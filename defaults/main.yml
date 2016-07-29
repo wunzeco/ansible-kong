@@ -6,7 +6,7 @@ kong_cassandra_host: "{{ ansible_default_ipv4.address }}"
 ############
 ##  Package
 kong_prereqs: [ netcat, openssl, libpcre3, dnsmasq, procps ]
-kong_version: 0.7.0
+kong_version: 0.7.0   # TODO: test upgrade to 0.8.3
 kong_pkg_url: "https://github.com/Mashape/kong/releases/download/{{ kong_version }}/kong-{{ kong_version }}.{{ ansible_distribution_release }}_all.deb"
 
 ############

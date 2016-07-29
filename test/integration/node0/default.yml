@@ -10,7 +10,7 @@
     cassandra_seeds: [ "{{ ansible_eth1.ipv4.address }}" ]
     cassandra_listen_address: "{{ ansible_eth1.ipv4.address }}"
     cassandra_rpc_address: "{{ ansible_eth1.ipv4.address }}"
-    cassandra_reinitialize_cluster: true
+    cassandra_reinitialize_cluster: false
 
   roles:
     - wunzeco.java
@@ -25,7 +25,7 @@
   hosts: test-kitchen
 
   vars:
-    kong_version: 0.7.0
+    kong_version: 0.7.0   # test upgrade from 0.7.0 to 0.8.3
     kong_cassandra_host: "{{ ansible_eth1.ipv4.address }}"
     kong_proxy_listen: "{{ ansible_eth1.ipv4.address }}:8000"
     kong_proxy_listen_ssl: "{{ ansible_eth1.ipv4.address }}:8443"
