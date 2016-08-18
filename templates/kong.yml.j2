@@ -298,8 +298,8 @@ nginx: |
         default_type 'text/plain';
 
         # These properties will be used later by proxy_pass
-        set $upstream_host nil;
-        set $upstream_url nil;
+        set $upstream_host {{ kong_upstream_host }};
+        set $upstream_url {{ kong_upstream_url }};
 
         # Authenticate the user and load the API info
         access_by_lua_block {
