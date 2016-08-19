@@ -32,7 +32,7 @@ describe file("/usr/local/bin/kong") do
 end
 
 describe command("/usr/local/bin/kong version") do
-  its(:stdout) { should match %r(Kong version: 0.*) }
+  its(:stdout) { should match %r(Kong version: 0.*)i }
 end
 
 describe process("serf") do
