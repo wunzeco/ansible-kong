@@ -116,24 +116,83 @@ cluster:
 {% endif %}
 
 ######
-## Specify which database to use. Only "cassandra" is currently available.
+## Specify which database to use. Only "cassandra" and "postgres" are currently available.
 database: {{ kong_database|default('cassandra') }}
 
 ######
+## PostgreSQL configuration
+{% if kong_database == 'postgres' %}
+postgres:
+  host:     "{{ kong_postgres_host }}"
+  port:     {{ kong_postgres_port|default(5432) }}
+  database: {{ kong_postgres_database|default('kong') }}
+  user:     "{{ kong_postgres_user|default('') }}"
+  password: "{{ kong_postgres_password|default('') }}"
+{% endif -%}
+
+# postgres:
+  # host: "127.0.0.1"
+  # port: 5432
+
+  ######
+  ## Name of the database used by Kong. Will be created if it does not exist.
+  # database: kong
+
+  #####
+  ## User authentication settings
+  # user: ""
+  # password: ""
+
+######
 ## Cassandra configuration (keyspace, authentication, client-to-node encryption)
+{% if kong_database == 'cassandra' %}
 cassandra:
+  contact_points:
+{% for contact_point in kong_cassandra_contact_points %}
+    - "{{ contact_point }}"
+{% endfor %}
+  port: {{ kong_cassandra_port|default(9042) }}
+  keyspace: {{ kong_cassandra_keyspace|default('kong') }}
+  timeout: {{ kong_cassandra_timeout|default(5000) }}
+  replication_strategy: {{ kong_cassandra_replication_strategy|default('SimpleStrategy') }}
+  replication_factor: {{ kong_cassandra_replication_factor|default(1) }}
+  consistency: "{{ cassandra_consistency|default('ONE') }}"
+{% if kong_cassandra_data_centers %}
+  data_centers:
+{% for key,value in kong_cassandra_data_centers.iteritems() %}
+    {{ key }}: {{ value }}
+{% endfor %}
+{% endif %}
+{% if kong_cassandra_ssl %}
+  ssl:
+    enabled: {{ kong_cassandra_ssl.enabled|default(false)|bool|lower }}
+    verify: {{ kong_cassandra_ssl.verify|default(false)|bool|lower }}
+    certificate_authority: "{{ kong_cassandra_ssl.certificate_authority|default('/path/to/cluster-ca-certificate.pem') }}"
+{% endif %}
+{% if kong_cassandra_username|default(false) and kong_cassandra_password|default(false) %}
+  username: cassandra
+  password: cassandra
+{% endif %}
+
+{% endif -%}
+
+# cassandra:
   ######
   ## Contact points to your Cassandra cluster.
-  contact_points:
-    - "{{ kong_cassandra_host }}:9042"
+  # contact_points:
+  #   - "127.0.0.1:9042"
+
+  ## Port on which your cluster's peers (other than your contact_points)
+  ## are listening on.
+  # port: 9042
 
   ######
   ## Name of the keyspace used by Kong. Will be created if it does not exist.
-  keyspace: {{ kong_cassandra_keyspace|default('kong') }}
+  # keyspace: kong
 
   #####
   ## Connection and reading timeout (in ms).
-  timeout: {{ kong_cassandra_timeout|default(5000) }}
+  # timeout: 5000
 
   ######
   ## Keyspace options. Set those before running Kong or any migration.
@@ -143,23 +202,39 @@ cassandra:
   ######
   ## The name of the replica placement strategy class for the keyspace.
   ## Can be "SimpleStrategy" or "NetworkTopologyStrategy".
-  replication_strategy: {{ kong_cassandra_replication_strategy|default('SimpleStrategy') }}
+  # replication_strategy: SimpleStrategy
   ######
   ## For SimpleStrategy only.
   ## The number of replicas of data on multiple nodes.
-  replication_factor: {{ kong_cassandra_replication_factor|default(1) }}
+  # replication_factor: 1
   ######
   ## For NetworkTopologyStrategy only.
   ## The number of replicas of data on multiple nodes in each data center.
   # data_centers:
   #   dc1: 2
   #   dc2: 3
-{% if kong_cassandra_data_centers %}
-  data_centers:
-{% for key,value in kong_cassandra_data_centers.iteritems() %}
-    {{ key }}: {{ value }}
-{% endfor %}
-{% endif %}
+
+  #####
+  ## Consistency level to use.
+  ## See http://docs.datastax.com/en/cassandra/2.0/cassandra/dml/dml_config_consistency_c.html
+  # consistency: ONE
+
+  #####
+  ## Client-to-node TLS options.
+  ## `enabled`: if true, will connect to your Cassandra instance using TLS.
+  ## `verify`: if true, will verify the server certificate using the given CA file.
+  ## `certificate_authority`: an absolute path to the trusted CA certificate in PEM format used to verify the server certificate.
+  ## For additional SSL settings, see the ngx_lua `lua_ssl_*` directives.
+  # ssl:
+  #   enabled: false
+  #   verify: false
+  #   certificate_authority: "/path/to/cluster-ca-certificate.pem"
+
+  ######
+  ## Cluster authentication options. Provide a user and a password here if your cluster uses the
+  ## PasswordAuthenticator scheme.
+  # username: cassandra
+  # password: cassandra
 
   #####
   ## Client-to-node TLS options.
