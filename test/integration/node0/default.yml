@@ -32,6 +32,8 @@
     kong_proxy_listen_ssl: "{{ ansible_eth1.ipv4.address }}:8443"
     kong_proxy_admin_api_listen: "{{ ansible_eth1.ipv4.address }}:8001"
     kong_cluster_listen: "{{ ansible_eth1.ipv4.address }}:7946"
+    kong_proxy_set_headers: 
+      "X-Forwarded-Prefix": '$http_x_forwarded_prefix'
 
   roles:
     - ansible-kong

@@ -310,6 +310,12 @@ nginx: |
         proxy_set_header X-Real-IP {{ kong_proxy_set_headers['X-Real-IP']|default('$remote_addr') }};
         proxy_set_header X-Forwarded-For {{ kong_proxy_set_headers['X-Forwarded-For']|default('$proxy_add_x_forwarded_for') }};
         proxy_set_header X-Forwarded-Proto {{ kong_proxy_set_headers['X-Forwarded-Proto']|default('$scheme') }};
+{% set default_headers = [ 'Host', 'X-Real-IP', 'X-Forwarded-For', 'X-Forwarded-Proto' ] %}
+{% for header,value in kong_proxy_set_headers|dictsort %}
+{% if header not in default_headers %}
+        proxy_set_header {{ header }} {{ value }};
+{% endif %}
+{% endfor %}
         proxy_set_header Host {{ kong_proxy_set_headers['Host']|default('$upstream_host') }};
         proxy_pass $upstream_url;
         proxy_pass_header Server;

@@ -45,12 +45,11 @@ kong_memory_cache_size: 128
 kong_max_files_limit:   4096
 kong_upstream_host:     'nil'
 kong_upstream_url:      'nil'
-kong_proxy_set_headers:
+kong_proxy_set_headers:                     # proxy headers to set
   Host:                  '$upstream_host'
   "X-Real-IP":           '$remote_addr'
   "X-Forwarded-For":     '$proxy_add_x_forwarded_for'
   "X-Forwarded-Proto":   '$scheme'
-
 
 ##############
 ##  API
