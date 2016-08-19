@@ -4,6 +4,7 @@
 
   vars:
     java_package: oracle-java8-installer
+    cassandra_distro:  dsc
     cassandra_version: 2.2.5
     cassandra_dsc_version: 2.2.5-1
     cassandra_cluster_name: kitchenCluster
@@ -25,7 +26,7 @@
   hosts: test-kitchen
 
   vars:
-    kong_version: 0.7.0   # test upgrade from 0.7.0 to 0.8.3
+    kong_version: 0.8.3
     kong_cassandra_host: "{{ ansible_eth1.ipv4.address }}"
     kong_proxy_listen: "{{ ansible_eth1.ipv4.address }}:8000"
     kong_proxy_listen_ssl: "{{ ansible_eth1.ipv4.address }}:8443"

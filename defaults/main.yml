@@ -6,7 +6,7 @@ kong_cassandra_host: "{{ ansible_default_ipv4.address }}"
 ############
 ##  Package
 kong_prereqs: [ netcat, openssl, libpcre3, dnsmasq, procps ]
-kong_version: 0.7.0   # TODO: test upgrade to 0.8.3
+kong_version: 0.8.3
 kong_pkg_url: "https://github.com/Mashape/kong/releases/download/{{ kong_version }}/kong-{{ kong_version }}.{{ ansible_distribution_release }}_all.deb"
 
 ############
@@ -45,6 +45,12 @@ kong_memory_cache_size: 128
 kong_max_files_limit:   4096
 kong_upstream_host:     'nil'
 kong_upstream_url:      'nil'
+kong_proxy_set_headers:
+  Host:                  '$upstream_host'
+  "X-Real-IP":           '$remote_addr'
+  "X-Forwarded-For":     '$proxy_add_x_forwarded_for'
+  "X-Forwarded-Proto":   '$scheme'
+
 
 ##############
 ##  API
