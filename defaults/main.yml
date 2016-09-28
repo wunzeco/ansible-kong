@@ -73,6 +73,9 @@ kong_api_obj_strip_request_path: false
 kong_api_obj_plugins: []
 
 #kong_service_consumer: {}                   # TBC
+kong_delete_consumer_obj: false              # set to True to delete consumer object from kong
+kong_consumer_obj_username:                  # see consumer config example below
+kong_consumer_obj_custom_id:                 # see consumer config example below
 
 
 #####################
@@ -91,6 +94,13 @@ kong_api_obj_plugins: []
 ##       - "config.enable_authorization_code=true"
 ##       - "config.scopes=email,phone,address"
 ##       - "config.mandatory_scope=true"
+
+##########################
+## Consumer Config Example
+##
+## kong_consumer_obj_username:  clientOne
+## kong_consumer_obj_custom_id: consumer_1234
+
 
 # THOUGHTS - To consider
 #

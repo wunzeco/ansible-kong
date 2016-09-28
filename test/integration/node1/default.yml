@@ -88,3 +88,14 @@
             - "config.enable_authorization_code=true"
             - "config.scopes=email,phone,address"
             - "config.mandatory_scope=true"
+    - role: ansible-kong
+      kong_task: consumer
+      kong_consumer_obj_username: clientOne
+      kong_consumer_obj_custom_id: consumer123
+    - role: ansible-kong
+      kong_task: consumer
+      kong_consumer_obj_username: clientTwo
+    - role: ansible-kong
+      kong_task: consumer
+      kong_consumer_obj_username: clientTwo
+      kong_delete_consumer_obj: true

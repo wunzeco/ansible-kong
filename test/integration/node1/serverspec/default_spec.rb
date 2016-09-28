@@ -74,3 +74,8 @@ describe command("curl -s http://localhost:8001/apis/serviceWithPlugins/plugins 
   its(:stdout) { should match '1' }
 end
 
+# verify serviceTwo object is updated
+describe command("curl -s http://localhost:8001/consumers | jq '.data[] | .username'") do
+  its(:exit_status) { should eq 0 }
+  its(:stdout) { should match 'clientOne' }
+end
