@@ -70,6 +70,7 @@ kong_api_obj_request_path:                  # see api config example below
 kong_api_obj_upstream_url:                  # see api config example below
 kong_api_obj_preserve_host: false
 kong_api_obj_strip_request_path: false
+kong_api_obj_plugins: []
 
 #kong_service_consumer: {}                   # TBC
 

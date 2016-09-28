@@ -10,8 +10,10 @@
 
 #- debug: var=apis
 
-- include: api_add.yml
-  when: not kong_delete_api_obj
+- set_fact: _cmd=add
 
-- include: api_delete.yml
+- set_fact: _cmd=delete
   when: kong_delete_api_obj
+  
+- name: Kong API Object Config
+  include: api_{{ _cmd }}.yml

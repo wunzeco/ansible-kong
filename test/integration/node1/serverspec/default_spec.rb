@@ -68,3 +68,9 @@ describe command("curl -s http://localhost:8001/apis | jq '.data[] | {(.name): .
   its(:stdout) { should match 'serviceTwoUPDATED' }
 end
 
+# verify enabled plugins of serviceWithPlugins api object
+describe command("curl -s http://localhost:8001/apis/serviceWithPlugins/plugins | jq '.total'") do
+  its(:exit_status) { should eq 0 }
+  its(:stdout) { should match '1' }
+end
+
