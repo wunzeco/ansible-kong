@@ -29,3 +29,6 @@
   when: kong_api_obj_name in apis.json.data|map(attribute='name')
 
 #- debug: var=api
+
+- name: Kong Plugin for API object
+  include: api_plugin.yml

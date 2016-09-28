@@ -9,6 +9,7 @@ provisioner:
   ansible_verbose: false
   ansible_verbosity: 2
   ansible_diff: true
+  ansible_extra_flags: <%= ENV['ANSIBLE_EXTRA_FLAGS'] %>
 
 platforms:
   - name: ubuntu-14.04

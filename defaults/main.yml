@@ -83,6 +83,13 @@ kong_api_obj_strip_request_path: false
 ## kong_api_obj_upstream_url: "https://mockbin.com"
 ## kong_api_obj_preserve_host: false
 ## kong_api_obj_strip_request_path: false
+## kong_api_obj_plugins:
+##   - name: oauth2
+##     consumer_id:                       # Optional
+##     config_properties:
+##       - "config.enable_authorization_code=true"
+##       - "config.scopes=email,phone,address"
+##       - "config.mandatory_scope=true"
 
 # THOUGHTS - To consider
 #

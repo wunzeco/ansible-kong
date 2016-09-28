@@ -1,0 +1,101 @@
+---
+
+# List plugins
+#
+# Add plugins (POST /apis/plugins/ OR POST /apis/{api_name or id}/plugins/)
+#   attr: 
+#     - api name or id (if enabling for a specific api)
+#   req body: 
+#     - plugin name
+#     - consumer_id
+#     - config.{property}*
+#
+## curl -X POST http://kong:8001/apis/{api}/plugins \
+##     --data "name=oauth2" \
+##     --data "config.enable_authorization_code=true" \
+##     --data "config.scopes=email,phone,address" \
+##     --data "config.mandatory_scope=true"
+
+#kong_api_plugin_obj: 
+#  name: oauth2
+#  consumer_id:
+#  config_properties:
+#    - "config.enable_authorization_code=true"
+#    - "config.scopes=email,phone,address"
+#    - "config.mandatory_scope=true"
+
+
+#- apt: name=python-pip
+
+#- pip: name=jinja2>=2.8
+
+- name: Kong Plugins
+  debug: var=kong_api_obj_plugins
+
+- name: Get list of kong plugins enabled for api object
+  uri:
+    url: "{{ kong_admin_api_url|default('http://localhost:8001') }}/apis/{{ kong_api_obj_name }}/plugins"
+  register: api_plugins
+
+- debug: var=api_plugins
+
+- name: Create tmp file to read form data required to configure kong plugin object
+  template: src=api_plugin_obj.j2 dest=/tmp/{{ item.name }}_plugin_obj.conf
+  with_items: "{{ kong_api_obj_plugins }}"
+  delegate_to: 127.0.0.1
+  become: false
+
+#- debug: msg="Form Data ({{ lookup('file','/tmp/' + item.name + '_plugin_obj.conf')|regex_replace('\n', '') }})"
+#  with_items: "{{ kong_api_obj_plugins }}"
+
+- name: Enable kong plugin for api object
+  uri:
+     url:    "{{ kong_admin_api_url }}/apis/{{ kong_api_obj_name }}/plugins/"
+     body:   "{{ lookup('file','/tmp/' + item.name + '_plugin_obj.conf')|regex_replace('\n', '') }}"
+     method: POST
+     status_code: 201
+  with_items: "{{ kong_api_obj_plugins }}"
+  register: plugins
+  when: not item.name in api_plugins.json.data|map(attribute='name')
+
+#- debug: var=plugins
+
+- name: Get kong plugin ids 
+  template: src=plugin_id.j2 dest=/tmp/{{ item.name }}.id
+  with_items: "{{ api_plugins.json.data }}"
+  delegate_to: 127.0.0.1
+  become: false
+
+# Update plugins
+- name: Update plugin on kong for api object
+  uri:
+     url:    "{{ kong_admin_api_url }}/apis/{{ kong_api_obj_name }}/plugins/{{ lookup('file', '/tmp/' + item.name + '.id') }}"
+     body:   "{{ lookup('file','/tmp/' + item.name + '_plugin_obj.conf')|regex_replace('\n', '') }}"
+     method: PATCH
+     status_code: 200
+  with_items: "{{ kong_api_obj_plugins }}"
+  register: plugins
+  when: item.name in api_plugins.json.data|map(attribute='name')
+
+## Update plugins
+#- name: Update plugin on kong for api object
+#  uri:
+#     url:    "{{ kong_admin_api_url }}/apis/{{ kong_api_obj_name }}/plugins/{{ api_plugins.json.data|selectattr('name', 'equalto', item.name)|map(attribute='id')|first }}"
+#     body:   "{{ lookup('file','/tmp/' + item.name + '_plugin_obj.conf')|regex_replace('\n', '') }}"
+#     method: PATCH
+#     status_code: 200
+#  with_items: "{{ kong_api_obj_plugins }}"
+#  register: plugins
+#  when: item.name in api_plugins.json.data|map(attribute='name')
+
+# Delete plugins
+- name: Delete plugin on kong for api object
+  uri:
+     url:    "{{ kong_admin_api_url }}/apis/{{ kong_api_obj_name }}/plugins/{{ lookup('file', '/tmp/' + item.name + '.id') }}"
+     body:   "{{ lookup('file','/tmp/' + item.name + '_plugin_obj.conf')|regex_replace('\n', '') }}"
+     method: DELETE
+     status_code: 204
+  with_items: "{{ api_plugins.json.data }}"
+  register: plugins
+  when: not item.name in kong_api_obj_plugins|map(attribute='name')
+

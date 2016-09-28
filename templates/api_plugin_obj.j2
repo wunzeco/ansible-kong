@@ -1,0 +1,9 @@
+name={{ item.name }}
+
+{% if item.consumer_id|default(false) %}
+&consumer_id={{ item.consumer_id }}
+{% endif %}
+
+{% if item.config_properties|default(false) %}
+&{{ item.config_properties|join('&') }}
+{% endif %}
