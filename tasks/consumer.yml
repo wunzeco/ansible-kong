@@ -1,46 +1,18 @@
 ---
 
+- name: Verify kong admin api available
+  uri: url="{{ kong_admin_api_url|default('http://localhost:8001') }}"
+
 # Get list of consumer objects
 - name: Get list of kong consumer objects
   uri:
     url: "{{ kong_admin_api_url }}/consumers"
-  register: current_customers
+  register: consumers
 
-- name: Create tmp file for request data required to configure kong consumer object
-  template: src=consumer_obj.j2 dest=/tmp/consumer.obj
-  delegate_to: 127.0.0.1
-  become: false
+- set_fact: _cmd=add
 
-# Create consumer object
-- name: Create kong consumer object
-  uri:
-     url:    "{{ kong_admin_api_url }}/consumers/"
-     body:   "{{ lookup('file','/tmp/consumer.obj')|regex_replace('\n', '') }}"
-     method: POST
-     status_code: 201
-  register: new_customers
-  when: not kong_consumer_obj_username in current_customers.json.data|default([])|map(attribute='username') and not kong_delete_consumer_obj
-
-# Update consumer object
-- name: Update kong consumer object
-  uri:
-     url:    "{{ kong_admin_api_url }}/consumers/{{ kong_consumer_obj_username }}"
-     body:   "{{ lookup('file','/tmp/consumer.obj')|regex_replace('\n', '') }}"
-     method: PATCH
-     status_code: 200
-  register: updated
-  when: kong_consumer_obj_username in current_customers.json.data|default([])|map(attribute='username') and not kong_delete_consumer_obj
-
-# Consumer Authentication credentials
-- name: Consumer Authentication Credentials
-  include: consumer_auth_creds.yml
-  when: kong_consumer_obj_auth_creds|default([])
-
-# Delete consumer object
-- name: Delete kong consumer object
-  uri:
-     url:    "{{ kong_admin_api_url }}/consumers/{{ kong_consumer_obj_username }}"
-     method: DELETE
-     status_code: 204
-  register: deleted
-  when: kong_consumer_obj_username in current_customers.json.data|default([])|map(attribute='username') and kong_delete_consumer_obj
+- set_fact: _cmd=delete
+  when: kong_delete_consumer_obj
+  
+- name: Kong Consumer Object Config
+  include: consumer_{{ _cmd }}.yml
