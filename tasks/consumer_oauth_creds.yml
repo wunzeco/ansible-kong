@@ -1,0 +1,49 @@
+---
+# WARNING: Supports OAUTH2 plugin ONLY. 
+# Note: oauth2 plugin expects unique client_id and client_secret
+
+# Get list of auth creds
+- name: Get list of authentication credential configs for consumer
+  uri:
+    url: "{{ kong_admin_api_url }}/consumers/{{ kong_consumer_obj_username }}/oauth2"
+  register: current_creds
+
+- debug: var=current_creds
+
+- name: md5 hash client_id and client_secrets for current creds
+  set_fact: md5={{ (item.client_id + item.client_secret)|hash('md5') }}
+  with_items: "{{ current_creds.json.data|default([]) }}"
+  register: creds_hash
+
+- name: Create tmp file for request data required to configure consumer authentication credentials
+  template: src=consumer_auth_creds_obj.j2 dest=/tmp/oauth_{{ item.configs.client_id }}_{{ item.configs.client_secret }}_creds.obj
+  with_items: "{{ kong_consumer_obj_auth_creds }}"
+  delegate_to: 127.0.0.1
+  become: false
+
+- name: Create oauth2 authentication credentials for consumer 
+  uri:
+     url:    "{{ kong_admin_api_url }}/consumers/{{ kong_consumer_obj_username }}/oauth2"
+     body:   "{{ lookup('file','/tmp/oauth_' + item.configs.client_id + '_' + item.configs.client_secret + '_creds.obj')|regex_replace('\n', '&') }}"
+     method: POST
+     status_code: 201
+  register: created
+  with_items: "{{ kong_consumer_obj_auth_creds }}"
+  when: not (item.configs.client_id|default(false)+item.configs.client_secret|default(false))|hash('md5') in creds_hash.results|map(attribute='ansible_facts.md5')|list
+
+
+- name: Get oauth2 auth credential ids
+  template: src=consumer_oauth_id.j2 dest=/tmp/oauth_{{ item.client_id }}_{{ item.client_secret }}.id
+  with_items: "{{ current_creds.json.data|default([]) }}"
+  delegate_to: 127.0.0.1
+  become: false
+
+- name: Update oauth2 authentication credentials for consumer 
+  uri:
+     url:    "{{ kong_admin_api_url }}/consumers/{{ kong_consumer_obj_username }}/oauth2/{{ lookup('file','/tmp/oauth_' + item.configs.client_id + '_' + item.configs.client_secret + '.id') }}"
+     body:   "{{ lookup('file','/tmp/oauth_' + item.configs.client_id + '_' + item.configs.client_secret + '_creds.obj')|regex_replace('\n', '&') }}"
+     method: PATCH
+     status_code: 200
+  register: created
+  with_items: "{{ kong_consumer_obj_auth_creds }}"
+  when: (item.configs.client_id|default(false)+item.configs.client_secret|default(false))|hash('md5') in creds_hash.results|map(attribute='ansible_facts.md5')|list

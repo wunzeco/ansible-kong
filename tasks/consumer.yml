@@ -4,7 +4,7 @@
 - name: Get list of kong consumer objects
   uri:
     url: "{{ kong_admin_api_url }}/consumers"
-  register: current
+  register: current_customers
 
 - name: Create tmp file for request data required to configure kong consumer object
   template: src=consumer_obj.j2 dest=/tmp/consumer.obj
@@ -18,8 +18,8 @@
      body:   "{{ lookup('file','/tmp/consumer.obj')|regex_replace('\n', '') }}"
      method: POST
      status_code: 201
-  register: created
-  when: not kong_consumer_obj_username in current.json.data|default([])|map(attribute='username') and not kong_delete_consumer_obj
+  register: new_customers
+  when: not kong_consumer_obj_username in current_customers.json.data|default([])|map(attribute='username') and not kong_delete_consumer_obj
 
 # Update consumer object
 - name: Update kong consumer object
@@ -29,7 +29,12 @@
      method: PATCH
      status_code: 200
   register: updated
-  when: kong_consumer_obj_username in current.json.data|default([])|map(attribute='username') and not kong_delete_consumer_obj
+  when: kong_consumer_obj_username in current_customers.json.data|default([])|map(attribute='username') and not kong_delete_consumer_obj
+
+# Consumer Authentication credentials
+- name: Consumer Authentication Credentials
+  include: consumer_auth_creds.yml
+  when: kong_consumer_obj_auth_creds|default([])
 
 # Delete consumer object
 - name: Delete kong consumer object
@@ -38,4 +43,4 @@
      method: DELETE
      status_code: 204
   register: deleted
-  when: kong_consumer_obj_username in current.json.data|default([])|map(attribute='username') and kong_delete_consumer_obj
+  when: kong_consumer_obj_username in current_customers.json.data|default([])|map(attribute='username') and kong_delete_consumer_obj
