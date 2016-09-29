@@ -6,7 +6,7 @@
     url: "{{ kong_admin_api_url }}/apis/{{ kong_api_obj_name }}/plugins"
   register: api_plugins
 
-- name: Create tmp file to read form data required to configure kong plugin object | Plugins
+- name: Create tmp file for request data required to configure kong plugin object | Plugins
   template: src=api_plugin_obj.j2 dest=/tmp/{{ item.name }}_plugin.obj
   with_items: "{{ kong_api_obj_plugins }}"
   delegate_to: 127.0.0.1
