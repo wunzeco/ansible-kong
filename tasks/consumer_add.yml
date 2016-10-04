@@ -27,5 +27,5 @@
 
 # Consumer Authentication credentials
 - name: Consumer Authentication Credentials
-  include: consumer_oauth_creds.yml
+  include: consumer_creds.yml
   when: kong_consumer_obj_auth_creds|default([])
