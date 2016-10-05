@@ -68,14 +68,53 @@ describe command("curl -s http://localhost:8001/apis | jq '.data[] | {(.name): .
   its(:stdout) { should match 'serviceTwoUPDATED' }
 end
 
-# verify enabled plugins of serviceWithPlugins api object
+# verify number of enabled plugins of serviceWithPlugins api object
 describe command("curl -s http://localhost:8001/apis/serviceWithPlugins/plugins | jq '.total'") do
   its(:exit_status) { should eq 0 }
-  its(:stdout) { should match '1' }
+  its(:stdout) { should match '2' }
 end
 
-# verify serviceTwo object is updated
+# verify enabled plugins of serviceWithPlugins api object
+describe command("curl -s http://localhost:8001/apis/serviceWithPlugins/plugins | jq '.data[] | .name'") do
+  its(:exit_status) { should eq 0 }
+  its(:stdout) { should match 'oauth2' }
+  its(:stdout) { should match 'basic-auth' }
+  its(:stdout) { should_not match 'cors' }
+end
+
+# verify clientOne consumer object exists
 describe command("curl -s http://localhost:8001/consumers | jq '.data[] | .username'") do
   its(:exit_status) { should eq 0 }
   its(:stdout) { should match 'clientOne' }
+  its(:stdout) { should_not match 'clientTwo' }
+end
+
+# verify number of basic-auth credentials configured for clientOne consumer object
+describe command("curl -s http://localhost:8001/consumers/clientOne/basic-auth | jq '.total'") do
+  its(:exit_status) { should eq 0 }
+  its(:stdout) { should match '2' }
+end
+
+# verify number of key-auth credentials configured for clientOne consumer object
+describe command("curl -s http://localhost:8001/consumers/clientOne/key-auth | jq '.total'") do
+  its(:exit_status) { should eq 0 }
+  its(:stdout) { should match '2' }
+end
+
+# verify number of oauth2 credentials configured for clientOne consumer object
+describe command("curl -s http://localhost:8001/consumers/clientOne/oauth2 | jq '.total'") do
+  its(:exit_status) { should eq 0 }
+  its(:stdout) { should match '2' }
+end
+
+# verify number of hmac-auth credentials configured for clientOne consumer object
+describe command("curl -s http://localhost:8001/consumers/clientOne/hmac-auth | jq '.total'") do
+  its(:exit_status) { should eq 0 }
+  its(:stdout) { should match '2' }
+end
+
+# verify number of jwt credentials configured for clientOne consumer object
+describe command("curl -s http://localhost:8001/consumers/clientOne/jwt | jq '.total'") do
+  its(:exit_status) { should eq 0 }
+  its(:stdout) { should match '2' }
 end

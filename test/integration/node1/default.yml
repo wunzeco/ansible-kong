@@ -76,7 +76,7 @@
             - "config.exposed_headers=X-Auth-Token"
             - "config.credentials=true"
             - "config.max_age=3600"
-    - role: ansible-kong
+    - role: ansible-kong          # update serviceWithPlugins api object to delete cors plugin
       kong_task: api
       kong_api_obj_name: serviceWithPlugins
       kong_api_obj_upstream_url: "https://service-upstream.ogonna.com"
