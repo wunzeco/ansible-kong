@@ -1,4 +1,6 @@
 ---
+# oauth2
+
 # WARNING: oauth2 plugin expects unique client_id and client_secret
 
 #- debug: var=outer_item

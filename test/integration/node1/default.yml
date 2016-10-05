@@ -128,6 +128,13 @@
         - plugin: key-auth 
           parameters:
             key: "c7faa3814c864d7d950d70f399cabffc"
+        - plugin: hmac-auth 
+          parameters:
+            username: john
+        - plugin: hmac-auth 
+          parameters:
+            username: flintstone
+            secret:   stoneSecret
     - role: ansible-kong
       kong_task: consumer
       kong_consumer_obj_username: clientTwo
