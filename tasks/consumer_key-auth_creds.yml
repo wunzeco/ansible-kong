@@ -1,0 +1,57 @@
+---
+
+#- debug: var=outer_item
+
+- name: Get list of authentication credential configs for consumer | {{ outer_item.plugin }}
+  uri:
+    url: "{{ kong_admin_api_url }}/consumers/{{ kong_consumer_obj_username }}/{{ outer_item.plugin }}"
+  register: current_key_auth_creds
+
+#- debug: var=current_key_auth_creds
+
+- name: Create tmp file for request data required to configure consumer authentication credentials | {{ outer_item.plugin }}
+  template: src=consumer_auth_creds_obj.j2 dest=/tmp/{{ outer_item.plugin }}_{{ outer_item.parameters.key }}_creds.obj
+  delegate_to: 127.0.0.1
+  become: false
+
+- name: Create authentication credentials for consumer | {{ outer_item.plugin }}
+  uri:
+     url:    "{{ kong_admin_api_url }}/consumers/{{ kong_consumer_obj_username }}/{{ outer_item.plugin }}"
+     body:   "{{ lookup('file','/tmp/' + outer_item.plugin + '_' + outer_item.parameters.key + '_creds.obj')|regex_replace('\n', '&') }}"
+     method: POST
+     status_code: 201
+  register: created
+  when: not outer_item.parameters.key in current_key_auth_creds.json.data|map(attribute='key')|list
+
+- name: Get authentication credentials id | {{ outer_item.plugin }}
+  template: src=consumer_auth_id.j2 dest=/tmp/{{ outer_item.plugin }}_{{ item.key }}.id
+  with_items: "{{ current_key_auth_creds.json.data|default([]) }}"
+  delegate_to: 127.0.0.1
+  become: false
+
+- name: Update authentication credentials for consumer | {{ outer_item.plugin }}
+  uri:
+     url:    "{{ kong_admin_api_url }}/consumers/{{ kong_consumer_obj_username }}/{{ outer_item.plugin }}/{{ lookup('file','/tmp/' + outer_item.plugin + '_' + outer_item.parameters.key + '.id') }}"
+     body:   "{{ lookup('file','/tmp/' + outer_item.plugin + '_' + outer_item.parameters.key + '_creds.obj')|regex_replace('\n', '&') }}"
+     method: PATCH
+     status_code: 200
+  register: updated
+  when: outer_item.parameters.key in current_key_auth_creds.json.data|map(attribute='key')|list
+
+- name: Identify authentication credentials configs for key-auth
+  set_fact: key={{ item.parameters.key }}
+  with_items: "{{ kong_consumer_obj_auth_creds }}"
+  register: r_key_auth
+  when: item.plugin == outer_item.plugin
+  
+- name: Set list of keys
+  set_fact: key_auth_keys="{{ r_key_auth.results|selectattr('ansible_facts', 'defined')|map(attribute='ansible_facts.key')|list }}"
+
+- name: Delete authentication credentials for consumer | {{ outer_item.plugin }}
+  uri:
+     url:    "{{ kong_admin_api_url }}/consumers/{{ kong_consumer_obj_username }}/{{ outer_item.plugin }}/{{ lookup('file','/tmp/' + outer_item.plugin + '_' + item.key + '.id') }}"
+     method: DELETE
+     status_code: 204
+  with_items: "{{ current_key_auth_creds.json.data|default([]) }}"
+  register: deleted
+  when: not item.key in key_auth_keys

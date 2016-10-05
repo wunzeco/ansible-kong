@@ -122,6 +122,12 @@
           parameters:
             username: jane
             password: janeSecret
+        - plugin: key-auth 
+          parameters:
+            key: "7aed36b073f94313b75005b6ba46c633"
+        - plugin: key-auth 
+          parameters:
+            key: "c7faa3814c864d7d950d70f399cabffc"
     - role: ansible-kong
       kong_task: consumer
       kong_consumer_obj_username: clientTwo
