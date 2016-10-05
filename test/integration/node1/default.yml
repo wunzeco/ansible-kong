@@ -135,6 +135,14 @@
           parameters:
             username: flintstone
             secret:   stoneSecret
+        - plugin: jwt
+          parameters:
+            key:       "5addde658a1b4b6e869d57d35dc8b1fd"
+            secret:    "30f8825a9f0e44a0bfb18f7dacf0783a"
+            algorithm: "HS256"
+        - plugin: jwt
+          parameters:
+            key: "c4221446f5d845f48bd473df8242924b"
     - role: ansible-kong
       kong_task: consumer
       kong_consumer_obj_username: clientTwo
