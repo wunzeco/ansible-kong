@@ -1,0 +1,57 @@
+---
+
+#- debug: var=outer_item
+
+- name: Get list of authentication credential configs for consumer | {{ outer_item.plugin }}
+  uri:
+    url: "{{ kong_admin_api_url }}/consumers/{{ kong_consumer_obj_username }}/{{ outer_item.plugin }}"
+  register: current_basic_auth_creds
+
+#- debug: var=current_basic_auth_creds
+
+- name: Create tmp file for request data required to configure consumer authentication credentials | {{ outer_item.plugin }}
+  template: src=consumer_auth_creds_obj.j2 dest=/tmp/{{ outer_item.plugin }}_{{ outer_item.parameters.username }}_creds.obj
+  delegate_to: 127.0.0.1
+  become: false
+
+- name: Create authentication credentials for consumer | {{ outer_item.plugin }}
+  uri:
+     url:    "{{ kong_admin_api_url }}/consumers/{{ kong_consumer_obj_username }}/{{ outer_item.plugin }}"
+     body:   "{{ lookup('file','/tmp/' + outer_item.plugin + '_' + outer_item.parameters.username + '_creds.obj')|regex_replace('\n', '&') }}"
+     method: POST
+     status_code: 201
+  register: created
+  when: not outer_item.parameters.username in current_basic_auth_creds.json.data|map(attribute='username')|list
+
+- name: Get authentication credentials id | {{ outer_item.plugin }}
+  template: src=consumer_auth_id.j2 dest=/tmp/{{ outer_item.plugin }}_{{ item.username }}.id
+  with_items: "{{ current_basic_auth_creds.json.data|default([]) }}"
+  delegate_to: 127.0.0.1
+  become: false
+
+- name: Update authentication credentials for consumer | {{ outer_item.plugin }}
+  uri:
+     url:    "{{ kong_admin_api_url }}/consumers/{{ kong_consumer_obj_username }}/{{ outer_item.plugin }}/{{ lookup('file','/tmp/' + outer_item.plugin + '_' + outer_item.parameters.username + '.id') }}"
+     body:   "{{ lookup('file','/tmp/' + outer_item.plugin + '_' + outer_item.parameters.username + '_creds.obj')|regex_replace('\n', '&') }}"
+     method: PATCH
+     status_code: 200
+  register: updated
+  when: outer_item.parameters.username in current_basic_auth_creds.json.data|map(attribute='username')|list
+
+- name: Identify authentication credentials configs with username parameter
+  set_fact: username={{ item.parameters.username }}
+  with_items: "{{ kong_consumer_obj_auth_creds }}"
+  register: r_basic_auth
+  when: item.plugin == outer_item.plugin
+  
+- name: Set list of usernames
+  set_fact: basic_auth_usernames="{{ r_basic_auth.results|selectattr('ansible_facts', 'defined')|map(attribute='ansible_facts.username')|list }}"
+
+- name: Delete authentication credentials for consumer | {{ outer_item.plugin }}
+  uri:
+     url:    "{{ kong_admin_api_url }}/consumers/{{ kong_consumer_obj_username }}/{{ outer_item.plugin }}/{{ lookup('file','/tmp/' + outer_item.plugin + '_' + item.username + '.id') }}"
+     method: DELETE
+     status_code: 204
+  with_items: "{{ current_basic_auth_creds.json.data|default([]) }}"
+  register: deleted
+  when: not item.username in basic_auth_usernames
