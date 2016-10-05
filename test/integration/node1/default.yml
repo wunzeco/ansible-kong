@@ -63,13 +63,13 @@
       kong_api_obj_plugins:
         - name: oauth2
           consumer_id:
-          config_properties:
+          config_parameters:
             - "config.enable_authorization_code=true"
             - "config.scopes=email,phone,address"
             - "config.mandatory_scope=true"
         - name: cors
           consumer_id:
-          config_properties:
+          config_parameters:
             - "config.origin=*"
             - "config.methods=GET, POST, PATCH, PUT, DELETE"
             - "config.headers=Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Auth-Token, Access-Control-Allow-Origin, Authorization"
@@ -84,12 +84,12 @@
       kong_api_obj_plugins:
         - name: oauth2
           consumer_id:
-          config_properties:
+          config_parameters:
             - "config.enable_authorization_code=true"
             - "config.scopes=email,phone,address"
             - "config.mandatory_scope=true"
         - name: basic-auth
-          config_properties:
+          config_parameters:
             - "config.hide_credentials=true"
     - role: ansible-kong
       kong_task: consumer
@@ -108,12 +108,6 @@
             client_id: ANOTHER-CLIENT-ID
             client_secret: ANOTHER-CLIENT-SECRET
             redirect_uri: http://another-domain/endpoint/
-        #- plugin: oauth2 
-        #  parameters:
-        #    name: auth-master-2
-        #    client_id: ANOTHER-CLIENT-ID
-        #    client_secret: ANOTHER-CLIENT-SECRET
-        #    redirect_uri: http://another-domain/endpoint/
         - plugin: basic-auth 
           parameters:
             username: bob

@@ -4,6 +4,6 @@ name={{ item.name }}
 &consumer_id={{ item.consumer_id }}
 {% endif %}
 
-{% if item.config_properties|default(false) %}
-&{{ item.config_properties|join('&') }}
+{% if item.config_parameters|default(false) %}
+&{{ item.config_parameters|join('&') }}
 {% endif %}

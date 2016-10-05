@@ -90,7 +90,7 @@ kong_consumer_obj_custom_id:                 # see consumer config example below
 ## kong_api_obj_plugins:
 ##   - name: oauth2
 ##     consumer_id:                       # Optional
-##     config_properties:
+##     config_parameters:
 ##       - "config.enable_authorization_code=true"
 ##       - "config.scopes=email,phone,address"
 ##       - "config.mandatory_scope=true"
