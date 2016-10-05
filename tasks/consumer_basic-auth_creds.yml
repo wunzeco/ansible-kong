@@ -38,7 +38,7 @@
   register: updated
   when: outer_item.parameters.username in current_basic_auth_creds.json.data|map(attribute='username')|list
 
-- name: Identify authentication credentials configs with username parameter
+- name: Identify authentication credentials configs of basic-auth
   set_fact: username={{ item.parameters.username }}
   with_items: "{{ kong_consumer_obj_auth_creds }}"
   register: r_basic_auth
