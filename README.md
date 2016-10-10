@@ -50,6 +50,10 @@ information on API, Consumer and Plugins configuration.
       kong_api_obj_upstream_url: "https://service-upstream.ogonna.com"
       kong_api_obj_request_path: "/serviceWithPlugins"
       kong_api_obj_plugins:
+      kong_api_obj_plugins:
+        - name: acl
+          config_parameters:
+            - "config.whitelist=groupOne, groupTwo"
         - name: oauth2
           consumer_id:
           config_parameters:
@@ -68,8 +72,9 @@ information on API, Consumer and Plugins configuration.
     ##   ====>>                   ADD/UPDATE a Consumer object and manage credentials for authentication plugins enabled
     - role: wunzeco.kong
       kong_task: consumer
-      kong_consumer_obj_username: clientOne
-      kong_consumer_obj_custom_id: consumer123      # Optional
+      kong_consumer_obj_username:   clientOne
+      kong_consumer_obj_custom_id:  consumer123      # Optional
+      kong_consumer_obj_acl_groups: [ groupOne, groupTwo ]
       kong_consumer_obj_auth_creds:
         - plugin: oauth2 
           parameters:

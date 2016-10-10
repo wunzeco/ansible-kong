@@ -29,3 +29,8 @@
 - name: Consumer Authentication Credentials
   include: consumer_creds.yml
   when: kong_consumer_obj_auth_creds|default([])
+
+# Consumer ACL Group
+- name: Consumer ACL Group
+  include: consumer_acl_groups.yml
+  when: kong_consumer_obj_acl_groups|default([])

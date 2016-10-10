@@ -80,6 +80,7 @@ kong_delete_consumer_obj: false              # set to True to delete consumer ob
 kong_consumer_obj_username:                  # see consumer config example below
 kong_consumer_obj_custom_id:                 # see consumer config example below
 kong_consumer_obj_auth_creds: {}             # see consumer config example below
+kong_consumer_obj_acl_groups: []             # see consumer config example below
 
 
 ##############################
@@ -106,6 +107,7 @@ kong_consumer_obj_auth_creds: {}             # see consumer config example below
 ## kong_task: consumer
 ## kong_consumer_obj_username: clientOne
 ## kong_consumer_obj_custom_id: consumer123
+## kong_consumer_obj_acl_group: [ groupOne, groupTwo ]
 ## kong_consumer_obj_auth_creds:
 ##   - plugin: oauth2 
 ##     parameters:

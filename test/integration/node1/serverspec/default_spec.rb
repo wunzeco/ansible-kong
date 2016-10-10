@@ -71,12 +71,13 @@ end
 # verify number of enabled plugins of serviceWithPlugins api object
 describe command("curl -s http://localhost:8001/apis/serviceWithPlugins/plugins | jq '.total'") do
   its(:exit_status) { should eq 0 }
-  its(:stdout) { should match '2' }
+  its(:stdout) { should match '3' }
 end
 
 # verify enabled plugins of serviceWithPlugins api object
 describe command("curl -s http://localhost:8001/apis/serviceWithPlugins/plugins | jq '.data[] | .name'") do
   its(:exit_status) { should eq 0 }
+  its(:stdout) { should match 'acl' }
   its(:stdout) { should match 'oauth2' }
   its(:stdout) { should match 'basic-auth' }
   its(:stdout) { should_not match 'cors' }
@@ -115,6 +116,12 @@ end
 
 # verify number of jwt credentials configured for clientOne consumer object
 describe command("curl -s http://localhost:8001/consumers/clientOne/jwt | jq '.total'") do
+  its(:exit_status) { should eq 0 }
+  its(:stdout) { should match '2' }
+end
+
+# verify number of acl groups configured for clientOne consumer object
+describe command("curl -s http://localhost:8001/consumers/clientOne/acls | jq '.total'") do
   its(:exit_status) { should eq 0 }
   its(:stdout) { should match '2' }
 end
