@@ -2,3 +2,5 @@
 
 - name: Restart kong
   command: kong restart
+  environment:
+    PATH: "{{ ansible_env.PATH }}:/usr/local/bin"

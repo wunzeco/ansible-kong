@@ -15,7 +15,7 @@ information on API, Consumer and Plugins configuration.
 - hosts: konghost
 
   vars:
-    kong_version: 0.7.0
+    kong_version: 0.8.3
 	kong_cassandra_host: <my_cassandra_ip_or_fqdn>
 
   roles:
@@ -131,8 +131,10 @@ information on API, Consumer and Plugins configuration.
 To run this role's integration tests
 
 ```
-kitchen verify && kitchen destroy
+PLATFORM=ubuntu                              # OR centos
+kitchen verify $PLATFORM && kitchen destroy $PLATFORM
 ```
+
 
 
 ## Dependencies
