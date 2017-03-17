@@ -13,7 +13,11 @@ provisioner:
 
 platforms:
   - name: ubuntu-14.04
+    driver:
+      box: bento/ubuntu-14.04
   - name: centos-7.2
+    driver:
+      box: bento/centos-7.2
 
 suites:
   - name: node0
