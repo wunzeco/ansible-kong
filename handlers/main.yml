@@ -2,7 +2,7 @@
 
 - name: Validate kong config
   shell: kong check {{ kong_conf_dir }}/kong.conf
-  when: kong_major_minor_version >= 0.9
+  when: kong_major_minor_version_sum|int >= 9
 
 - name: Reload kong
   shell: >
