@@ -8,18 +8,19 @@ describe package('kong') do
   it { should be_installed }
 end
 
-%W(
-  #{kong_conf_dir}
-  #{kong_nginx_working_dir}
-).each do |d|
-  describe file(d) do
-    it { should be_directory }
-    it { should be_mode 755 }
-    it { should be_owned_by 'root' }
-  end
+describe file(kong_conf_dir) do
+  it { should be_directory }
+  it { should be_mode 755 }
+  it { should be_owned_by 'root' }
 end
 
-describe file("#{kong_conf_dir}/kong.yml") do
+describe file(kong_nginx_working_dir) do
+  it { should be_directory }
+  it { should be_mode 777 }
+  it { should be_owned_by 'root' }
+end
+
+describe file("#{kong_conf_dir}/kong.conf") do
   it { should be_file }
   it { should be_mode 644 }
   it { should be_owned_by 'root' }
@@ -32,12 +33,12 @@ describe file("/usr/local/bin/kong") do
 end
 
 describe command("/usr/local/bin/kong version") do
-  its(:stdout) { should match %r(Kong version: 0.*)i }
+  its(:stdout) { should match %r[(Kong version:\s)?0.*]i }
 end
 
 describe process("serf") do
   it { should be_running }
-  its(:args) { should match %r(agent -profile=wan -rpc-addr=.*:kong=/usr/local/kong/serf_event.sh) }
+  its(:args) { should match %r(agent -profile.wan -rpc-addr.*:kong=/usr/local/kong/serf.*) }
 end
 
 describe process("nginx") do

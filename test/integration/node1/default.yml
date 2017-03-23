@@ -3,7 +3,7 @@
   hosts: test-kitchen
 
   vars:
-    kong_version: 0.8.3
+    kong_version: 0.9.9
     kong_host:  "{{ ansible_eth1.ipv4.address }}"
     kong_cassandra_host: "172.29.129.11"
     kong_proxy_listen:            "{{ kong_host }}:8000"

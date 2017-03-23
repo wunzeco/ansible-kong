@@ -13,6 +13,14 @@
   with_items: "{{ kong_prereqs }}"
   when: ansible_os_family|lower == 'debian'
 
+- name: Install kong extra prerequisites (Debian/Ubuntu only) | v0.8.x or earlier
+  apt: 
+    name: "{{ item }}"
+    update_cache: yes
+    state: present
+  with_items: [ netcat, dnsmasq ]
+  when: ansible_os_family|lower == 'debian' and kong_major_minor_version < 0.9
+
 - name: Install kong | Debian
   apt:
     deb:   "/var/tmp/kong-{{ kong_version }}.{{ ansible_distribution_release }}_all.deb"
@@ -31,28 +39,94 @@
     state: present
   when: ansible_os_family|lower == 'redhat'
 
-- name: Create kong config file
-  template: src=kong.yml.j2 dest="{{ kong_conf_dir }}/kong.yml" owner=root group=root mode=0644
-  notify: Restart kong
-
 - name: Ensure kong nginx working dir has appropriate permissions
-  file: path="{{ kong_nginx_working_dir }}" owner=root group=root mode=0755
+  file:
+    path:  "{{ kong_nginx_working_dir }}"
+    owner: root
+    group: root
+    mode:  0777     # vanilla install gives mode=0777 but could it be mode=0755?
 
-- name: Check kong running status
+##-------------------
+##  v0.8.x or earlier
+##-------------------
+- name: Create kong config file | v0.8.x or earlier
+  template: src=kong.yml.j2 dest="{{ kong_conf_dir }}/kong.yml" owner=root group=root mode=0644
+  when: kong_major_minor_version|float < 0.9
+  notify: Restart kong | v0.8.x or earlier
+
+- name: Check kong running status | v0.8.x or earlier
   shell: kong status || true
   environment:
     PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
-  register: run
+  register: status
+  when: kong_major_minor_version|float < 0.9
 
-- name: Start kong
+- name: Set kong run status | v0.8.x or earlier
+  set_fact: 
+    run_status: down
+  when: kong_major_minor_version|float < 0.9 and status.stdout.find('Kong is not running') != -1
+
+- debug: var=status.stdout_lines
+  when: kong_major_minor_version|float < 0.9
+
+- name: Start kong | v0.8.x or earlier
   shell: ulimit -n "{{ kong_max_files_limit }}" && kong start
   environment:
     PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
-  when: run.stdout.find('Kong is not running') != -1
+  when: kong_major_minor_version|float < 0.9 and run_status|default("up") == "down"
   register: start
 
-#- debug: var=start.stdout_lines
+##-------------------
+##  v0.9.x or later
+##-------------------
+- name: Create kong config file | v0.9.x or later
+  template: 
+    src:  kong.conf.j2
+    dest: "{{ kong_conf_dir }}/kong.conf"
+    owner: root
+    group: root
+    mode:  0644
+  when: kong_major_minor_version|float >= 0.9
+  notify: 
+    - Validate kong config
+    - Reload kong
 
-# ToDo:
-#   - consider running kong as non-root user
-#   - consider writing a startup script for kong
+- name: Create kong custom nginx config file | v0.9.x or later
+  template: 
+    src:  custom-nginx.template.j2
+    dest: "{{ kong_conf_dir }}/custom-nginx.template"
+    owner: root
+    group: root
+    mode:  0644
+  when: kong_major_minor_version|float >= 0.9
+  notify: 
+    - Validate kong config
+    - Reload kong
+
+- name: Check kong health status | v0.9.x or later
+  shell: kong health || true
+  environment:
+    PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
+  register: health
+  when: kong_major_minor_version|float >= 0.9
+
+- name: Set kong run status | v0.9.x or later
+  set_fact: 
+    run_status: down
+  when: kong_major_minor_version|float >= 0.9 and health.stderr.find('Kong is not running') != -1
+
+- debug: var=health
+  when: kong_major_minor_version|float >= 0.9
+
+- name: Start kong | v0.9.x or earlier
+  shell: >
+      ulimit -n "{{ kong_max_files_limit }}" && \
+        kong start --conf {{ kong_conf_dir }}/kong.conf --nginx-conf {{ kong_conf_dir }}/custom-nginx.template
+  environment:
+    PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
+  when: kong_major_minor_version|float >= 0.9 and run_status|default("up") == "down"
+  register: start
+
+- debug: var=start.stdout_lines
+
+#- pause: minutes=60
