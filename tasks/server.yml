@@ -89,7 +89,7 @@
   when: kong_major_minor_version_sum|int >= 9
   notify: 
     - Validate kong config
-    - Reload kong
+    - Restart kong | v0.9.x or later
 
 - name: Create kong custom nginx config file | v0.9.x or later
   template: 
