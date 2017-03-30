@@ -7,8 +7,6 @@
     cassandra_distro:  dsc
     cassandra_version: 2.2.5
     cassandra_dsc_version: 2.2.5-1
-
-    #cassandra_version: 3.7.0
     cassandra_cluster_name: kitchenCluster
     cassandra_listen_address: "{{ ansible_eth1.ipv4.address }}"
     cassandra_rpc_address:    "{{ cassandra_listen_address }}"
@@ -38,12 +36,14 @@
   hosts: test-kitchen
 
   vars:
-    kong_version: 0.9.9
+    kong_version: 0.8.3
     kong_host:  "{{ ansible_eth1.ipv4.address }}"
     kong_cassandra_host:          "{{ kong_host }}"
+    kong_cassandra_ssl:           {}
+    kong_cassandra_data_centers:  {}
     kong_proxy_listen:            "{{ kong_host }}:8000"
     kong_proxy_listen_ssl:        "{{ kong_host }}:8443"
-    kong_admin_listen:            "{{ kong_host }}:8001"
+    kong_admin_api_listen:        "{{ kong_host }}:8001"
     kong_cluster_listen:          "{{ kong_host }}:7946"
     kong_proxy_set_headers: 
       "X-Forwarded-Prefix": '$http_x_forwarded_prefix'

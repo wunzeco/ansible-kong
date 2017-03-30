@@ -6,6 +6,7 @@ This role installs and configures Kong.
 Please refer to [Kong documentation](https://getkong.org/docs/) for further
 information on API, Consumer and Plugins configuration.
 
+> *WARNING:* Support for v0.8.x and earlier will be DEPRECATED soon!!
 
 ## Example
 
@@ -15,7 +16,21 @@ information on API, Consumer and Plugins configuration.
 - hosts: konghost
 
   vars:
+    kong_version: 0.9.9
+	kong_cassandra_host: <my_cassandra_ip_or_fqdn>
+
+  roles:
+    - wunzeco.kong
+```
+
+> Note: Installing Kong v0.8.x requires a different set of prereqs
+
+```
+- hosts: konghost
+
+  vars:
     kong_version: 0.8.3
+    kong_prereqs: [ netcat, openssl, libpcre3, dnsmasq, procps ] # <<== NOTE
 	kong_cassandra_host: <my_cassandra_ip_or_fqdn>
 
   roles:

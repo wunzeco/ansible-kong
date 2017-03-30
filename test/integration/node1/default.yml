@@ -3,12 +3,12 @@
   hosts: test-kitchen
 
   vars:
-    kong_version: 0.8.3
+    kong_version: 0.9.9
     kong_host:  "{{ ansible_eth1.ipv4.address }}"
     kong_cassandra_host: "172.29.129.11"
     kong_proxy_listen:            "{{ kong_host }}:8000"
     kong_proxy_listen_ssl:        "{{ kong_host }}:8443"
-    kong_proxy_admin_api_listen:  "{{ kong_host }}:8001"
+    kong_admin_listen:            "{{ kong_host }}:8001"
     kong_cluster_listen:          "{{ kong_host }}:7946"
     kong_proxy_set_headers: 
       "X-Forwarded-Prefix": '$http_x_forwarded_prefix'
@@ -24,6 +24,10 @@
 
 - name: Kong Install
   hosts: test-kitchen
+
+  vars:
+    kong_host:          "{{ ansible_eth1.ipv4.address }}"
+    kong_admin_api_url: "http://{{ kong_host }}:8001"
 
   pre_tasks:
     - name: Install jq and curl

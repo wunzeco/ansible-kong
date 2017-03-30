@@ -1,6 +1,24 @@
 ---
 
-- name: Restart kong
+- name: Validate kong config
+  shell: kong check {{ kong_conf_dir }}/kong.conf
+  when: kong_major_minor_version_sum|int >= 9
+
+- name: Reload kong
+  shell: >
+      ulimit -n "{{ kong_max_files_limit }}" && \
+        kong reload --conf {{ kong_conf_dir }}/kong.conf --nginx-conf {{ kong_conf_dir }}/custom-nginx.template
+  environment:
+    PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
+
+- name: Restart kong | v0.8.x or earlier
   shell: ulimit -n "{{ kong_max_files_limit }}" && kong restart
+  environment:
+    PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
+
+- name: Restart kong | v0.9.x or later
+  shell: >
+      ulimit -n "{{ kong_max_files_limit }}" && \
+        kong restart --conf {{ kong_conf_dir }}/kong.conf --nginx-conf {{ kong_conf_dir }}/custom-nginx.template
   environment:
     PATH: "{{ ansible_env.PATH }}:/usr/local/bin"

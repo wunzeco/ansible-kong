@@ -1,0 +1,31 @@
+# ---------------------
+# custom_nginx.template
+# ---------------------
+
+worker_processes {{ '${{' }}NGINX_WORKER_PROCESSES}};
+daemon {{ '${{' }}NGINX_DAEMON}};
+
+pid pids/nginx.pid;
+error_log logs/error.log {{ '${{' }}LOG_LEVEL}};
+
+> if nginx_optimizations then
+worker_rlimit_nofile {{ '${{' }}WORKER_RLIMIT}};
+> end
+
+events {
+> if nginx_optimizations then
+    worker_connections {{ '${{' }}WORKER_CONNECTIONS}};
+    multi_accept on;
+> end
+}
+
+http {
+{% set default_headers = [ 'Host', 'X-Real-IP', 'X-Forwarded-For', 'X-Forwarded-Proto' ] %}
+{% for header,value in kong_proxy_set_headers|dictsort %}
+{% if header not in default_headers %}
+    proxy_set_header {{ header }} {{ value }};
+{% endif %}
+{% endfor %}
+
+    include 'nginx-kong.conf';
+}

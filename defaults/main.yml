@@ -4,23 +4,102 @@ kong_conf_dir: /etc/kong
 
 ############
 ##  Package
-kong_prereqs: [ netcat, openssl, libpcre3, dnsmasq, procps ]
-kong_version: 0.8.3
+kong_prereqs: [ openssl, libpcre3, procps, perl ]
+kong_version: 0.9.9
+kong_version_string:      "{{ kong_version|string }}"
+kong_major_minor_version: "{{ kong_version_string.split('.')|first }}.{{ kong_version_string.split('.')[1] }}"
+kong_major_minor_version_sum: "{{ kong_version_string.split('.')|first + kong_version_string.split('.')[1] }}"
 kong_deb_pkg_url: "https://github.com/Mashape/kong/releases/download/{{ kong_version }}/kong-{{ kong_version }}.{{ ansible_distribution_release }}_all.deb"
 kong_rpm_pkg_url: "https://github.com/Mashape/kong/releases/download/{{ kong_version }}/kong-{{ kong_version }}.el7.noarch.rpm"
 
 ############
 ##  Config
-kong_custom_plugins: []
-kong_nginx_working_dir: /usr/local/kong
-kong_proxy_listen: "0.0.0.0:8000"
-kong_proxy_listen_ssl: "0.0.0.0:8443"
-kong_proxy_admin_api_listen: "0.0.0.0:8001"
-kong_cluster_listen: "0.0.0.0:7946"
-kong_cluster_listen_rpc: "127.0.0.1:7373"
+##
+##------------------
+## NGINX Config
+##------------------
+kong_nginx_working_dir:        /usr/local/kong
+kong_log_level:                notice
+kong_custom_plugins:           []
+kong_anonymous_reports:        "on"
+kong_proxy_listen:             "0.0.0.0:8000"
+kong_proxy_listen_ssl:         "0.0.0.0:8443"
+kong_admin_listen:             "0.0.0.0:8001"
+kong_nginx_worker_processes:   auto
+kong_nginx_daemon:             "on"
+kong_mem_cache_size:           128m
+kong_ssl_cert:                                # /path/to/certificate.pem
+kong_ssl_cert_key:                            # /path/to/certificate.key
+
+##------------------
+## DATASTORE
+##------------------
+kong_database:        cassandra
+#----  PostgreSQL  ----
+kong_pg_host:         127.0.0.1
+kong_pg_port:         5432
+kong_pg_user:         kong
+kong_pg_password:     kong
+kong_pg_database:     kong
+kong_pg_ssl:          "off"
+kong_pg_ssl_verify:   "off"
+#----  Cassandra  ----
+kong_cassandra_host: "{{ ansible_default_ipv4.address }}"
+kong_cassandra_contact_points:
+  - "{{ kong_cassandra_host }}:{{ kong_cassandra_port }}"
+kong_cassandra_port:            9042
+kong_cassandra_keyspace:        kong
+kong_cassandra_consistency:     ONE
+kong_cassandra_timeout:         5000
+kong_cassandra_ssl:             "off"
+kong_cassandra_ssl_verify:      "off"
+kong_cassandra_username:
+kong_cassandra_password:
+kong_cassandra_repl_strategy:   SimpleStrategy
+kong_cassandra_repl_factor:     1
+kong_cassandra_data_centers:    []
+
+##------------------
+## CLUSTERING
+##------------------
+kong_cluster_listen:           "0.0.0.0:7946"
+kong_cluster_listen_rpc:       "127.0.0.1:7373"
+kong_cluster_advertise:        ""
+kong_cluster_encrypt_key:      ""
+kong_cluster_ttl_on_failure:   3600
+kong_cluster_profile:          wan
+
+##------------------
+## DNS RESOLVER
+##------------------
+kong_dnsmasq:      "on"
+kong_dnsmasq_port: 8053
+kong_dns_resolver: ""           # a name server e.g. 8.8.8.8
+
+##-----------------------------
+## DEVELOPMENT & MISCELLANEOUS
+##-----------------------------
+kong_lua_ssl_trusted_certificate: ""
+kong_lua_ssl_verify_depth:        1
+kong_lua_code_cache:              "on"
+kong_lua_package_path:            ""
+kong_lua_package_cpath:           ""
+
+kong_max_files_limit:   65535               # if less than 4096 kong may perform poorly. 
+                                            # Under load it may raise:
+                                            #   socket() failed (24: Too many open files) while connecting to upstream
+kong_upstream_host:     'nil'
+kong_upstream_url:      'nil'
+kong_proxy_set_headers: {}                  # custom proxy headers to set at nginx http context
+
+
+##--------------------------------------
+##  v0.8.3 and earlier specific configs (to be DEPRECATED soon)
+##--------------------------------------
+kong_admin_api_listen: "0.0.0.0:8001"
 kong_ssl_cert_path:                           # /path/to/certificate.pem
 kong_ssl_key_path:                            # /path/to/certificate.key
-kong_dns_resolver: dnsmasq
+#kong_dns_resolver: dnsmasq
 kong_dns_resolvers_available: {}              # see example below
 ## kong_dns_resolvers_available:
 ##   server:
@@ -28,37 +107,19 @@ kong_dns_resolvers_available: {}              # see example below
 ##   dnsmasq:
 ##     port: 8053
 kong_cluster: {}                              # e.g. kong_clusters: { advertise: "", encrypt: "foo" }
-
-kong_database: cassandra
-kong_cassandra_host: "{{ ansible_default_ipv4.address }}"
-kong_cassandra_port: 9042
-kong_cassandra_contact_points:
-  - "{{ kong_cassandra_host }}:{{ kong_cassandra_port }}"
-kong_cassandra_keyspace: kong
-kong_cassandra_timeout: 5000
 kong_cassandra_replication_strategy: SimpleStrategy
 kong_cassandra_replication_factor: 1
-kong_cassandra_consistency: ONE
-kong_cassandra_data_centers: {}               # e.g. kong_cassandra_data_centers: { dc1: 2, dc2: 3 }
-kong_cassandra_ssl: {}                        # e.g. kong_cassandra_ssl: { enabled: false, verify: false, certificate_authority: "/path/to/cluster-ca-certificate.pem" }
-kong_cassandra_username:
-kong_cassandra_password:
+#kong_cassandra_data_centers: {}               # e.g. kong_cassandra_data_centers: { dc1: 2, dc2: 3 }
+#kong_cassandra_ssl: {}                        # e.g. kong_cassandra_ssl: { enabled: false, verify: false, certificate_authority: "/path/to/cluster-ca-certificate.pem" }
 kong_postgres_host:     "{{ ansible_default_ipv4.address }}"
 kong_postgres_port:     5432
 kong_postgres_user:     ''
 kong_postgres_password: ''
-kong_send_anonymous_reports: true
+kong_send_anonymous_reports: true           # v0.8.3 and earlier
 kong_memory_cache_size: 128
-kong_max_files_limit:   65535               # if less than 4096 kong may perform poorly. 
-                                            # Under load it may raise:
-                                            #   socket() failed (24: Too many open files) while connecting to upstream
-kong_upstream_host:     'nil'
-kong_upstream_url:      'nil'
-kong_proxy_set_headers:                     # proxy headers to set
-  Host:                  '$upstream_host'
-  "X-Real-IP":           '$remote_addr'
-  "X-Forwarded-For":     '$proxy_add_x_forwarded_for'
-  "X-Forwarded-Proto":   '$scheme'
+##--------------------------------------
+##  v0.8.3 and earlier specific configs
+##--------------------------------------
 
 
 ##################################

@@ -6,14 +6,21 @@ provisioner:
   name: ansible_playbook
   hosts: test-kitchen
   requirements_path: requirements.yml
-  ansible_verbose: false
+  require_pip: true
+  require_ansible_repo: false
+  ansible_version:  2.2.1.0
+  ansible_verbose:  false
   ansible_verbosity: 2
   ansible_diff: true
   ansible_extra_flags: <%= ENV['ANSIBLE_EXTRA_FLAGS'] %>
 
 platforms:
   - name: ubuntu-14.04
+    driver:
+      box: bento/ubuntu-14.04
   - name: centos-7.2
+    driver:
+      box: bento/centos-7.2
 
 suites:
   - name: node0
@@ -26,3 +33,9 @@ suites:
     driver:
       network:
         - ["private_network", { ip: "172.29.129.12" }]
+  - name: node0.8.x
+    driver:
+      customize:
+        memory: 1024
+      network:
+        - ["private_network", { ip: "172.29.129.21" }]
