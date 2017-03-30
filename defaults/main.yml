@@ -96,7 +96,7 @@ kong_proxy_set_headers: {}                  # custom proxy headers to set at ngi
 ##--------------------------------------
 ##  v0.8.3 and earlier specific configs (to be DEPRECATED soon)
 ##--------------------------------------
-kong_proxy_admin_api_listen: "0.0.0.0:8001"
+kong_admin_api_listen: "0.0.0.0:8001"
 kong_ssl_cert_path:                           # /path/to/certificate.pem
 kong_ssl_key_path:                            # /path/to/certificate.key
 #kong_dns_resolver: dnsmasq
