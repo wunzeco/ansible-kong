@@ -32,6 +32,8 @@ information on API, Consumer and Plugins configuration.
     kong_version: 0.8.3
     kong_prereqs: [ netcat, openssl, libpcre3, dnsmasq, procps ] # <<== NOTE
 	kong_cassandra_host: <my_cassandra_ip_or_fqdn>
+    kong_cassandra_ssl:           {}
+    kong_cassandra_data_centers:  {}
 
   roles:
     - wunzeco.kong
