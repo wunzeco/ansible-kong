@@ -1,7 +1,10 @@
 ---
 
 - name: Validate kong config
-  shell: kong check {{ kong_conf_dir }}/kong.conf
+  shell: >
+      kong check {{ kong_conf_dir }}/kong.conf
+  environment:
+    PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
   when: kong_major_minor_version_sum|int >= 9
 
 - name: Reload kong
