@@ -46,6 +46,14 @@
     group: root
     mode:  0777     # vanilla install gives mode=0777 but could it be mode=0755?
 
+- name: Create logrotate config for kong logs
+  template:
+    src:  logrotate.j2
+    dest: /etc/logrotate.d/kong
+    owner: root
+    group: root
+    mode: 0644
+
 ##-------------------
 ##  v0.8.x or earlier
 ##-------------------

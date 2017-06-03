@@ -1,6 +1,7 @@
 ---
 kong_task:      server        # influences task file to apply. Options - server, api and (soon) consumer
 kong_conf_dir: /etc/kong
+kong_log_dir:  /usr/local/kong/logs
 
 ############
 ##  Package

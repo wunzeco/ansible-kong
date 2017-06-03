@@ -1,0 +1,9 @@
+{{ kong_log_dir }}/logs/*.log {
+    weekly
+    rotate 5
+    maxsize 500M
+    missingok
+    dateext
+    copytruncate
+    compress
+}

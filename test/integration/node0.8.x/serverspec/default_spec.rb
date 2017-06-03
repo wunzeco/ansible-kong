@@ -25,6 +25,12 @@ describe file("#{kong_conf_dir}/kong.yml") do
   it { should be_owned_by 'root' }
 end
 
+describe file("/etc/logrotate.d/kong") do
+  it { should be_file }
+  it { should be_mode 644 }
+  it { should be_owned_by 'root' }
+end
+
 describe file("/usr/local/bin/kong") do
   it { should be_file }
   it { should be_mode 755 }
