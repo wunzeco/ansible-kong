@@ -1,7 +1,7 @@
 ---
 galaxy_info:
   author: "Ogonna Iwunze"
-  company: EqualExperts
+  company: None
   license: BSD
   min_ansible_version: 2.1.0.0
   platforms:
