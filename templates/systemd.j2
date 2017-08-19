@@ -1,0 +1,13 @@
+[Unit]
+Description=Kong API Gateway
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/kong start --conf {{ kong_conf_dir }}/kong.conf --nginx-conf {{ kong_conf_dir }}/custom-nginx.template
+ExecStop=/usr/local/bin/kong stop
+ExecReload=/usr/local/bin/kong reload --conf {{ kong_conf_dir }}/kong.conf --nginx-conf {{ kong_conf_dir }}/custom-nginx.template
+Type=forking
+PIDFile=/usr/local/kong/pids/nginx.pid
+
+[Install]
+WantedBy=default.target

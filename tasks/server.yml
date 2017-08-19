@@ -1,42 +1,42 @@
 ---
+- name: Copying limits.conf
+  copy:
+    src: "limits.conf"
+    dest: "/etc/security/limits.conf"
+    owner: root
+    group: root
+    mode: 0644
 
-# Debian
-- name: Download kong deb package | Debian
+- name: Download kong deb package
   get_url: url="{{ kong_deb_pkg_url }}" dest=/var/tmp validate_certs=no
-  when: ansible_os_family|lower == 'debian'
 
-- name: Install kong prerequisites (Debian/Ubuntu only)
+- name: Install kong prerequisites
   apt:
     name: "{{ item }}"
     update_cache: yes
     state: present
   with_items: "{{ kong_prereqs }}"
-  when: ansible_os_family|lower == 'debian'
 
-- name: Install kong | Debian
+- name: Install kong
   apt:
-    deb:   "/var/tmp/kong-{{ kong_version }}.{{ ansible_distribution_release }}_all.deb"
+    deb:   "/var/tmp/kong-community-edition-{{ kong_version }}.{{ ansible_distribution_release }}.all.deb"
     state: present
-  when: ansible_os_family|lower == 'debian'
-
-# RedHat
-- name: Download kong rpm package | RedHat
-  get_url: url="{{ kong_rpm_pkg_url }}" dest=/var/tmp validate_certs=no
-  when: ansible_os_family|lower == 'redhat'
-
-- name: Install kong | RedHat
-  yum:
-    name: "/var/tmp/kong-{{ kong_version }}.el7.noarch.rpm"
-    disable_gpg_check: yes
-    state: present
-  when: ansible_os_family|lower == 'redhat'
 
 - name: Ensure kong nginx working dir has appropriate permissions
   file:
     path:  "{{ kong_nginx_working_dir }}"
-    owner: root
-    group: root
-    mode:  0777     # vanilla install gives mode=0777 but could it be mode=0755?
+    state: directory
+    owner: www-data
+    group: www-data
+    mode:  0755     # vanilla install gives mode=0777 but could it be mode=0755?
+
+- name: Ensure log directory owned by nginx user
+  become: yes
+  file:
+    path: "{{ kong_log_dir }}"
+    state: directory
+    owner: www-data
+    group: www-data
 
 - name: Create logrotate config for kong logs
   template:
@@ -54,8 +54,8 @@
     group: root
     mode:  0644
   notify:
-    - Validate kong config
-    - Restart kong
+    - validate kong
+    - restart kong
 
 - name: Create kong custom nginx config file
   template:
@@ -65,31 +65,21 @@
     group: root
     mode:  0644
   notify:
-    - Validate kong config
-    - Reload kong
+    - validate kong
+    - reload kong
 
-- name: Check kong health status
-  shell: kong health || true
-  environment:
-    PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
-  register: health
+- name: Create kong systemd script
+  template:
+    dest: /etc/systemd/system/kong.service
+    mode: 0755
+    src: systemd.j2
 
-- name: Set kong run status
-  set_fact:
-    run_status: down
-  when: health.stderr.find('Kong is not running') != -1
+- name: Ensure kong service is enabled
+  service:
+    name: kong
+    enabled: yes
 
-- debug: var=health
-
-- name: Start kong
-  shell: >
-      ulimit -n "{{ kong_max_files_limit }}" && \
-        kong start --conf {{ kong_conf_dir }}/kong.conf --nginx-conf {{ kong_conf_dir }}/custom-nginx.template
-  environment:
-    PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
-  when: run_status|default("up") == "down"
-  register: start
-
-- debug: var=start.stdout_lines
-
-#- pause: minutes=60
+- name: Ensure Kong is running
+  service:
+    name: kong
+    state: started

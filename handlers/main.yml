@@ -1,21 +1,24 @@
 ---
-
-- name: Validate kong config
+- name: validate kong
   shell: >
-      kong check {{ kong_conf_dir }}/kong.conf
-  environment:
-    PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
+      /usr/local/bin/kong check {{ kong_conf_dir }}/kong.conf
 
-- name: Reload kong
-  shell: >
-      ulimit -n "{{ kong_max_files_limit }}" && \
-        kong reload --conf {{ kong_conf_dir }}/kong.conf --nginx-conf {{ kong_conf_dir }}/custom-nginx.template
-  environment:
-    PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
+- name: reload kong
+  service:
+    name: kong
+    state: reloaded
 
-- name: Restart kong
-  shell: >
-      ulimit -n "{{ kong_max_files_limit }}" && \
-        kong restart --conf {{ kong_conf_dir }}/kong.conf --nginx-conf {{ kong_conf_dir }}/custom-nginx.template
-  environment:
-    PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
+- name: restart kong
+  service:
+    name: kong
+    state: restarted
+
+- name: start kong
+  service:
+    name: kong
+    state: started
+
+- name: stop kong
+  service:
+    name: kong
+    state: stopped
