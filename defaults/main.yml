@@ -32,6 +32,8 @@ kong_mem_cache_size:           128m
 kong_ssl:                      "off"
 kong_ssl_cert:                                # /path/to/certificate.pem
 kong_ssl_cert_key:                            # /path/to/certificate.key
+kong_server_tokens:             "on"
+kong_latency_tokens:            "on"
 
 ##------------------
 ## DATASTORE
