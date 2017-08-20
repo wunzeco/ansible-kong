@@ -49,13 +49,20 @@
     state: directory
     owner: www-data
     group: www-data
-    mode:  0755     # vanilla install gives mode=0777 but could it be mode=0755?
+    mode:  0755
 
-- name: Ensure log directory owned by nginx user
-  become: yes
+- name: Create configurated log dir
   file:
     path: "{{ kong_log_dir }}"
     state: directory
+    owner: www-data
+    group: www-data
+
+- name: Sylink to real log dir
+  file:
+    src: "{{ kong_log_dir }}"
+    dest: "{{ kong_nginx_working_dir }}/logs"
+    state: link
     owner: www-data
     group: www-data
 
