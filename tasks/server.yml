@@ -1,11 +1,32 @@
 ---
-- name: Copying limits.conf
-  copy:
-    src: "limits.conf"
-    dest: "/etc/security/limits.conf"
-    owner: root
-    group: root
-    mode: 0644
+- name: Install psycopg2 to create database if necessary
+  pip:
+    name: "{{ item }}"
+  with_items:
+    - psycopg2
+  when: kong_database|lower == "postgres" and kong_pg_root_user and kong_pg_root_password
+
+- name: Ensure Kong postgres DB database
+  postgresql_db:
+    name: "{{ kong_pg_database }}"
+    state: present
+    login_host: "{{ kong_pg_host }}"
+    login_user: "{{ kong_pg_root_user }}"
+    login_password: "{{ kong_pg_root_password }}"
+  register: create_db
+  when: kong_database|lower == "postgres" and kong_pg_root_user and kong_pg_root_password
+
+- name: Ensure Kong DB user
+  postgresql_user:
+    db: "{{ kong_pg_database }}"
+    login_host: "{{ kong_pg_host }}"
+    login_user: "{{ kong_pg_root_user }}"
+    login_password: "{{ kong_pg_root_password }}"
+    name: "{{ kong_pg_user }}"
+    password: "{{ kong_pg_password }}"
+    priv: "ALL"
+    state: present
+  when: kong_database|lower == "postgres" and kong_pg_root_user and kong_pg_root_password and create_db.changed
 
 - name: Download kong deb package
   get_url: url="{{ kong_deb_pkg_url }}" dest=/var/tmp validate_certs=no
@@ -78,6 +99,10 @@
   service:
     name: kong
     enabled: yes
+
+- name: Run kong migrations to keep database updated
+  shell: >
+      /usr/local/bin/kong migrations up -c {{ kong_conf_dir }}/kong.conf --v
 
 - name: Ensure Kong is running
   service:
