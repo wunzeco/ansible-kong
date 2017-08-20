@@ -444,6 +444,7 @@ db_cache_ttl = {{ kong_db_cache_ttl }}
 # overridden by the environment variables `LOCALDOMAIN` and `RES_OPTIONS` if
 # they have been set.
 
+dns_resolver = {{ kong_dns_resolver }}
 #dns_resolver =                  # Comma separated list of nameservers, each
                                  # entry in `ip[:port]` format to be used by
                                  # Kong. If not specified the nameservers in
@@ -451,17 +452,20 @@ db_cache_ttl = {{ kong_db_cache_ttl }}
                                  # Port defaults to 53 if omitted. Accepts
                                  # both IPv4 and IPv6 addresses.
 
+dns_hostsfile = {{ kong_dns_hostsfile }}
 #dns_hostsfile = /etc/hosts      # The hosts file to use. This file is read
                                  # once and its content is static in memory.
                                  # To read the file again after modifying it,
                                  # Kong must be reloaded.
 
+dns_order = {{ kong_dns_order }}
 #dns_order = LAST,SRV,A,CNAME    # The order in which to resolve different
                                  # record types. The `LAST` type means the
                                  # type of the last successful lookup (for the
                                  # specified name). The format is a (case
                                  # insensitive) comma separated list.
 
+dns_stale_ttl = {{ kong_dns_stale_ttl }}
 #dns_stale_ttl = 4               # Defines, in seconds, how long a record will
                                  # remain in cache past its TTL. This value
                                  # will be used while the new DNS record is
@@ -471,11 +475,14 @@ db_cache_ttl = {{ kong_db_cache_ttl }}
                                  # completes, or the `dns_stale_ttl` number of
                                  # seconds have passed.
 
+dns_not_found_ttl = {{ kong_dns_not_found_ttl }}
 #dns_not_found_ttl = 30          # TTL in seconds for empty DNS responses and
                                  # "(3) name error" responses.
 
+dns_error_ttl = {{ kong_dns_error_ttl }}
 #dns_error_ttl = 1               # TTL in seconds for error responses.
 
+dns_no_sync = {{ kong_dns_no_sync }}
 #dns_no_sync = off               # If enabled, then upon a cache-miss every
                                  # request will trigger its own dns query.
                                  # When disabled multiple requests for the

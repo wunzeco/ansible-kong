@@ -69,6 +69,13 @@ kong_db_cache_ttl: 3600
 ##------------------
 ## DNS RESOLVER
 ##------------------
+kong_dns_resolver:                 ""
+kong_dns_hostsfile:                /etc/hosts
+kong_dns_order:                    "LAST,SRV,A,CNAME"
+kong_dns_stale_ttl:                4
+kong_dns_not_found_ttl:            30
+kong_dns_error_ttl:                1
+kong_dns_no_sync:                  off
 
 
 ##-----------------------------
