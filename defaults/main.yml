@@ -23,12 +23,14 @@ kong_anonymous_reports:        "on"
 kong_proxy_listen:             "0.0.0.0:8000"
 kong_proxy_listen_ssl:         "0.0.0.0:8443"
 kong_admin_listen:             "0.0.0.0:8001"
+kong_admin_listen_ssl:         "0.0.0.0:8444"
 kong_nginx_user_u:             "www-data"
 kong_nginx_user_g:             "www-data"
 kong_nginx_user:               "{{ kong_nginx_user_u}} {{ kong_nginx_user_g }}"
 kong_nginx_worker_processes:   auto
 kong_nginx_daemon:             "on"
 kong_mem_cache_size:           128m
+kong_admin_ssl:                "off"
 kong_ssl:                      "off"
 kong_ssl_cert:                                # /path/to/certificate.pem
 kong_ssl_cert_key:                            # /path/to/certificate.key
