@@ -115,3 +115,10 @@
   service:
     name: kong
     state: started
+
+- name: Install common utilities to have in kong nodes
+  pip:
+    name: "{{ item }}"
+  with_items:
+    - http
+    - kong-cli
