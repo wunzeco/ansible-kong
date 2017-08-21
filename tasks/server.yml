@@ -120,5 +120,5 @@
   pip:
     name: "{{ item }}"
   with_items:
-    - http
+    - httpie
     - kong-cli
