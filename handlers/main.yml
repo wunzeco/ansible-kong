@@ -19,7 +19,7 @@
   environment:
     PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
 
-- name: Restart kong | v0.9.x or later
+- name: Restart kong
   shell: >
       ulimit -n "{{ kong_max_files_limit }}" && \
         kong restart --conf {{ kong_conf_dir }}/kong.conf --nginx-conf {{ kong_conf_dir }}/custom-nginx.template

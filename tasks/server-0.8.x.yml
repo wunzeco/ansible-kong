@@ -1,0 +1,34 @@
+---
+
+##-------------------
+##  v0.8.x or earlier
+##-------------------
+- name: Create kong config file | v0.8.x or earlier
+  template: src=kong.yml.j2 dest="{{ kong_conf_dir }}/kong.yml" owner=root group=root mode=0644
+  #when: kong_version|version_compare('0.9.0', '<')
+  notify: Restart kong | v0.8.x or earlier
+
+- name: Check kong running status | v0.8.x or earlier
+  shell: kong status || true
+  environment:
+    PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
+  register: status
+  #when: kong_version|version_compare('0.9.0', '<')
+
+- name: Set kong run status | v0.8.x or earlier
+  set_fact: 
+    run_status: down
+  when: status.stdout.find('Kong is not running') != -1
+  #when: kong_version|version_compare('0.9.0', '<') and status.stdout.find('Kong is not running') != -1
+
+- debug: var=status.stdout_lines
+  #when: kong_version|version_compare('0.9.0', '<')
+
+- name: Start kong | v0.8.x or earlier
+  shell: ulimit -n "{{ kong_max_files_limit }}" && kong start
+  environment:
+    PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
+  when: run_status|default("up") == "down"
+  #when: kong_version|version_compare('0.9.0', '<') and run_status|default("up") == "down"
+  register: start
+
