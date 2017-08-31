@@ -44,14 +44,10 @@ end
 
 describe process("serf") do
   it { should be_running }
-  its(:args) { should match %r(agent -profile.wan -rpc-addr.*:kong=/usr/local/kong/serf.*) }
+  its(:args) { should match %r(agent -profile.* -rpc-addr.*:kong=/usr/local/kong/serf.*) }
 end
 
 describe process("nginx") do
   it { should be_running }
   its(:args) { should match %r(-p /usr/local/kong -c nginx.conf) }
-end
-
-describe process("dnsmasq") do
-  it { should be_running }
 end
