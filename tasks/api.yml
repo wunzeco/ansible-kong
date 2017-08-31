@@ -1,5 +1,7 @@
 ---
 
+- debug: msg="Kong Version - {{ kong_version }}"
+
 - name: Verify kong admin api available
   uri: url="{{ kong_admin_api_url|default('http://localhost:8001') }}"
 

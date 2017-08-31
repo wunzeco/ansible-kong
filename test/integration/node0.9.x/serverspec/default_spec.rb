@@ -59,7 +59,7 @@ end
 # verify number of cluster members
 describe command('sudo /usr/local/bin/kong cluster members | grep node | wc -l') do
   its(:exit_status) { should eq 0 }
-  its(:stdout) { should match '2' }
+  its(:stdout) { should match '1' }
 end
 
 # verify serviceOne object is configured and serviceThree does not exist
