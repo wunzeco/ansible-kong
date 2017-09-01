@@ -6,10 +6,9 @@ kong_log_dir:  /usr/local/kong/logs
 ############
 ##  Package
 kong_prereqs: [ openssl, libpcre3, procps, perl ]
-kong_version: 0.9.9
+kong_version: 0.10.3
 kong_version_string:      "{{ kong_version|string }}"
-#kong_major_minor_version: "{{ kong_version_string.split('.')|first }}.{{ kong_version_string.split('.')[1] }}"
-#kong_major_minor_version_sum: "{{ kong_version_string.split('.')|first + kong_version_string.split('.')[1] }}"
+kong_major_minor_version: "{{ kong_version_string.split('.')|first }}.{{ kong_version_string.split('.')[1] }}"
 kong_deb_pkg_url: "https://github.com/Mashape/kong/releases/download/{{ kong_version }}/kong-{{ kong_version }}.{{ ansible_distribution_release }}_all.deb"
 kong_rpm_pkg_url: "https://github.com/Mashape/kong/releases/download/{{ kong_version }}/kong-{{ kong_version }}.el7.noarch.rpm"
 
@@ -21,16 +20,32 @@ kong_rpm_pkg_url: "https://github.com/Mashape/kong/releases/download/{{ kong_ver
 ##------------------
 kong_nginx_working_dir:        /usr/local/kong
 kong_log_level:                notice
+kong_proxy_access_log:         "logs/access.log"
+kong_proxy_error_log:          "logs/error.log"
+kong_admin_access_log:         "logs/access.log"
+kong_admin_error_log:          "logs/error.log"
 kong_custom_plugins:           []
 kong_anonymous_reports:        "on"
 kong_proxy_listen:             "0.0.0.0:8000"
 kong_proxy_listen_ssl:         "0.0.0.0:8443"
 kong_admin_listen:             "0.0.0.0:8001"
+kong_admin_listen_ssl:         "0.0.0.0:8444"
 kong_nginx_worker_processes:   auto
 kong_nginx_daemon:             "on"
 kong_mem_cache_size:           128m
 kong_ssl_cert:                                # /path/to/certificate.pem
 kong_ssl_cert_key:                            # /path/to/certificate.key
+kong_ssl_cipher_suite:         modern
+kong_ssl_ciphers: 
+kong_client_ssl:               "off"
+kong_client_ssl_cert:
+kong_client_ssl_cert_key:
+kong_admin_ssl:                "off"
+kong_admin_ssl_cert:
+kong_admin_ssl_cert_key:
+kong_upstream_keepalive:       60
+kong_server_tokens:            "on"
+kong_latency_tokens:           "on"
 
 ##------------------
 ## DATASTORE
@@ -47,7 +62,7 @@ kong_pg_ssl_verify:   "off"
 #----  Cassandra  ----
 kong_cassandra_host: "{{ ansible_default_ipv4.address }}"
 kong_cassandra_contact_points:
-  - "{{ kong_cassandra_host }}:{{ kong_cassandra_port }}"
+  - "{{ kong_cassandra_host }}"
 kong_cassandra_port:            9042
 kong_cassandra_keyspace:        kong
 kong_cassandra_consistency:     ONE
@@ -56,9 +71,12 @@ kong_cassandra_ssl:             "off"
 kong_cassandra_ssl_verify:      "off"
 kong_cassandra_username:
 kong_cassandra_password:
+kong_cassandra_data_centers:    []
+kong_cassandra_lb_policy: RoundRobin
+kong_cassandra_local_datacenter: 
 kong_cassandra_repl_strategy:   SimpleStrategy
 kong_cassandra_repl_factor:     1
-kong_cassandra_data_centers:    []
+kong_cassandra_schema_consensus_timeout: 10000
 
 ##------------------
 ## CLUSTERING
@@ -67,15 +85,17 @@ kong_cluster_listen:           "0.0.0.0:7946"
 kong_cluster_listen_rpc:       "127.0.0.1:7373"
 kong_cluster_advertise:        ""
 kong_cluster_encrypt_key:      ""
+kong_cluster_keyring_file:
 kong_cluster_ttl_on_failure:   3600
 kong_cluster_profile:          wan
 
 ##------------------
 ## DNS RESOLVER
 ##------------------
-kong_dnsmasq:      "on"
-kong_dnsmasq_port: 8053
+kong_dnsmasq:      "on"         # 0.9.x only
+kong_dnsmasq_port: 8053         # 0.9.x only
 kong_dns_resolver: ""           # a name server e.g. 8.8.8.8
+kong_dns_hostsfile:
 
 ##-----------------------------
 ## DEVELOPMENT & MISCELLANEOUS
@@ -133,12 +153,17 @@ kong_admin_api_url: "http://localhost:8001"
 kong_delete_api_obj: false                  # set to True to delete api object from kong
 
 kong_api_obj_name:                          # see api config example below
-kong_api_obj_request_host:                  # see api config example below
-kong_api_obj_request_path:                  # see api config example below
+kong_api_obj_hosts:                         # see api config example below (WARN: valid for 0.10.x and later)
+kong_api_obj_uris:                          # see api config example below (WARN: valid for 0.10.x and later)
 kong_api_obj_upstream_url:                  # see api config example below
 kong_api_obj_preserve_host: false
-kong_api_obj_strip_request_path: false
+kong_api_obj_strip_uri: false               # see api config example below (WARN: valid for 0.10.x and later)
 kong_api_obj_plugins: []
+
+# BREAKING CHANGE: request_host, request_path and strip_request_path are NOT valid for 0.10.x and later
+kong_api_obj_request_host:                  # (WARN: valid for 0.9.x and earlier)
+kong_api_obj_request_path:                  # (WARN: valid for 0.9.x and earlier)
+kong_api_obj_strip_request_path: false      # (WARN: valid for 0.9.x and earlier)
 
 ## Consumer Object
 kong_delete_consumer_obj: false              # set to True to delete consumer object from kong
@@ -153,11 +178,13 @@ kong_consumer_obj_acl_groups: []             # see consumer config example below
 ##
 ## kong_task: api
 ## kong_api_obj_name:         Mockbin
-## kong_api_obj_request_host: "mockbin.com"
-## kong_api_obj_request_path: "/someservice"
+## kong_api_obj_hosts: "mockbin.com"
+## kong_api_obj_uris: "/someservice"
 ## kong_api_obj_upstream_url: "https://mockbin.com"
 ## kong_api_obj_preserve_host: false
-## kong_api_obj_strip_request_path: false
+## kong_api_obj_strip_uri: false
+## kong_api_obj_https_only: true
+## kong_api_obj_http_if_terminated: true
 ## kong_api_obj_plugins:
 ##   - name: oauth2
 ##     consumer_id:                       # Optional
@@ -223,16 +250,16 @@ kong_consumer_obj_acl_groups: []             # see consumer config example below
 ## e.g 
 ##   kong_api_objs: 
 ##     - name:         mockbin
-##       request_host: "mockbin.com"
-##       request_path: "/someservice"
+##       hosts: "mockbin.com"
+##       uris: "/someservice"
 ##       upstream_url: "https://mockbin.com"
 ##       preserve_host: false
-##       strip_request_path: false
+##       strip_uri: false
 ##     - name:         payments
-##       request_host: "mockbin.com"
-##       request_path: "/payments-service"
+##       hosts: "mockbin.com"
+##       uris: "/payments-service"
 ##       upstream_url: "https://mockbin.com"
 ##       preserve_host: false
-##       strip_request_path: false
+##       strip_uri: false
 ##
 ##  kong_delete_api_objs: []

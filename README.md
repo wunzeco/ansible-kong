@@ -6,7 +6,12 @@ This role installs and configures Kong.
 Please refer to [Kong documentation](https://getkong.org/docs/) for further
 information on API, Consumer and Plugins configuration.
 
-> *WARNING:* Support for v0.8.x and earlier will be DEPRECATED soon!!
+> *WARNING:*
+> 
+>     -  There are breaking changes between v0.9.x and 0.10.x
+>     -  For v0.8.x support use earlier version of this role. (Git commit hash 46118507b6d02348aca69f9ff58943aa5e11dd87)
+>     -  Support for v0.8.x deprecated!!
+
 
 ## Example
 
@@ -16,28 +21,13 @@ information on API, Consumer and Plugins configuration.
 - hosts: konghost
 
   vars:
-    kong_version: 0.9.9
+    kong_version: 0.10.3
 	kong_cassandra_host: <my_cassandra_ip_or_fqdn>
 
   roles:
     - wunzeco.kong
 ```
 
-> Note: Installing Kong v0.8.x requires a different set of prereqs
-
-```
-- hosts: konghost
-
-  vars:
-    kong_version: 0.8.3
-    kong_prereqs: [ netcat, openssl, libpcre3, dnsmasq, procps ] # <<== NOTE
-	kong_cassandra_host: <my_cassandra_ip_or_fqdn>
-    kong_cassandra_ssl:           {}
-    kong_cassandra_data_centers:  {}
-
-  roles:
-    - wunzeco.kong
-```
 
 ### Add/Update/Delete API Object in Kong
 
@@ -57,7 +47,7 @@ information on API, Consumer and Plugins configuration.
       kong_task: api
       kong_api_obj_name: serviceThree
       kong_api_obj_upstream_url: "https://service-upstream.ogonna.com"
-      kong_api_obj_request_path: "/serviceThree"
+      kong_api_obj_uris: "/serviceThree"
       kong_delete_api_obj: true
 
     ##   ====>>                   ADD/UPDATE an API object and enable Plugins for it
@@ -65,7 +55,7 @@ information on API, Consumer and Plugins configuration.
       kong_task: api
       kong_api_obj_name: serviceWithPlugins
       kong_api_obj_upstream_url: "https://service-upstream.ogonna.com"
-      kong_api_obj_request_path: "/serviceWithPlugins"
+      kong_api_obj_uris: "/serviceWithPlugins"
       kong_api_obj_plugins:
       kong_api_obj_plugins:
         - name: acl

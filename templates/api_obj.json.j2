@@ -1,12 +1,40 @@
 {
     "name": "{{ kong_api_obj_name }}",
+{# START - params for 0.9.x and earlier #}
+{% if kong_version|version_compare('0.10.0', '<') %}
 {% if kong_api_obj_request_host|default(false) %}
     "request_host": "{{ kong_api_obj_request_host }}",
 {% endif %}
 {% if kong_api_obj_request_path|default(false) %}
     "request_path": "{{ kong_api_obj_request_path }}",
 {% endif %}
-    "preserve_host": {{ kong_api_obj_preserve_host|default('false')|lower }},
     "strip_request_path": {{ kong_api_obj_strip_request_path|default('false')|lower }},
+{% endif %}
+{# END - params for 0.9.x and earlier #}
+{# -#}
+
+{# START - params for 0.10.x and later #}
+{% if kong_version|version_compare('0.10.0', '>=') %}
+{% if kong_api_obj_hosts|default(false) %}
+    "hosts": "{{ kong_api_obj_hosts }}",
+{% endif %}
+{% if kong_api_obj_uris|default(false) %}
+    "uris": "{{ kong_api_obj_uris }}",
+{% endif %}
+{% if kong_api_obj_methods|default(false) %}
+    "methods": "{{ kong_api_obj_methods }}",
+{% endif %}
+    "strip_uri": {{ kong_api_obj_strip_uri|default('false')|lower }},
+    "retries": {{ kong_api_obj_retries|default(5) }},
+    "upstream_connect_timeout": {{ kong_api_obj_upstream_connect_timeout|default(60000) }},
+    "upstream_send_timeout": {{ kong_api_obj_upstream_send_timeout|default(60000) }},
+    "upstream_read_timeout": {{ kong_api_obj_upstream_read_timeout|default(60000) }},
+    "https_only":  {{ kong_api_obj_https_only|default('false')|lower }},
+    "http_if_terminated":  {{ kong_api_obj_http_if_terminated|default('true')|lower }},
+{% endif %}
+{# END - params for 0.10.x and later #}
+{# -#}
+
+    "preserve_host": {{ kong_api_obj_preserve_host|default('false')|lower }},
     "upstream_url": "{{ kong_api_obj_upstream_url }}"
 }

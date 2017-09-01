@@ -1,13 +1,48 @@
 ---
+- name: Cassandra Install
+  hosts: test-kitchen
+
+  vars:
+    java_package: oracle-java8-installer
+    cassandra_distro:  dsc
+    cassandra_version: 2.2.5
+    cassandra_dsc_version: 2.2.5-1
+
+    cassandra_cluster_name: kitchenCluster
+    cassandra_listen_address: "{{ ansible_eth1.ipv4.address }}"
+    cassandra_rpc_address:    "{{ cassandra_listen_address }}"
+    cassandra_seeds:          [ "{{ cassandra_listen_address }}" ]
+    cassandra_reinitialize_cluster: false
+
+  pre_tasks:
+    - name: Set cassandra listen address | RedHat
+      set_fact: cassandra_listen_address="{{ ansible_enp0s8.ipv4.address }}"
+      when: ansible_os_family|lower == 'redhat'
+
+  roles:
+    - wunzeco.java
+    - wunzeco.cassandra
+
+  post_tasks:
+    - name: Wait for cassandra to start fully | Debian
+      wait_for: host="{{ ansible_eth1.ipv4.address }}" port=9042
+      when: ansible_os_family|lower == 'debian'
+
+    - name: Wait for cassandra to start fully | RedHat
+      wait_for: host="{{ ansible_enp0s8.ipv4.address }}" port=9042
+      when: ansible_os_family|lower == 'redhat'
+
+
 - name: Kong Install
   hosts: test-kitchen
 
   vars:
-    kong_version: 0.10.3
+    kong_version: 0.9.9
     kong_host:  "{{ ansible_eth1.ipv4.address }}"
-    kong_cassandra_host: "172.29.129.11"
+    kong_cassandra_host:          "{{ kong_host }}"
     kong_proxy_listen:            "{{ kong_host }}:8000"
     kong_proxy_listen_ssl:        "{{ kong_host }}:8443"
+    kong_admin_listen:            "0.0.0.0:8001"
     kong_cluster_listen:          "{{ kong_host }}:7946"
     kong_proxy_set_headers: 
       "X-Forwarded-Prefix": '$http_x_forwarded_prefix'
@@ -21,8 +56,11 @@
     - ansible-kong
 
 
-- name: Kong Install
+- name: Kong Objects Config
   hosts: test-kitchen
+
+  vars:
+    kong_version: 0.9.9
 
   pre_tasks:
     - name: Install jq and curl
@@ -40,39 +78,37 @@
       kong_task: api
       kong_api_obj_name: serviceOne
       kong_api_obj_upstream_url: "https://service-upstream.ogonna.com/serviceOne/api"
-      kong_api_obj_uris: "/serviceOne"
+      kong_api_obj_request_path: "/serviceOne"
       kong_api_obj_preserve_host: true
-      kong_api_obj_strip_uri: true
+      kong_api_obj_strip_request_path: true
     - role: ansible-kong            ## ADD serviceTwo
       kong_task: api
       kong_api_obj_name: serviceTwo
       kong_api_obj_upstream_url: "https://service-upstream.ogonna.com"
-      kong_api_obj_uris: "/serviceTwo"
+      kong_api_obj_request_path: "/serviceTwo"
     - role: ansible-kong            ## UPDATE serviceTwo
       kong_task: api
       kong_api_obj_name: serviceTwo
       kong_api_obj_upstream_url: "https://service-upstream.ogonna.com"
-      kong_api_obj_uris: "/serviceTwoUPDATED"
-      kong_api_obj_hosts: "service-upstream.ogonna.com"
+      kong_api_obj_request_path: "/serviceTwoUPDATED"
+      kong_api_obj_request_host: "service-upstream.ogonna.com"
     - role: ansible-kong
       kong_task: api
       kong_api_obj_name: serviceThree
       kong_api_obj_upstream_url: "https://service-upstream.ogonna.com"
-      kong_api_obj_uris: "/serviceThree"
+      kong_api_obj_request_path: "/serviceThree"
       kong_api_obj_preserve_host: true
     - role: ansible-kong
       kong_task: api
       kong_api_obj_name: serviceThree
       kong_api_obj_upstream_url: "https://service-upstream.ogonna.com"
-      kong_api_obj_uris: "/serviceThree"
+      kong_api_obj_request_path: "/serviceThree"
       kong_delete_api_obj: true
     - role: ansible-kong
       kong_task: api
       kong_api_obj_name: serviceWithPlugins
       kong_api_obj_upstream_url: "https://service-upstream.ogonna.com"
-      kong_api_obj_uris: "/serviceWithPlugins"
-      kong_api_obj_https_only: true
-      kong_api_obj_http_if_terminated: true
+      kong_api_obj_request_path: "/serviceWithPlugins"
       kong_api_obj_plugins:
         - name: oauth2
           consumer_id:
@@ -83,7 +119,7 @@
         - name: cors
           consumer_id:
           config_parameters:
-            - "config.origins=*"
+            - "config.origin=*"
             - "config.methods=GET, POST, PATCH, PUT, DELETE"
             - "config.headers=Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Auth-Token, Access-Control-Allow-Origin, Authorization"
             - "config.exposed_headers=X-Auth-Token"
@@ -93,9 +129,7 @@
       kong_task: api
       kong_api_obj_name: serviceWithPlugins
       kong_api_obj_upstream_url: "https://service-upstream.ogonna.com"
-      kong_api_obj_uris: "/serviceWithPlugins"
-      kong_api_obj_https_only: true
-      kong_api_obj_http_if_terminated: true
+      kong_api_obj_request_path: "/serviceWithPlugins"
       kong_api_obj_plugins:
         - name: acl
           config_parameters:
