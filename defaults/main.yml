@@ -102,6 +102,11 @@ kong_upstream_host:     'nil'
 kong_upstream_url:      'nil'
 kong_proxy_set_headers: {}                  # custom proxy headers to set at nginx http context
 
+kong_logrotate_freq:      weekly
+kong_logrotate_quantity:  5
+kong_logrotate_max_size:  500M
+
+
 ##################################
 ##  API, Plugin & Consumer objects
 ##  Note: Refer to https://getkong.org/docs/ for further information

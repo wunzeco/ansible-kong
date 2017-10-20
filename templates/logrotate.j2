@@ -1,7 +1,7 @@
 {{ kong_log_dir }}/*.log {
-    weekly
-    rotate 5
-    maxsize 500M
+    {{ kong_logrotate_freq }}
+    rotate {{ kong_logrotate_quantity }}
+    maxsize {{ kong_logrotate_max_size }}
     missingok
     dateext
     copytruncate
