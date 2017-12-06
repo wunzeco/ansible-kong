@@ -47,9 +47,6 @@ kong_upstream_keepalive:       60
 kong_server_tokens:            "on"
 kong_latency_tokens:           "on"
 
-# NOTE: Remember to set kong_proxy_access_log to:
-#       - "logs/access.log custom" if kong_nginx_custom_log_fields not an empty list
-#       - "logs/access.log custom_json" if kong_nginx_json_log_format_enable is true
 kong_nginx_custom_log_fields: []
 kong_nginx_json_log_format_enable: false
 
