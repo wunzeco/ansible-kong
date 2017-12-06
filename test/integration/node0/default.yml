@@ -52,6 +52,8 @@
     kong_cluster_listen:          "{{ kong_host }}:7946"
     kong_proxy_set_headers: 
       "X-Forwarded-Prefix": '$http_x_forwarded_prefix'
+    kong_nginx_custom_log_fields: [ realip_remote_addr, http_x_forwarded_prefix, http_x_forwarded_for, http_x_forwarded_proto ]
+    kong_nginx_json_log_format_enable: true
 
   pre_tasks:
     ###  &&&&&&&&&&&&&&&&&&  ###

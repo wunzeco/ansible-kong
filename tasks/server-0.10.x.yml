@@ -15,6 +15,13 @@
     - Validate kong config
     - Restart kong
 
+# "Reload kong" handler sometimes fails for instance when access_log config
+# This is an edge case when custom log format is configured and name of log format
+# appended to proxy_access_log property value ("logs/access.log"). Unfortunately,
+# "kong reload" command does not recompile nginx-kong.conf as expected before
+# reloading nginx. So the outdated nginx-kong.conf fails nginx config validation
+# and nginx errors out.
+# So it is safer to Restart
 - name: Create kong custom nginx config file | v0.10.x or later
   template: 
     src:  custom-nginx.template.j2
@@ -24,7 +31,7 @@
     mode:  0644
   notify: 
     - Validate kong config
-    - Reload kong
+    - Restart kong
 
 - name: Check kong health status | v0.10.x or later
   shell: kong health || true

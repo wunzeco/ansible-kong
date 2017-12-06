@@ -47,6 +47,9 @@ kong_upstream_keepalive:       60
 kong_server_tokens:            "on"
 kong_latency_tokens:           "on"
 
+kong_nginx_custom_log_fields: []
+kong_nginx_json_log_format_enable: false
+
 ##------------------
 ## DATASTORE
 ##------------------
