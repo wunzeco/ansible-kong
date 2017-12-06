@@ -36,6 +36,11 @@ log_level = {{ kong_log_level }}
 # Note: See http://nginx.org/en/docs/ngx_core_module.html#error_log for a list
 # of accepted values.
 
+{% if kong_nginx_json_log_format_enable|default(false) and not kong_proxy_access_log|match('.*custom_json$') %}
+{% set kong_proxy_access_log = kong_proxy_access_log + ' custom_json' %}
+{% elif kong_nginx_custom_log_fields|default([]) and not kong_proxy_access_log|match('.*custom$') %}
+{% set kong_proxy_access_log = kong_proxy_access_log + ' custom' %}
+{% endif %}
 proxy_access_log = {{ kong_proxy_access_log }}
 #proxy_access_log = logs/access.log       # Path for proxy port request access
                                           # logs. Set this value to `off` to
@@ -50,6 +55,11 @@ proxy_error_log = {{ kong_proxy_error_log }}
                                           # adjusted by the `log_level`
                                           # directive.
 
+{% if kong_nginx_json_log_format_enable|default(false) and not kong_admin_access_log|match('.*custom_json$') %}
+{% set kong_admin_access_log = kong_admin_access_log + ' custom_json' %}
+{% elif kong_nginx_custom_log_fields|default([]) and not kong_admin_access_log|match('.*custom$') %}
+{% set kong_admin_access_log = kong_admin_access_log + ' custom' %}
+{% endif %}
 admin_access_log = {{ kong_admin_access_log }}
 #admin_access_log = logs/admin_access.log # Path for Admin API request access
                                           # logs. Set this value to `off` to
