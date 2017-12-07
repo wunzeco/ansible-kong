@@ -33,7 +33,7 @@ suites:
     driver:
       network:
         - ["private_network", { ip: "172.29.129.12" }]
-  - name: node0.10.3
+  - name: node0.10.x
     driver:
       customize:
         memory: 1024
