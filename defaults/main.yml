@@ -6,7 +6,7 @@ kong_log_dir:  /usr/local/kong/logs
 ############
 ##  Package
 kong_prereqs: [ openssl, libpcre3, procps, perl ]
-kong_version: 0.10.3
+kong_version: 0.11.1
 kong_version_string:      "{{ kong_version|string }}"
 kong_major_minor_version: "{{ kong_version_string.split('.')|first }}.{{ kong_version_string.split('.')[1] }}"
 kong_deb_pkg:     "kong-community-edition-{{ kong_version }}.{{ ansible_distribution_release }}.all.deb"
