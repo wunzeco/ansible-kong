@@ -3,7 +3,8 @@
   hosts: test-kitchen
 
   vars:
-    kong_version: 0.10.3
+    kong_version: 0.11.1
+    kong_version_current: 0.10.3
     kong_host:  "{{ ansible_eth1.ipv4.address }}"
     kong_cassandra_host: "172.29.129.11"
     kong_proxy_listen:            "{{ kong_host }}:8000"
@@ -13,30 +14,9 @@
       "X-Forwarded-Prefix": '$http_x_forwarded_prefix'
 
   pre_tasks:
-    ###  &&&&&&&&&&&&&&&&&&  ###
-    - name: Check kong version installed
-      shell: kong version
-      environment:
-        PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
-      ignore_errors: true
-      register: v
-
-    - debug: msg="Installed kong version - {{ v.stdout }}"
-
-    - name: Stop kong | pre kong v0.10.x upgrade
-      shell: kong stop
-      environment:
-        PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
-      ignore_errors: true
-      when: v.stdout|match('0.9.9') and kong_version|version_compare('0.9.9', '>')
-
-    - name: Set cors plugin config.origin config parameter | kong 0.9.9
-      set_fact:
-        _kong_cors_config_origin_param: "config.origin=*"
-      when: kong_version == '0.9.9'
-
-
-    ###  &&&&&&&&&&&&&&&&&&  ###
+    - name: Kong Migrations
+      include: "roles/ansible-kong/test/integration/node1/kong-migration.yml"
+      when: ansible_os_family|lower == 'debian' and kong_version|version_compare(kong_version_current, '>')
 
     - name: Set kong host | RedHat
       set_fact: kong_host="{{ ansible_enp0s8.ipv4.address }}"
@@ -46,11 +26,11 @@
     - ansible-kong
 
 
-- name: Kong Install
+- name: Kong Objects Configure
   hosts: test-kitchen
 
   vars:
-    kong_version: 0.10.3
+    kong_version: 0.11.1
 
   pre_tasks:
     - name: Install jq and curl
@@ -118,7 +98,7 @@
         - name: cors
           consumer_id:
           config_parameters:
-            - "{{ _kong_cors_config_origin_param|default('config.origins=*') }}"    # defaults to config param required for kong 0.10.3
+            - "config.origins=*"
 
             - "config.methods=GET, POST, PATCH, PUT, DELETE"
             - "config.headers=Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Auth-Token, Access-Control-Allow-Origin, Authorization"
