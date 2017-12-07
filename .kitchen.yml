@@ -33,15 +33,9 @@ suites:
     driver:
       network:
         - ["private_network", { ip: "172.29.129.12" }]
-  - name: node0.8.x
+  - name: node0.10.3
     driver:
       customize:
         memory: 1024
       network:
         - ["private_network", { ip: "172.29.129.21" }]
-  - name: node0.9.x
-    driver:
-      customize:
-        memory: 1024
-      network:
-        - ["private_network", { ip: "172.29.129.31" }]

@@ -9,8 +9,15 @@ kong_prereqs: [ openssl, libpcre3, procps, perl ]
 kong_version: 0.10.3
 kong_version_string:      "{{ kong_version|string }}"
 kong_major_minor_version: "{{ kong_version_string.split('.')|first }}.{{ kong_version_string.split('.')[1] }}"
-kong_deb_pkg_url: "https://github.com/Mashape/kong/releases/download/{{ kong_version }}/kong-{{ kong_version }}.{{ ansible_distribution_release }}_all.deb"
-kong_rpm_pkg_url: "https://github.com/Mashape/kong/releases/download/{{ kong_version }}/kong-{{ kong_version }}.el7.noarch.rpm"
+kong_deb_pkg:     "kong-community-edition-{{ kong_version }}.{{ ansible_distribution_release }}.all.deb"
+kong_rpm_pkg:     "kong-community-edition-{{ kong_version }}.el7.noarch.rpm"
+kong_deb_pkg_url: "https://bintray.com/kong/kong-community-edition-deb/download_file?file_path=dists/{{ kong_deb_pkg }}"
+kong_rpm_pkg_url: "https://bintray.com/kong/kong-community-edition-rpm/download_file?file_path=dists/{{ kong_rpm_pkg }}"
+
+kong_deb_pkg_pre_0_11_x:     "kong-{{ kong_version }}.{{ ansible_distribution_release }}_all.deb"
+kong_rpm_pkg_pre_0_11_x:     "kong-{{ kong_version }}.el7.noarch.rpm"
+kong_deb_pkg_url_pre_0_11_x: "https://github.com/Mashape/kong/releases/download/{{ kong_version }}/{{ kong_deb_pkg_pre_0_11_x }}"
+kong_rpm_pkg_url_pre_0_11_x: "https://github.com/Mashape/kong/releases/download/{{ kong_version }}/{{ kong_rpm_pkg_pre_0_11_x }}"
 
 ############
 ##  Config
@@ -46,9 +53,21 @@ kong_admin_ssl_cert_key:
 kong_upstream_keepalive:       60
 kong_server_tokens:            "on"
 kong_latency_tokens:           "on"
+# Config properties new in 0.11.x
+kong_nginx_user:              "nobody nobody"
+kong_http2:                   "off"
+kong_admin_http2:             "off"
+kong_trusted_ips:             ""
+kong_real_ip_header:          "X-Real-IP"
+kong_real_ip_recursive:       "off"
+kong_client_max_body_size:    0
+kong_client_body_buffer_size: 8k
+kong_error_default_type:      'text/plain'
 
 kong_nginx_custom_log_fields: []
 kong_nginx_json_log_format_enable: false
+
+
 
 ##------------------
 ## DATASTORE
@@ -82,7 +101,14 @@ kong_cassandra_repl_factor:     1
 kong_cassandra_schema_consensus_timeout: 10000
 
 ##------------------
-## CLUSTERING
+## DATASTORE CACHE
+##------------------
+kong_db_update_frequency: 5
+kong_db_update_propagation: 0
+kong_db_cache_ttl: 3600
+
+##------------------
+## CLUSTERING (0.10.x ONLY. Deprecated in 0.11.0)
 ##------------------
 kong_cluster_listen:           "0.0.0.0:7946"
 kong_cluster_listen_rpc:       "127.0.0.1:7373"
@@ -95,17 +121,20 @@ kong_cluster_profile:          wan
 ##------------------
 ## DNS RESOLVER
 ##------------------
-kong_dnsmasq:      "on"         # 0.9.x only
-kong_dnsmasq_port: 8053         # 0.9.x only
-kong_dns_resolver: ""           # a name server e.g. 8.8.8.8
-kong_dns_hostsfile:
+kong_dns_resolver:      ""           # a name server e.g. 8.8.8.8
+kong_dns_hostsfile:     "/etc/hosts"
+kong_dns_order:         "LAST,SRV,A,CNAME"
+kong_dns_stale_ttl:     4
+kong_dns_not_found_ttl: 30
+kong_dns_error_ttl:     1
+kong_dns_no_sync:       "off"
 
 ##-----------------------------
 ## DEVELOPMENT & MISCELLANEOUS
 ##-----------------------------
 kong_lua_ssl_trusted_certificate: ""
 kong_lua_ssl_verify_depth:        1
-kong_lua_code_cache:              "on"
+kong_lua_code_cache:              "on"  # 0.10.x ONLY
 kong_lua_package_path:            ""
 kong_lua_package_cpath:           ""
 

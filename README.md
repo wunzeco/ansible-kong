@@ -8,9 +8,7 @@ information on API, Consumer and Plugins configuration.
 
 > *WARNING:*
 > 
->     -  There are breaking changes between v0.9.x and 0.10.x
->     -  For v0.8.x support use earlier version of this role. (Git commit hash 46118507b6d02348aca69f9ff58943aa5e11dd87)
->     -  Support for v0.8.x deprecated!!
+>     -  Support for v0.8.x and v0.9.x deprecated!!
 
 
 ## Example
@@ -21,7 +19,7 @@ information on API, Consumer and Plugins configuration.
 - hosts: konghost
 
   vars:
-    kong_version: 0.10.3
+    kong_version: 0.11.1
 	kong_cassandra_host: <my_cassandra_ip_or_fqdn>
 
   roles:

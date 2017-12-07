@@ -38,10 +38,12 @@
   hosts: test-kitchen
 
   vars:
-    kong_version: 0.10.3
+    kong_version: 0.11.1
+    kong_version_current: 0.10.3
     ###  &&&&&&&&&&&&&&&&&&  ###
     kong_prereqs: [ openssl, libpcre3, procps, perl ]
-    kong_deb_pkg_url: "https://github.com/Mashape/kong/releases/download/{{ kong_version }}/kong-{{ kong_version }}.{{ ansible_distribution_release }}_all.deb"
+    #kong_deb_pkg_url: "https://github.com/Mashape/kong/releases/download/{{ kong_version }}/kong-{{ kong_version }}.{{ ansible_distribution_release }}_all.deb"
+    #kong_deb_pkg_url: "https://bintray.com/kong/kong-community-edition-deb/download_file?file_path=dists/kong-community-edition-{{ kong_version }}.{{ ansible_distribution_release }}.all.deb"
     kong_conf_dir: /etc/kong
     ###  &&&&&&&&&&&&&&&&&&  ###
     kong_host:  "{{ ansible_eth1.ipv4.address }}"
@@ -54,70 +56,79 @@
       "X-Forwarded-Prefix": '$http_x_forwarded_prefix'
     kong_nginx_custom_log_fields: [ realip_remote_addr, http_x_forwarded_prefix, http_x_forwarded_for, http_x_forwarded_proto ]
     kong_nginx_json_log_format_enable: true
+    kong_db_update_propagation: 1
 
   pre_tasks:
-    ###  &&&&&&&&&&&&&&&&&&  ###
-    - name: START HERE
-      debug: msg=starting
+    ####  &&&&&&&&&&&&&&&&&&  ###
+    #- name: START HERE
+    #  debug: msg=starting
 
-    - name: Copy kong_migration_check.sh
-      copy:
-        src:  roles/ansible-kong/test/kong_migration_check.sh
-        dest: /var/tmp/kong_migration_check.sh
-        mode: 0755
+    #- name: Copy kong_migration_check.sh
+    #  copy:
+    #    src:  roles/ansible-kong/test/kong_migration_check.sh
+    #    dest: /var/tmp/kong_migration_check.sh
+    #    mode: 0755
    
-    - name: Check kong version installed
-      shell: kong version
-      environment:
-        PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
-      ignore_errors: true
-      register: v
+    #- name: Check kong version installed
+    #  shell: kong version
+    #  environment:
+    #    PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
+    #  ignore_errors: true
+    #  register: v
 
-    - debug: msg="Installed kong version - {{ v.stdout }}"
+    #- debug: msg="Installed kong version - {{ v.stdout }}"
 
-    - name: Run kong_migration_check.sh
-      shell: /var/tmp/kong_migration_check.sh {{ kong_host }}
-      when: v|success
-      register: o
+    #- name: Run kong_migration_check.sh
+    #  shell: /var/tmp/kong_migration_check.sh {{ kong_host }}
+    #  when: v|success
+    #  register: o
 
-    - debug: var=o
+    #- debug: var=o
 
-    - name: Kong migrations
-      block:
-        - name: Stop kong (before migration)
-          shell: kong stop
-          environment:
-            PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
-          #ignore_errors: true
+    #- name: Kong migrations
+    #  block:
+    #    - name: Stop kong (before migration)
+    #      shell: kong stop
+    #      environment:
+    #        PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
+    #      ignore_errors: true
 
-        - name: Download kong deb package | Debian
-          get_url: url="{{ kong_deb_pkg_url }}" dest=/var/tmp validate_certs=no
-          when: ansible_os_family|lower == 'debian'
+    #    - name: Download kong deb package | Debian
+    #      get_url: url="{{ kong_deb_pkg_url }}" dest=/var/tmp validate_certs=no
+    #      when: ansible_os_family|lower == 'debian'
 
-        - name: Install kong prerequisites (Debian/Ubuntu only)
-          apt: 
-            name: "{{ item }}"
-            update_cache: yes
-            state: present
-          with_items: "{{ kong_prereqs }}"
-          when: ansible_os_family|lower == 'debian'
+    #    #- pause: minutes=5
+    #    - name: Install kong prerequisites (Debian/Ubuntu only)
+    #      apt: 
+    #        name: "{{ item }}"
+    #        update_cache: yes
+    #        state: present
+    #      with_items: "{{ kong_prereqs }}"
+    #      when: ansible_os_family|lower == 'debian'
 
-        - name: Install kong | Debian
-          apt:
-            deb:   "/var/tmp/kong-{{ kong_version }}.{{ ansible_distribution_release }}_all.deb"
-            state: present
-          when: ansible_os_family|lower == 'debian'
+    #    - name: Uninstall kong {{ kong_version_current }} | Debian
+    #      apt:
+    #        name: kong={{ kong_version_current }}
+    #        state: absent
+    #      when: ansible_os_family|lower == 'debian'
 
-        - name: Run kong migration
-          shell: kong migrations up  --conf {{ kong_conf_dir }}/kong.conf
-          environment:
-            PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
-          register: migration
+    #    - name: Install kong | Debian
+    #      apt:
+    #        deb:   "/var/tmp/kong-community-edition-{{ kong_version }}.{{ ansible_distribution_release }}.all.deb"
+    #        state: present
+    #      when: ansible_os_family|lower == 'debian'
 
-        - debug: var=migration
-      when: v.stdout|match('0.9.9') and kong_version|version_compare('0.9.9', '>')
+    #    - name: Run kong migration
+    #      shell: kong migrations up  --conf {{ kong_conf_dir }}/kong.conf
+    #      environment:
+    #        PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
+    #      register: migration
 
-    ###  &&&&&&&&&&&&&&&&&&  ###
+    #    - debug: var=migration
+    #  when: v.stdout|match('0.10.3') and kong_version|version_compare('0.10.3', '>')
+
+    #- pause: minutes=15
+    ####  &&&&&&&&&&&&&&&&&&  ###
     
     - name: Set kong host | RedHat
       set_fact: kong_host="{{ ansible_enp0s8.ipv4.address }}"
@@ -126,9 +137,9 @@
   roles:
     - ansible-kong
 
-  ###  &&&&&&&&&&&&&&&&&&  ###
-  post_tasks:
-    - name: Run kong_migration_check.sh
-      shell: /var/tmp/kong_migration_check.sh {{ kong_host }}
-  ###  &&&&&&&&&&&&&&&&&&  ###
+  ####  &&&&&&&&&&&&&&&&&&  ###
+  #post_tasks:
+  #  - name: Run kong_migration_check.sh
+  #    shell: /var/tmp/kong_migration_check.sh {{ kong_host }}
+  ####  &&&&&&&&&&&&&&&&&&  ###
 
