@@ -16,7 +16,7 @@ end
 
 describe file(kong_nginx_working_dir) do
   it { should be_directory }
-  it { should be_mode 777 }
+  it { should be_mode 755 }
   it { should be_owned_by 'root' }
 end
 
@@ -44,16 +44,12 @@ end
 
 describe process("serf") do
   it { should be_running }
-  its(:args) { should match %r(agent -profile.wan -rpc-addr.*:kong=/usr/local/kong/serf.*) }
+  its(:args) { should match %r(agent -profile.* -rpc-addr.*:kong=/usr/local/kong/serf.*) }
 end
 
 describe process("nginx") do
   it { should be_running }
   its(:args) { should match %r(-p /usr/local/kong -c nginx.conf) }
-end
-
-describe process("dnsmasq") do
-  it { should be_running }
 end
 
 # verify number of cluster members
@@ -70,7 +66,7 @@ describe command("curl -s http://localhost:8001/apis | jq '.data[].name'") do
 end
 
 # verify serviceTwo object is updated
-describe command("curl -s http://localhost:8001/apis | jq '.data[] | {(.name): .request_path }'") do
+describe command("curl -s http://localhost:8001/apis | jq '.data[] | {(.name): .uris }'") do
   its(:exit_status) { should eq 0 }
   its(:stdout) { should match 'serviceTwoUPDATED' }
 end

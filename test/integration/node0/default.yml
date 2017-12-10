@@ -4,11 +4,7 @@
 
   vars:
     java_package: oracle-java8-installer
-    cassandra_distro:  dsc
-    cassandra_version: 2.2.5
-    cassandra_dsc_version: 2.2.5-1
-
-    #cassandra_version: 3.7.0
+    cassandra_version: 3.7.0
     cassandra_cluster_name: kitchenCluster
     cassandra_listen_address: "{{ ansible_eth1.ipv4.address }}"
     cassandra_rpc_address:    "{{ cassandra_listen_address }}"
@@ -38,7 +34,13 @@
   hosts: test-kitchen
 
   vars:
-    kong_version: 0.10.3
+    kong_version: 0.11.1
+    kong_version_current: 0.0.0
+    kong_prereqs: [ openssl, libpcre3, procps, perl ]
+    kong_deb_pkg:     "kong-community-edition-{{ kong_version }}.{{ ansible_distribution_release }}.all.deb"
+    kong_deb_pkg_url: "https://bintray.com/kong/kong-community-edition-deb/download_file?file_path=dists/{{ kong_deb_pkg }}"
+
+    kong_conf_dir: /etc/kong
     kong_host:  "{{ ansible_eth1.ipv4.address }}"
     kong_cassandra_host:          "{{ kong_host }}"
     kong_proxy_listen:            "{{ kong_host }}:8000"
@@ -49,11 +51,25 @@
       "X-Forwarded-Prefix": '$http_x_forwarded_prefix'
     kong_nginx_custom_log_fields: [ realip_remote_addr, http_x_forwarded_prefix, http_x_forwarded_for, http_x_forwarded_proto ]
     kong_nginx_json_log_format_enable: true
+    kong_db_update_propagation: 1
 
   pre_tasks:
+    - name: START HERE
+      debug: msg=starting
+
+    - include: "roles/ansible-kong/test/integration/node0/kong-migration.yml"
+      when: ansible_os_family|lower == 'debian'
+
+    #- pause: minutes=10
+    
     - name: Set kong host | RedHat
       set_fact: kong_host="{{ ansible_enp0s8.ipv4.address }}"
       when: ansible_os_family|lower == 'redhat'
 
   roles:
     - ansible-kong
+
+  post_tasks:
+    - name: Run kong_migration_check.sh
+      shell: /var/tmp/kong_migration_check.sh {{ kong_host }}
+      when: ansible_os_family|lower == 'debian' and kong_run_migration|default(false)

@@ -1,5 +1,13 @@
 ---
 
+- name: Set kong pkg download variables
+  set_fact:
+    kong_deb_pkg_url: "{{ kong_deb_pkg_url_pre_0_11_x }}"
+    kong_rpm_pkg_url: "{{ kong_rpm_pkg_url_pre_0_11_x }}"
+    kong_deb_pkg:     "kong-{{ kong_version }}.{{ ansible_distribution_release }}_all.deb"
+    kong_rpm_pkg:     "kong-{{ kong_version }}.el7.noarch.rpm"
+  when: kong_version|version_compare('0.11.0', '<')
+
 # Debian
 - name: Download kong deb package | Debian
   get_url: url="{{ kong_deb_pkg_url }}" dest=/var/tmp validate_certs=no
@@ -13,17 +21,9 @@
   with_items: "{{ kong_prereqs }}"
   when: ansible_os_family|lower == 'debian'
 
-- name: Install kong extra prerequisites (Debian/Ubuntu only) | v0.8.x or earlier
-  apt: 
-    name: "{{ item }}"
-    update_cache: yes
-    state: present
-  with_items: [ netcat, dnsmasq ]
-  when: ansible_os_family|lower == 'debian' and kong_version|version_compare('0.9.0', '<')
-
 - name: Install kong | Debian
   apt:
-    deb:   "/var/tmp/kong-{{ kong_version }}.{{ ansible_distribution_release }}_all.deb"
+    deb:   "/var/tmp/{{ kong_deb_pkg }}"
     state: present
   when: ansible_os_family|lower == 'debian'
 
@@ -34,17 +34,18 @@
 
 - name: Install kong | RedHat
   yum: 
-    name: "/var/tmp/kong-{{ kong_version }}.el7.noarch.rpm"
+    name: "/var/tmp/{{ kong_rpm_pkg }}"
     disable_gpg_check: yes
     state: present
   when: ansible_os_family|lower == 'redhat'
 
-- name: Ensure kong nginx working dir has appropriate permissions
+- name: Create kong nginx work dir
   file:
     path:  "{{ kong_nginx_working_dir }}"
     owner: root
     group: root
-    mode:  0777     # vanilla install gives mode=0777 but could it be mode=0755?
+    mode:  0755
+    state: directory
 
 - name: Create logrotate config for kong logs
   template:
@@ -54,6 +55,9 @@
     group: root
     mode: 0644
 
+- name: Check for supported kong versions
+  fail: msg="Kong {{ kong_version }} no longer supported"
+  when: kong_version|version_compare('0.10.0', '<')
 
 - name: Kong Server Config & Start
   include: "server-{{ kong_major_minor_version }}.x.yml"

@@ -1,0 +1,27 @@
+---
+
+- name: Check kong version installed
+  shell: kong version
+  environment:
+    PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
+  ignore_errors: true
+  register: v
+
+- set_fact:
+    kong_version_current: "{{ v.stdout }}"
+  when: v|success
+
+- debug: msg="Installed kong version - {{ kong_version_current }}"
+
+- name: Stop kong | pre kong v{{ kong_version_current }} upgrade
+  shell: kong stop
+  environment:
+    PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
+  ignore_errors: true
+  when: v.stdout|match(kong_version_current) and kong_version|version_compare(kong_version_current, '>')
+
+- name: Uninstall kong {{ kong_version_current }} | Debian
+  apt:
+    name: kong={{ kong_version_current }}
+    state: absent
+  when: ansible_os_family|lower == 'debian'

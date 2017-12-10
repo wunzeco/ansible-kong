@@ -4,7 +4,7 @@ kong_conf_dir = '/etc/kong/'
 kong_nginx_working_dir = '/usr/local/kong'
 
 
-describe package('kong') do
+describe package('kong-community-edition') do
   it { should be_installed }
 end
 
@@ -16,7 +16,7 @@ end
 
 describe file(kong_nginx_working_dir) do
   it { should be_directory }
-  it { should be_mode 777 }
+  it { should be_mode 755 }
   it { should be_owned_by 'root' }
 end
 
@@ -42,20 +42,9 @@ describe command("/usr/local/bin/kong version") do
   its(:stdout) { should match %r[(Kong version:\s)?0.*]i }
 end
 
-describe process("serf") do
-  it { should be_running }
-  its(:args) { should match %r(agent -profile.* -rpc-addr.*:kong=/usr/local/kong/serf.*) }
-end
-
 describe process("nginx") do
   it { should be_running }
   its(:args) { should match %r(-p /usr/local/kong -c nginx.conf) }
-end
-
-# verify number of cluster members
-describe command('sudo /usr/local/bin/kong cluster members | grep node | wc -l') do
-  its(:exit_status) { should eq 0 }
-  its(:stdout) { should match '2' }
 end
 
 # verify serviceOne object is configured and serviceThree does not exist

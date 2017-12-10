@@ -1,0 +1,69 @@
+---
+
+- name: Copy kong_migration_check.sh
+  copy:
+    src:  roles/ansible-kong/test/kong_migration_check.sh
+    dest: /var/tmp/kong_migration_check.sh
+    mode: 0755
+
+- name: Check kong version installed
+  shell: kong version
+  environment:
+    PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
+  ignore_errors: true
+  register: v
+
+- set_fact:
+    kong_version_current: "{{ v.stdout }}"
+  when: v|success
+
+- set_fact:
+    kong_run_migration: true
+  when: v|success and kong_version|version_compare(kong_version_current, '>')
+
+- debug: msg="Run kong migration? - {{ kong_run_migration|default(false) }}"
+- debug: msg="Installed kong version - {{ kong_version_current }}"
+
+- name: Run kong_migration_check.sh
+  shell: /var/tmp/kong_migration_check.sh {{ kong_host }}
+  when: v|success
+  register: o
+
+- debug: var=o
+
+- name: Kong migrations
+  block:
+    - name: Stop kong (before migration)
+      shell: kong stop
+      environment:
+        PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
+      ignore_errors: true
+
+    - name: Download kong deb package | Debian
+      get_url: url="{{ kong_deb_pkg_url }}" dest=/var/tmp validate_certs=no
+
+    - name: Install kong prerequisites (Debian/Ubuntu only)
+      apt: 
+        name: "{{ item }}"
+        update_cache: yes
+        state: present
+      with_items: "{{ kong_prereqs }}"
+
+    - name: Uninstall kong {{ kong_version_current }} | Debian
+      apt:
+        name: kong={{ kong_version_current }}
+        state: absent
+
+    - name: Install kong | Debian
+      apt:
+        deb:   "/var/tmp/{{ kong_deb_pkg }}"
+        state: present
+
+    - name: Run kong migration
+      shell: kong migrations up  --conf {{ kong_conf_dir }}/kong.conf
+      environment:
+        PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
+      register: migration
+
+    - debug: var=migration
+  when: kong_run_migration|default(false)

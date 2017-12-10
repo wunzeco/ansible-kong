@@ -6,11 +6,18 @@ kong_log_dir:  /usr/local/kong/logs
 ############
 ##  Package
 kong_prereqs: [ openssl, libpcre3, procps, perl ]
-kong_version: 0.10.3
+kong_version: 0.11.1
 kong_version_string:      "{{ kong_version|string }}"
 kong_major_minor_version: "{{ kong_version_string.split('.')|first }}.{{ kong_version_string.split('.')[1] }}"
-kong_deb_pkg_url: "https://github.com/Mashape/kong/releases/download/{{ kong_version }}/kong-{{ kong_version }}.{{ ansible_distribution_release }}_all.deb"
-kong_rpm_pkg_url: "https://github.com/Mashape/kong/releases/download/{{ kong_version }}/kong-{{ kong_version }}.el7.noarch.rpm"
+kong_deb_pkg:     "kong-community-edition-{{ kong_version }}.{{ ansible_distribution_release }}.all.deb"
+kong_rpm_pkg:     "kong-community-edition-{{ kong_version }}.el7.noarch.rpm"
+kong_deb_pkg_url: "https://bintray.com/kong/kong-community-edition-deb/download_file?file_path=dists/{{ kong_deb_pkg }}"
+kong_rpm_pkg_url: "https://bintray.com/kong/kong-community-edition-rpm/download_file?file_path=dists/{{ kong_rpm_pkg }}"
+
+kong_deb_pkg_pre_0_11_x:     "kong-{{ kong_version }}.{{ ansible_distribution_release }}_all.deb"
+kong_rpm_pkg_pre_0_11_x:     "kong-{{ kong_version }}.el7.noarch.rpm"
+kong_deb_pkg_url_pre_0_11_x: "https://github.com/Mashape/kong/releases/download/{{ kong_version }}/{{ kong_deb_pkg_pre_0_11_x }}"
+kong_rpm_pkg_url_pre_0_11_x: "https://github.com/Mashape/kong/releases/download/{{ kong_version }}/{{ kong_rpm_pkg_pre_0_11_x }}"
 
 ############
 ##  Config
@@ -46,9 +53,21 @@ kong_admin_ssl_cert_key:
 kong_upstream_keepalive:       60
 kong_server_tokens:            "on"
 kong_latency_tokens:           "on"
+# Config properties new in 0.11.x
+kong_nginx_user:              "nobody nobody"
+kong_http2:                   "off"
+kong_admin_http2:             "off"
+kong_trusted_ips:             ""
+kong_real_ip_header:          "X-Real-IP"
+kong_real_ip_recursive:       "off"
+kong_client_max_body_size:    0
+kong_client_body_buffer_size: 8k
+kong_error_default_type:      'text/plain'
 
 kong_nginx_custom_log_fields: []
 kong_nginx_json_log_format_enable: false
+
+
 
 ##------------------
 ## DATASTORE
@@ -82,7 +101,14 @@ kong_cassandra_repl_factor:     1
 kong_cassandra_schema_consensus_timeout: 10000
 
 ##------------------
-## CLUSTERING
+## DATASTORE CACHE
+##------------------
+kong_db_update_frequency: 5
+kong_db_update_propagation: 0
+kong_db_cache_ttl: 3600
+
+##------------------
+## CLUSTERING (0.10.x ONLY. Deprecated in 0.11.0)
 ##------------------
 kong_cluster_listen:           "0.0.0.0:7946"
 kong_cluster_listen_rpc:       "127.0.0.1:7373"
@@ -95,17 +121,20 @@ kong_cluster_profile:          wan
 ##------------------
 ## DNS RESOLVER
 ##------------------
-kong_dnsmasq:      "on"         # 0.9.x only
-kong_dnsmasq_port: 8053         # 0.9.x only
-kong_dns_resolver: ""           # a name server e.g. 8.8.8.8
-kong_dns_hostsfile:
+kong_dns_resolver:      ""           # a name server e.g. 8.8.8.8
+kong_dns_hostsfile:     "/etc/hosts"
+kong_dns_order:         "LAST,SRV,A,CNAME"
+kong_dns_stale_ttl:     4
+kong_dns_not_found_ttl: 30
+kong_dns_error_ttl:     1
+kong_dns_no_sync:       "off"
 
 ##-----------------------------
 ## DEVELOPMENT & MISCELLANEOUS
 ##-----------------------------
 kong_lua_ssl_trusted_certificate: ""
 kong_lua_ssl_verify_depth:        1
-kong_lua_code_cache:              "on"
+kong_lua_code_cache:              "on"  # 0.10.x ONLY
 kong_lua_package_path:            ""
 kong_lua_package_cpath:           ""
 
@@ -115,35 +144,6 @@ kong_max_files_limit:   65535               # if less than 4096 kong may perform
 kong_upstream_host:     'nil'
 kong_upstream_url:      'nil'
 kong_proxy_set_headers: {}                  # custom proxy headers to set at nginx http context
-
-
-##--------------------------------------
-##  v0.8.3 and earlier specific configs (to be DEPRECATED soon)
-##--------------------------------------
-kong_admin_api_listen: "0.0.0.0:8001"
-kong_ssl_cert_path:                           # /path/to/certificate.pem
-kong_ssl_key_path:                            # /path/to/certificate.key
-#kong_dns_resolver: dnsmasq
-kong_dns_resolvers_available: {}              # see example below
-## kong_dns_resolvers_available:
-##   server:
-##     address: "8.8.8.8:53"
-##   dnsmasq:
-##     port: 8053
-kong_cluster: {}                              # e.g. kong_clusters: { advertise: "", encrypt: "foo" }
-kong_cassandra_replication_strategy: SimpleStrategy
-kong_cassandra_replication_factor: 1
-#kong_cassandra_data_centers: {}               # e.g. kong_cassandra_data_centers: { dc1: 2, dc2: 3 }
-#kong_cassandra_ssl: {}                        # e.g. kong_cassandra_ssl: { enabled: false, verify: false, certificate_authority: "/path/to/cluster-ca-certificate.pem" }
-kong_postgres_host:     "{{ ansible_default_ipv4.address }}"
-kong_postgres_port:     5432
-kong_postgres_user:     ''
-kong_postgres_password: ''
-kong_send_anonymous_reports: true           # v0.8.3 and earlier
-kong_memory_cache_size: 128
-##--------------------------------------
-##  v0.8.3 and earlier specific configs
-##--------------------------------------
 
 
 ##################################
@@ -162,11 +162,6 @@ kong_api_obj_upstream_url:                  # see api config example below
 kong_api_obj_preserve_host: false
 kong_api_obj_strip_uri: false               # see api config example below (WARN: valid for 0.10.x and later)
 kong_api_obj_plugins: []
-
-# BREAKING CHANGE: request_host, request_path and strip_request_path are NOT valid for 0.10.x and later
-kong_api_obj_request_host:                  # (WARN: valid for 0.9.x and earlier)
-kong_api_obj_request_path:                  # (WARN: valid for 0.9.x and earlier)
-kong_api_obj_strip_request_path: false      # (WARN: valid for 0.9.x and earlier)
 
 ## Consumer Object
 kong_delete_consumer_obj: false              # set to True to delete consumer object from kong
