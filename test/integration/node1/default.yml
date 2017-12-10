@@ -50,42 +50,35 @@
       kong_api_obj_upstream_url: "https://service-upstream.ogonna.com/serviceOne/api"
       kong_api_obj_uris: "/serviceOne"
       kong_api_obj_strip_uri: true
-      kong_api_obj_request_path: "/serviceOne"
-      kong_api_obj_strip_request_path: true
       kong_api_obj_preserve_host: true
     - role: ansible-kong            ## ADD serviceTwo
       kong_task: api
       kong_api_obj_name: serviceTwo
       kong_api_obj_upstream_url: "https://service-upstream.ogonna.com"
       kong_api_obj_uris: "/serviceTwo"
-      kong_api_obj_request_path: "/serviceTwo"
     - role: ansible-kong            ## UPDATE serviceTwo
       kong_task: api
       kong_api_obj_name: serviceTwo
       kong_api_obj_upstream_url: "https://service-upstream.ogonna.com"
       kong_api_obj_uris: "/serviceTwoUPDATED"
-      kong_api_obj_request_path: "/serviceTwoUPDATED"
       kong_api_obj_hosts: "service-upstream.ogonna.com"
     - role: ansible-kong
       kong_task: api
       kong_api_obj_name: serviceThree
       kong_api_obj_upstream_url: "https://service-upstream.ogonna.com"
       kong_api_obj_uris: "/serviceThree"
-      kong_api_obj_request_path: "/serviceThree"
       kong_api_obj_preserve_host: true
     - role: ansible-kong
       kong_task: api
       kong_api_obj_name: serviceThree
       kong_api_obj_upstream_url: "https://service-upstream.ogonna.com"
       kong_api_obj_uris: "/serviceThree"
-      kong_api_obj_request_path: "/serviceThree"
       kong_delete_api_obj: true
     - role: ansible-kong
       kong_task: api
       kong_api_obj_name: serviceWithPlugins
       kong_api_obj_upstream_url: "https://service-upstream.ogonna.com"
       kong_api_obj_uris: "/serviceWithPlugins"
-      kong_api_obj_request_path: "/serviceWithPlugins"
       kong_api_obj_https_only: true
       kong_api_obj_http_if_terminated: true
       kong_api_obj_plugins:
@@ -110,7 +103,6 @@
       kong_api_obj_name: serviceWithPlugins
       kong_api_obj_upstream_url: "https://service-upstream.ogonna.com"
       kong_api_obj_uris: "/serviceWithPlugins"
-      kong_api_obj_request_path: "/serviceWithPlugins"
       kong_api_obj_https_only: true
       kong_api_obj_http_if_terminated: true
       kong_api_obj_plugins:
