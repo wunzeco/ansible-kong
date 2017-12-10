@@ -1,7 +1,4 @@
 ---
-- name: Check os family
-  fail: msg="Kong migration on {{ ansible_os_family }} not supported here"
-  when: ansible_os_family|lower != 'debian'
 
 - name: Copy kong_migration_check.sh
   copy:
@@ -16,7 +13,16 @@
   ignore_errors: true
   register: v
 
-- debug: msg="Installed kong version - {{ v.stdout }}"
+- set_fact:
+    kong_version_current: "{{ v.stdout }}"
+  when: v|success
+
+- set_fact:
+    kong_run_migration: true
+  when: v|success and kong_version|version_compare(kong_version_current, '>')
+
+- debug: msg="Run kong migration? - {{ kong_run_migration|default(false) }}"
+- debug: msg="Installed kong version - {{ kong_version_current }}"
 
 - name: Run kong_migration_check.sh
   shell: /var/tmp/kong_migration_check.sh {{ kong_host }}
@@ -35,7 +41,6 @@
 
     - name: Download kong deb package | Debian
       get_url: url="{{ kong_deb_pkg_url }}" dest=/var/tmp validate_certs=no
-      when: ansible_os_family|lower == 'debian'
 
     - name: Install kong prerequisites (Debian/Ubuntu only)
       apt: 
@@ -43,19 +48,16 @@
         update_cache: yes
         state: present
       with_items: "{{ kong_prereqs }}"
-      when: ansible_os_family|lower == 'debian'
 
     - name: Uninstall kong {{ kong_version_current }} | Debian
       apt:
         name: kong={{ kong_version_current }}
         state: absent
-      when: ansible_os_family|lower == 'debian'
 
     - name: Install kong | Debian
       apt:
         deb:   "/var/tmp/{{ kong_deb_pkg }}"
         state: present
-      when: ansible_os_family|lower == 'debian'
 
     - name: Run kong migration
       shell: kong migrations up  --conf {{ kong_conf_dir }}/kong.conf
@@ -64,5 +66,4 @@
       register: migration
 
     - debug: var=migration
-  when: v.stdout|match(kong_version_current) and kong_version|version_compare(kong_version_current, '>')
-
+  when: kong_run_migration|default(false)

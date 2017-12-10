@@ -7,7 +7,11 @@
   ignore_errors: true
   register: v
 
-- debug: msg="Installed kong version - {{ v.stdout }}"
+- set_fact:
+    kong_version_current: "{{ v.stdout }}"
+  when: v|success
+
+- debug: msg="Installed kong version - {{ kong_version_current }}"
 
 - name: Stop kong | pre kong v{{ kong_version_current }} upgrade
   shell: kong stop

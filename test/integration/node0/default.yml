@@ -35,7 +35,7 @@
 
   vars:
     kong_version: 0.11.1
-    kong_version_current: 0.10.3
+    kong_version_current: 0.0.0
     kong_prereqs: [ openssl, libpcre3, procps, perl ]
     kong_deb_pkg:     "kong-community-edition-{{ kong_version }}.{{ ansible_distribution_release }}.all.deb"
     kong_deb_pkg_url: "https://bintray.com/kong/kong-community-edition-deb/download_file?file_path=dists/{{ kong_deb_pkg }}"
@@ -58,7 +58,7 @@
       debug: msg=starting
 
     - include: "roles/ansible-kong/test/integration/node0/kong-migration.yml"
-      when: ansible_os_family|lower == 'debian' and kong_version|version_compare(kong_version_current, '>')
+      when: ansible_os_family|lower == 'debian'
 
     #- pause: minutes=10
     
@@ -72,5 +72,4 @@
   post_tasks:
     - name: Run kong_migration_check.sh
       shell: /var/tmp/kong_migration_check.sh {{ kong_host }}
-      when: ansible_os_family|lower == 'debian' and kong_version|version_compare(kong_version_current, '>')
-
+      when: ansible_os_family|lower == 'debian' and kong_run_migration|default(false)
