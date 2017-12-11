@@ -4,7 +4,7 @@
 ##  v0.11.x
 ##-------------------
 
-- name: Create kong config file | v0.10.x
+- name: Create kong config file | v0.11.x
   template: 
     src:  "0.11.x-kong.conf.j2"
     dest: "{{ kong_conf_dir }}/kong.conf"
@@ -22,7 +22,7 @@
 # reloading nginx. So the outdated nginx-kong.conf fails nginx config validation
 # and nginx errors out.
 # So it is safer to Restart
-- name: Create kong custom nginx config file | v0.10.x or later
+- name: Create kong custom nginx config file | v0.11.x or later
   template: 
     src:  custom-nginx.template.j2
     dest: "{{ kong_conf_dir }}/custom-nginx.template"
@@ -32,6 +32,10 @@
   notify: 
     - Validate kong config
     - Restart kong
+
+- name: Initialise kong run status
+  set_fact: 
+    run_status: up
 
 - name: Check kong health status | v0.11.x or later
   shell: kong health || true
@@ -52,11 +56,12 @@
       kong migrations up --conf {{ kong_conf_dir }}/kong.conf
   environment:
     PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
-  when: run_status|default("up") == "down"
+  when: run_status == "down"
   run_once: true
   register: migration
 
 - debug: var=migration.stdout_lines
+  when: migration|success
 
 - name: Start kong | v0.11.x or earlier
   shell: >
@@ -64,9 +69,10 @@
         kong start --conf {{ kong_conf_dir }}/kong.conf --nginx-conf {{ kong_conf_dir }}/custom-nginx.template
   environment:
     PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
-  when: run_status|default("up") == "down"
+  when: run_status == "down"
   register: start
 
 - debug: var=start.stdout_lines
+  when: start|success
 
 #- pause: minutes=60
