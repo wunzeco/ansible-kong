@@ -45,6 +45,7 @@
   when: health.stderr.find('Kong is not running') != -1
 
 - debug: var=health
+- debug: var=run_status
 
 - name: Update kong database schema | v0.11.x or earlier
   shell: >
