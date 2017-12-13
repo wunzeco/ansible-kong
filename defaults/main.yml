@@ -57,7 +57,7 @@ kong_latency_tokens:           "on"
 kong_nginx_user:              "nobody nobody"
 kong_http2:                   "off"
 kong_admin_http2:             "off"
-kong_trusted_ips:             ""
+kong_trusted_ips:             ""        # set to 0.0.0.0/0,::/0 to trust all IPs. WARNING: important for oauth2 plugin
 kong_real_ip_header:          "X-Real-IP"
 kong_real_ip_recursive:       "off"
 kong_client_max_body_size:    0
