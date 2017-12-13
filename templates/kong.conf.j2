@@ -336,3 +336,8 @@ lua_package_path = {{ kong_lua_package_path }}
 lua_package_cpath = {{ kong_lua_package_cpath }}
 #lua_package_cpath =             # Sets the Lua C module search path
                                  # (LUA_CPATH).
+
+lua_socket_pool_size = {{ kong_lua_socket_pool_size }}
+#lua_socket_pool_size = 30       # Specifies the size limit for every cosocket
+                                 # connection pool associated with every remote
+                                 # server
