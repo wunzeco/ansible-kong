@@ -4,6 +4,14 @@
 ##  v0.10.x
 ##-------------------
 
+- name: Create kong nginx work dir
+  file:
+    path:  "{{ kong_nginx_working_dir }}"
+    owner: root
+    group: root
+    mode:  0755
+    state: directory
+
 - name: Create kong config file | v0.10.x
   template: 
     src:  "0.10.x-kong.conf.j2"
@@ -37,6 +45,7 @@
   shell: kong health || true
   environment:
     PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
+  changed_when: false
   register: health
 
 - name: Set kong run status | v0.10.x or later

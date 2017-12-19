@@ -39,14 +39,6 @@
     state: present
   when: ansible_os_family|lower == 'redhat'
 
-- name: Create kong nginx work dir
-  file:
-    path:  "{{ kong_nginx_working_dir }}"
-    owner: root
-    group: root
-    mode:  0755
-    state: directory
-
 - name: Create logrotate config for kong logs
   template:
     src:  logrotate.j2

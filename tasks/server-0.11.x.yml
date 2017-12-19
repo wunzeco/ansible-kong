@@ -33,6 +33,14 @@
     - Validate kong config
     - Restart kong
 
+- name: Prepare kong prefix directory | v0.11.x or earlier
+  shell: >
+      kong prepare --prefix {{ kong_prefix_dir }} --conf {{ kong_conf_dir }}/kong.conf
+  environment:
+    PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
+  args:
+    creates: "{{ kong_prefix_dir }}"
+
 - name: Initialise kong run status
   set_fact: 
     run_status: up
@@ -41,6 +49,7 @@
   shell: kong health || true
   environment:
     PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
+  changed_when: false
   register: health
 
 - name: Set kong run status | v0.11.x or later
