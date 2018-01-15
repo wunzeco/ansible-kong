@@ -42,7 +42,7 @@
     creates: "{{ kong_prefix_dir }}"
 
 - name: Initialise kong run status
-  set_fact: 
+  set_fact:
     run_status: up
 
 - name: Check kong health status | v0.11.x or later
@@ -53,7 +53,7 @@
   register: health
 
 - name: Set kong run status | v0.11.x or later
-  set_fact: 
+  set_fact:
     run_status: down
   when: health.stderr.find('Kong is not running') != -1
 
@@ -69,15 +69,17 @@
   run_once: true
   register: migration
 
-- debug: var=migration.stdout_lines
-  when: migration|success
+- name: Copy over kong init script
+  template:
+    src: kong-init.j2
+    dst: "/etc/init.d/kong.init.j2"
+    owner: root
+    group: root
+    mode:  0744
 
 - name: Start kong | v0.11.x or earlier
-  shell: >
-      ulimit -n "{{ kong_max_files_limit }}" && \
-        kong start --conf {{ kong_conf_dir }}/kong.conf --nginx-conf {{ kong_conf_dir }}/custom-nginx.template
-  environment:
-    PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
+  command:
+  environment: service kong start
   when: run_status == "down"
   register: start
 
