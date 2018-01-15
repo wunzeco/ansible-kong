@@ -4,6 +4,18 @@
 ##  v0.11.x
 ##-------------------
 
+- name: Set init script handlers for playbook
+  set_fact:
+    kong_reload: "Reload kong with init script"
+    kong_restart: "Restart kong with init script"
+  when: kong_manage_init_script
+
+- name: Set native kong service handlers for playbook
+  set_fact:
+    kong_reload: "Reload kong"
+    kong_restart: "Restart kong"
+  when: not kong_manage_init_script
+
 - name: Create kong config file | v0.11.x
   template: 
     src:  "0.11.x-kong.conf.j2"
@@ -13,7 +25,7 @@
     mode:  0644
   notify: 
     - Validate kong config
-    - Restart kong
+    - "{{ kong_restart }}"
 
 # "Reload kong" handler sometimes fails for instance when access_log config
 # This is an edge case when custom log format is configured and name of log format
@@ -31,7 +43,7 @@
     mode:  0644
   notify: 
     - Validate kong config
-    - Restart kong
+    - "{{ kong_restart }}"
 
 - name: Prepare kong prefix directory | v0.11.x or earlier
   shell: >
@@ -72,10 +84,17 @@
 - name: Copy over kong init script
   template:
     src: kong-init.j2
-    dst: "/etc/init.d/kong.init.j2"
+    dest: "/etc/init.d/kong.init.j2"
     owner: root
     group: root
     mode:  0744
+  when: kong_manage_init_script
+
+- name: Delete kong init script
+  file:
+    path: "/etc/init.d/kong.init.j2"
+    state: absent
+  when: not kong_manage_init_script
 
 - name: Start kong | v0.11.x or earlier
   command:
