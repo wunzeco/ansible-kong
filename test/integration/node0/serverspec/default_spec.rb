@@ -38,6 +38,16 @@ describe file("/usr/local/bin/kong") do
   it { should be_owned_by 'root' }
 end
 
+describe file("/etc/init.d/kong") do
+  it { should be_file }
+  it { should be_owned_by 'root' }
+end
+
+describe file("/etc/rc2.d/S20kong") do
+  it { should be_symlink }
+  it { should be_linked_to '../init.d/kong' }
+end
+
 describe command("/usr/local/bin/kong version") do
   its(:stdout) { should match %r[(Kong version:\s)?0.*]i }
 end

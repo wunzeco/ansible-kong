@@ -17,13 +17,13 @@
   when: not kong_manage_init_script
 
 - name: Create kong config file | v0.11.x
-  template: 
+  template:
     src:  "0.11.x-kong.conf.j2"
     dest: "{{ kong_conf_dir }}/kong.conf"
     owner: root
     group: root
     mode:  0644
-  notify: 
+  notify:
     - Validate kong config
     - "{{ kong_restart }}"
 
@@ -35,13 +35,13 @@
 # and nginx errors out.
 # So it is safer to Restart
 - name: Create kong custom nginx config file | v0.11.x or later
-  template: 
+  template:
     src:  custom-nginx.template.j2
     dest: "{{ kong_conf_dir }}/custom-nginx.template"
     owner: root
     group: root
     mode:  0644
-  notify: 
+  notify:
     - Validate kong config
     - "{{ kong_restart }}"
 
@@ -91,16 +91,20 @@
   when: kong_manage_init_script
 
 - name: Create sysvinit symlinks
-  command: update-rc.d kong defaults
+  service:
+    name: kong
+    enabled: yes
   when: kong_manage_init_script
 
 - name: Delete sysvinit symlinks
-  command: update-rc.d -f kong remove
+  service:
+    name: kong
+    enabled: no
   when: not kong_manage_init_script
 
 - name: Delete kong init script
   file:
-    path: "/etc/init.d/kong.init.j2"
+    path: "/etc/init.d/kong"
     state: absent
   when: not kong_manage_init_script
 
@@ -114,11 +118,7 @@
   register: start
 
 - name: Start kong via init | v0.11.x or earlier
-  command: service kong start
+  service:
+    name: kong
+    state: started
   when: run_status == "down" and kong_manage_init_script
-  register: start
-
-- debug: var=start.stdout_lines
-  when: start|success
-
-#- pause: minutes=60
