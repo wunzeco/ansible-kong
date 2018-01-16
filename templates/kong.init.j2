@@ -22,7 +22,7 @@ if [ -f $PIDFILE ] && kill -0 $(cat $PIDFILE); then
     return 1
 fi
 echo 'Starting service…' >&2
-ulimit -n 65565 && kong start --conf {{ kong_conf_dir }}/kong.conf --nginx-conf {{ kong_conf_dir }}/custom-nginx.template
+ulimit -n 65535 && kong start --conf {{ kong_conf_dir }}/kong.conf --nginx-conf {{ kong_conf_dir }}/custom-nginx.template
 echo 'Service started' >&2
 }
 
@@ -44,7 +44,7 @@ if [ ! -f "$PIDFILE" ] || ! kill -0 $(cat "$PIDFILE"); then
 fi
 
 echo 'Reloading configuration' >&2
-ulimit -n 65565 && kong reload --conf {{ kong_conf_dir }}/kong.conf --nginx-conf {{ kong_conf_dir }}/custom-nginx.template
+ulimit -n 65335 && kong reload --conf {{ kong_conf_dir }}/kong.conf --nginx-conf {{ kong_conf_dir }}/custom-nginx.template
 echo 'Configuration reloaded' >&2
 }
 
