@@ -13,6 +13,8 @@ provisioner:
   ansible_verbosity: 2
   ansible_diff: true
   ansible_extra_flags: <%= ENV['ANSIBLE_EXTRA_FLAGS'] %>
+  ignore_paths_from_root:
+    - .kitchen
 
 platforms:
   - name: ubuntu-14.04
@@ -39,3 +41,6 @@ suites:
         memory: 1024
       network:
         - ["private_network", { ip: "172.29.129.21" }]
+
+transport:
+  max_ssh_sessions: 4

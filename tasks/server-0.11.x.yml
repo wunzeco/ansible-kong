@@ -83,12 +83,25 @@
 
 - name: Copy over kong init script
   template:
-    src: kong-init.j2
-    dest: "/etc/init.d/kong.init.j2"
+    src: kong.init.j2
+    dest: "/etc/init.d/kong"
     owner: root
     group: root
     mode:  0744
   when: kong_manage_init_script
+
+- name: Create sysvinit symlink
+  file:
+    dest: "/etc/rc2.d/S30kong"
+    src: "/etc/init.d/kong"
+    state: link
+  when: kong_manage_init_script
+
+- name: Delete sysvinit symlink
+  file:
+    path: "/etc/rc2.d/S30kong"
+    state: absent
+  when: not kong_manage_init_script
 
 - name: Delete kong init script
   file:
