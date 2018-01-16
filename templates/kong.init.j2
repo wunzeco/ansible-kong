@@ -13,6 +13,7 @@
 
 set -eu
 
+kong_cmd=/usr/local/bin/kong
 
 PIDFILE={{ kong_prefix_dir }}/pids/nginx.pid
 
@@ -22,7 +23,7 @@ start() {
         return 1
     fi
     echo 'Starting service…' >&2
-    ulimit -n 65535 && /usr/local/bin/kong start --conf {{ kong_conf_dir }}/kong.conf --nginx-conf {{ kong_conf_dir }}/custom-nginx.template
+    ulimit -n 65535 && $kong_cmd start --conf {{ kong_conf_dir }}/kong.conf --nginx-conf {{ kong_conf_dir }}/custom-nginx.template
     echo 'Service started' >&2
 }
 
@@ -33,7 +34,7 @@ stop() {
     fi
 
     echo 'Stopping service…' >&2
-    /usr/local/bin/kong stop
+    $kong_cmd stop
     echo 'Service stopped' >&2
 }
 
@@ -44,7 +45,7 @@ reload() {
     fi
 
     echo 'Reloading configuration' >&2
-    ulimit -n 65335 && /usr/local/bin/kong reload --conf {{ kong_conf_dir }}/kong.conf --nginx-conf {{ kong_conf_dir }}/custom-nginx.template
+    ulimit -n 65335 && $kong_cmd reload --conf {{ kong_conf_dir }}/kong.conf --nginx-conf {{ kong_conf_dir }}/custom-nginx.template
     echo 'Configuration reloaded' >&2
 }
 
