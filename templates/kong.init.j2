@@ -17,50 +17,50 @@ set -eu
 PIDFILE={{ kong_prefix_dir }}/pids/nginx.pid
 
 start() {
-if [ -f $PIDFILE ] && kill -0 $(cat $PIDFILE); then
-    echo 'Service already running' >&2
-    return 1
-fi
-echo 'Starting service…' >&2
-ulimit -n 65535 && kong start --conf {{ kong_conf_dir }}/kong.conf --nginx-conf {{ kong_conf_dir }}/custom-nginx.template
-echo 'Service started' >&2
+    if [ -f $PIDFILE ] && kill -0 $(cat $PIDFILE); then
+        echo 'Service already running' >&2
+        return 1
+    fi
+    echo 'Starting service…' >&2
+    ulimit -n 65535 && /usr/local/bin/kong start --conf {{ kong_conf_dir }}/kong.conf --nginx-conf {{ kong_conf_dir }}/custom-nginx.template
+    echo 'Service started' >&2
 }
 
 stop() {
-if [ ! -f "$PIDFILE" ] || ! kill -0 $(cat "$PIDFILE"); then
-    echo 'Service not running' >&2
-    return 1
-fi
+    if [ ! -f "$PIDFILE" ] || ! kill -0 $(cat "$PIDFILE"); then
+        echo 'Service not running' >&2
+        return 1
+    fi
 
-echo 'Stopping service…' >&2
-kong stop
-echo 'Service stopped' >&2
+    echo 'Stopping service…' >&2
+    /usr/local/bin/kong stop
+    echo 'Service stopped' >&2
 }
 
 reload() {
-if [ ! -f "$PIDFILE" ] || ! kill -0 $(cat "$PIDFILE"); then
-    echo 'Service not running' >&2
-    return 1
-fi
+    if [ ! -f "$PIDFILE" ] || ! kill -0 $(cat "$PIDFILE"); then
+        echo 'Service not running' >&2
+        return 1
+    fi
 
-echo 'Reloading configuration' >&2
-ulimit -n 65335 && kong reload --conf {{ kong_conf_dir }}/kong.conf --nginx-conf {{ kong_conf_dir }}/custom-nginx.template
-echo 'Configuration reloaded' >&2
+    echo 'Reloading configuration' >&2
+    ulimit -n 65335 && /usr/local/bin/kong reload --conf {{ kong_conf_dir }}/kong.conf --nginx-conf {{ kong_conf_dir }}/custom-nginx.template
+    echo 'Configuration reloaded' >&2
 }
 
 status() {
-printf "%-50s" "Checking Kong status"
-if [ -f $PIDFILE ]; then
-    PID=$(cat $PIDFILE)
-    if [ -z "$(ps axf | grep ${PID} | grep -v grep)" ]; then
-        printf "%s\n" "The process appears to be dead but pidfile still exists"
-    else
-        echo "Running, the PID is $PID"
-    fi
+    printf "%-50s" "Checking Kong status"
+    if [ -f $PIDFILE ]; then
+        PID=$(cat $PIDFILE)
+        if [ -z "$(ps axf | grep ${PID} | grep -v grep)" ]; then
+            printf "%s\n" "The process appears to be dead but pidfile still exists"
+        else
+            echo "Running, the PID is $PID"
+        fi
 
-else
-    printf "%s\n" "Service not running"
-fi
+    else
+        printf "%s\n" "Service not running"
+    fi
 }
 
 

@@ -90,11 +90,8 @@
     mode:  0744
   when: kong_manage_init_script
 
-- name: Create sysvinit symlink
-  file:
-    dest: "/etc/rc2.d/S30kong"
-    src: "/etc/init.d/kong"
-    state: link
+- name: Create sysvinit symlinks
+  command: update-rc.d kong defaults
   when: kong_manage_init_script
 
 - name: Delete sysvinit symlink
@@ -110,8 +107,7 @@
   when: not kong_manage_init_script
 
 - name: Start kong | v0.11.x or earlier
-  command:
-  environment: service kong start
+  command: service kong start
   when: run_status == "down"
   register: start
 
