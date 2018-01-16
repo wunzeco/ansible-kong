@@ -4,16 +4,32 @@
 ##  v0.11.x
 ##-------------------
 
+- name: set sysvinit for all kong service settings
+  set_fact:
+    ansible_service_mgr: "sysvinit"
+
+- name: Set init script handlers for playbook
+  set_fact:
+    kong_reload: "Reload kong with init script"
+    kong_restart: "Restart kong with init script"
+  when: kong_manage_init_script
+
+- name: Set native kong service handlers for playbook
+  set_fact:
+    kong_reload: "Reload kong"
+    kong_restart: "Restart kong"
+  when: not kong_manage_init_script
+
 - name: Create kong config file | v0.11.x
-  template: 
+  template:
     src:  "0.11.x-kong.conf.j2"
     dest: "{{ kong_conf_dir }}/kong.conf"
     owner: root
     group: root
     mode:  0644
-  notify: 
+  notify:
     - Validate kong config
-    - Restart kong
+    - "{{ kong_restart }}"
 
 # "Reload kong" handler sometimes fails for instance when access_log config
 # This is an edge case when custom log format is configured and name of log format
@@ -23,15 +39,15 @@
 # and nginx errors out.
 # So it is safer to Restart
 - name: Create kong custom nginx config file | v0.11.x or later
-  template: 
+  template:
     src:  custom-nginx.template.j2
     dest: "{{ kong_conf_dir }}/custom-nginx.template"
     owner: root
     group: root
     mode:  0644
-  notify: 
+  notify:
     - Validate kong config
-    - Restart kong
+    - "{{ kong_restart }}"
 
 - name: Prepare kong prefix directory | v0.11.x or earlier
   shell: >
@@ -42,7 +58,7 @@
     creates: "{{ kong_prefix_dir }}"
 
 - name: Initialise kong run status
-  set_fact: 
+  set_fact:
     run_status: up
 
 - name: Check kong health status | v0.11.x or later
@@ -53,7 +69,7 @@
   register: health
 
 - name: Set kong run status | v0.11.x or later
-  set_fact: 
+  set_fact:
     run_status: down
   when: health.stderr.find('Kong is not running') != -1
 
@@ -69,19 +85,60 @@
   run_once: true
   register: migration
 
-- debug: var=migration.stdout_lines
-  when: migration|success
+- name: Copy over kong init script
+  template:
+    src: kong.init.j2
+    dest: "/etc/init.d/kong"
+    owner: root
+    group: root
+    mode:  0744
+  when: kong_manage_init_script
 
-- name: Start kong | v0.11.x or earlier
+- name: Create sysvinit symlinks
+  service:
+    name: kong
+    enabled: yes
+  when: kong_manage_init_script
+
+- name: Delete sysvinit symlinks
+  service:
+    name: kong
+    enabled: no
+  when: not kong_manage_init_script
+  failed_when: false  # This fails if there are no symlinks to delete
+
+  # Ansible doesn't clean up sysvinit symlinks properly!
+- name: Clean up sysvinit symlinks
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - /etc/rc0.d/K20kong
+    - /etc/rc1.d/K20kong
+    - /etc/rc2.d/K80kong
+    - /etc/rc3.d/K80kong
+    - /etc/rc4.d/K80kong
+    - /etc/rc5.d/K80kong
+    - /etc/rc6.d/K20kong
+  when: not kong_manage_init_script
+
+- name: Delete kong init script
+  file:
+    path: "/etc/init.d/kong"
+    state: absent
+  when: not kong_manage_init_script
+
+- name: Start kong natively | v0.11.x or earlier
   shell: >
       ulimit -n "{{ kong_max_files_limit }}" && \
         kong start --conf {{ kong_conf_dir }}/kong.conf --nginx-conf {{ kong_conf_dir }}/custom-nginx.template
   environment:
     PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
-  when: run_status == "down"
+  when: run_status == "down" and not kong_manage_init_script
   register: start
 
-- debug: var=start.stdout_lines
-  when: start|success
-
-#- pause: minutes=60
+- name: Start kong via init | v0.11.x or earlier
+  service:
+    name: kong
+    state: started
+  when: run_status == "down" and kong_manage_init_script

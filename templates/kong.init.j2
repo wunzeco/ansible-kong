@@ -1,0 +1,75 @@
+#!/bin/sh
+# {{  ansible_managed }}
+# Taken and adapted from https://github.com/Getsidecar/ansible-role-kong/blob/master/templates/etc/kong.init.d.j2
+
+### BEGIN INIT INFO
+# Provides:          Kong
+# Required-Start:    $local_fs $network $named $time $syslog
+# Required-Stop:     $local_fs $network $named $time $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Description:       Kong service wrapper (getkong.org)
+### END INIT INFO
+
+set -eu
+
+kong_cmd=/usr/local/bin/kong
+
+PIDFILE={{ kong_prefix_dir }}/pids/nginx.pid
+
+start() {
+    if [ -f $PIDFILE ] && kill -0 $(cat $PIDFILE); then
+        echo 'Service already running' >&2
+        return 1
+    fi
+    echo 'Starting service…' >&2
+    ulimit -n {{ kong_max_files_limit }} && $kong_cmd start --conf {{ kong_conf_dir }}/kong.conf --nginx-conf {{ kong_conf_dir }}/custom-nginx.template
+    echo 'Service started' >&2
+}
+
+stop() {
+    if [ ! -f "$PIDFILE" ] || ! kill -0 $(cat "$PIDFILE"); then
+        echo 'Service not running' >&2
+        return 1
+    fi
+
+    echo 'Stopping service…' >&2
+    $kong_cmd stop
+    echo 'Service stopped' >&2
+}
+
+reload() {
+    if [ ! -f "$PIDFILE" ] || ! kill -0 $(cat "$PIDFILE"); then
+        echo 'Service not running' >&2
+        return 1
+    fi
+
+    echo 'Reloading configuration' >&2
+    ulimit -n {{ kong_max_files_limit }} && $kong_cmd reload --conf {{ kong_conf_dir }}/kong.conf --nginx-conf {{ kong_conf_dir }}/custom-nginx.template
+    echo 'Configuration reloaded' >&2
+}
+
+status() {
+    printf "%-50s" "Checking Kong status"
+    if [ -f $PIDFILE ]; then
+        PID=$(cat $PIDFILE)
+        if [ -z "$(ps axf | grep ${PID} | grep -v grep)" ]; then
+            printf "%s\n" "The process appears to be dead but pidfile still exists"
+        else
+            echo "Running, the PID is $PID"
+        fi
+
+    else
+        printf "%s\n" "Service not running"
+    fi
+}
+
+
+case "$1" in
+    start) start ;;
+    stop) stop ;;
+    status) status ;;
+    reload) reload ;;
+    restart) stop  ; sleep 2 ; start ;;
+    *) echo "Usage: $0 {start|stop|status|restart|reload}" >&2
+esac

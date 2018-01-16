@@ -10,6 +10,7 @@
     kong_proxy_listen:            "{{ kong_host }}:8000"
     kong_proxy_listen_ssl:        "{{ kong_host }}:8443"
     kong_cluster_listen:          "{{ kong_host }}:7946"
+    kong_db_update_propagation: 1
     kong_proxy_set_headers: 
       "X-Forwarded-Prefix": '$http_x_forwarded_prefix'
 
@@ -31,6 +32,7 @@
 
   vars:
     kong_version: 0.11.1
+    kong_manage_init_script: true
 
   pre_tasks:
     - name: Install jq and curl
