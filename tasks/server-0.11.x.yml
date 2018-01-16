@@ -94,10 +94,8 @@
   command: update-rc.d kong defaults
   when: kong_manage_init_script
 
-- name: Delete sysvinit symlink
-  file:
-    path: "/etc/rc2.d/S30kong"
-    state: absent
+- name: Delete sysvinit symlinks
+  command: update-rc.d -f kong remove
   when: not kong_manage_init_script
 
 - name: Delete kong init script
@@ -106,9 +104,18 @@
     state: absent
   when: not kong_manage_init_script
 
-- name: Start kong | v0.11.x or earlier
+- name: Start kong natively | v0.11.x or earlier
+  shell: >
+      ulimit -n "{{ kong_max_files_limit }}" && \
+        kong start --conf {{ kong_conf_dir }}/kong.conf --nginx-conf {{ kong_conf_dir }}/custom-nginx.template
+  environment:
+    PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
+  when: run_status == "down" and not kong_manage_init_script
+  register: start
+
+- name: Start kong via init | v0.11.x or earlier
   command: service kong start
-  when: run_status == "down"
+  when: run_status == "down" and kong_manage_init_script
   register: start
 
 - debug: var=start.stdout_lines

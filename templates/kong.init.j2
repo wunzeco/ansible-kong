@@ -23,7 +23,7 @@ start() {
         return 1
     fi
     echo 'Starting service…' >&2
-    ulimit -n 65535 && $kong_cmd start --conf {{ kong_conf_dir }}/kong.conf --nginx-conf {{ kong_conf_dir }}/custom-nginx.template
+    ulimit -n {{ kong_max_files_limit }} && $kong_cmd start --conf {{ kong_conf_dir }}/kong.conf --nginx-conf {{ kong_conf_dir }}/custom-nginx.template
     echo 'Service started' >&2
 }
 
@@ -45,7 +45,7 @@ reload() {
     fi
 
     echo 'Reloading configuration' >&2
-    ulimit -n 65335 && $kong_cmd reload --conf {{ kong_conf_dir }}/kong.conf --nginx-conf {{ kong_conf_dir }}/custom-nginx.template
+    ulimit -n {{ kong_max_files_limit }} && $kong_cmd reload --conf {{ kong_conf_dir }}/kong.conf --nginx-conf {{ kong_conf_dir }}/custom-nginx.template
     echo 'Configuration reloaded' >&2
 }
 
