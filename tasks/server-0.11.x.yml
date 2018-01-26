@@ -100,34 +100,6 @@
     enabled: yes
   when: kong_manage_init_script
 
-- name: Delete sysvinit symlinks
-  service:
-    name: kong
-    enabled: no
-  when: not kong_manage_init_script
-  failed_when: false  # This fails if there are no symlinks to delete
-
-  # Ansible doesn't clean up sysvinit symlinks properly!
-- name: Clean up sysvinit symlinks
-  file:
-    path: "{{ item }}"
-    state: absent
-  with_items:
-    - /etc/rc0.d/K20kong
-    - /etc/rc1.d/K20kong
-    - /etc/rc2.d/K80kong
-    - /etc/rc3.d/K80kong
-    - /etc/rc4.d/K80kong
-    - /etc/rc5.d/K80kong
-    - /etc/rc6.d/K20kong
-  when: not kong_manage_init_script
-
-- name: Delete kong init script
-  file:
-    path: "/etc/init.d/kong"
-    state: absent
-  when: not kong_manage_init_script
-
 - name: Start kong natively | v0.11.x or earlier
   shell: >
       ulimit -n "{{ kong_max_files_limit }}" && \
