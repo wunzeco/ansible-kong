@@ -10,7 +10,7 @@
 
 # Debian
 - name: Download kong deb package | Debian
-  get_url: url="{{ kong_deb_pkg_url }}" dest=/var/tmp validate_certs=no
+  get_url: url="{{ kong_deb_pkg_url }}" dest=/var/tmp validate_certs=no force=no
   when: ansible_os_family|lower == 'debian'
 
 - name: Install kong prerequisites (Debian/Ubuntu only)
