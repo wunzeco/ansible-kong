@@ -208,6 +208,7 @@ latency_tokens = {{ kong_latency_tokens|default('on')|lower }}
                                  # and "X-Kong-Upstream-Latency" response
                                  # header fields.
 
+trusted_ips = {{ kong_server_trusted_ips }}
 #trusted_ips =                   # Defines trusted IP addresses blocks that are
                                  # known to send correct X-Forwarded-* headers.
                                  # Requests from trusted IPs make Kong forward

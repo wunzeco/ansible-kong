@@ -36,6 +36,7 @@ kong_ssl_cert:                                # /path/to/certificate.pem
 kong_ssl_cert_key:                            # /path/to/certificate.key
 kong_server_tokens:             "on"
 kong_latency_tokens:            "on"
+kong_server_trusted_ips:        ""
 
 ##------------------
 ## DATASTORE
