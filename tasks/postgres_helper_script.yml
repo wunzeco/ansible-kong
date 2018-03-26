@@ -1,0 +1,22 @@
+---
+
+- name: Set postgresql client package name
+  set_fact:
+    postgresql_client_package: postgresql-client
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Set postgresql client package name
+  set_fact:
+    postgresql_client_package: postgresql
+  when: ansible_distribution != 'Ubuntu'
+
+- name: Install postgresql client package
+  package:
+    name: "{{ postgresql_client_package }}"
+    state: present
+
+- name: Deploy postgres helper script
+  template:
+    src: psql.sh.j2
+    dest: /usr/local/bin/psql.sh
+    mode: 0700

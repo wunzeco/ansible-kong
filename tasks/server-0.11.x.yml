@@ -114,3 +114,6 @@
     name: kong
     state: started
   when: run_status == "down" and kong_manage_init_script
+
+- include: postgres_helper_script.yml
+  when: kong_database == "postgres"
