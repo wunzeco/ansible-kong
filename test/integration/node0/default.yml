@@ -4,7 +4,8 @@
 
   vars:
     java_package: oracle-java8-installer
-    cassandra_version: 3.7.0
+    cassandra_distro: apache
+    cassandra_version: 3.11.2
     cassandra_cluster_name: kitchenCluster
     cassandra_listen_address: "{{ ansible_eth1.ipv4.address }}"
     cassandra_rpc_address:    "{{ cassandra_listen_address }}"
@@ -14,7 +15,7 @@
   pre_tasks:
     - name: Set cassandra listen address | RedHat
       set_fact: cassandra_listen_address="{{ ansible_enp0s8.ipv4.address }}"
-      when: ansible_os_family|lower == 'redhat'
+      when: ansible_service_mgr == 'systemd'
 
   roles:
     - wunzeco.java
@@ -23,11 +24,11 @@
   post_tasks:
     - name: Wait for cassandra to start fully | Debian
       wait_for: host="{{ ansible_eth1.ipv4.address }}" port=9042
-      when: ansible_os_family|lower == 'debian'
+      when: ansible_service_mgr == 'upstart'
 
     - name: Wait for cassandra to start fully | RedHat
       wait_for: host="{{ ansible_enp0s8.ipv4.address }}" port=9042
-      when: ansible_os_family|lower == 'redhat'
+      when: ansible_service_mgr == 'systemd'
 
 
 - name: Kong Install
@@ -47,7 +48,7 @@
     kong_proxy_listen_ssl:        "{{ kong_host }}:8443"
     kong_admin_listen:            "{{ kong_host }}:8001"
     kong_cluster_listen:          "{{ kong_host }}:7946"
-    kong_proxy_set_headers: 
+    kong_proxy_set_headers:
       "X-Forwarded-Prefix": '$http_x_forwarded_prefix'
     kong_nginx_custom_log_fields: [ realip_remote_addr, http_x_forwarded_prefix, http_x_forwarded_for, http_x_forwarded_proto ]
     kong_nginx_json_log_format_enable: true
@@ -62,10 +63,10 @@
       when: ansible_os_family|lower == 'debian'
 
     #- pause: minutes=10
-    
+
     - name: Set kong host | RedHat
       set_fact: kong_host="{{ ansible_enp0s8.ipv4.address }}"
-      when: ansible_os_family|lower == 'redhat'
+      when: ansible_service_mgr == 'systemd'
 
   roles:
     - ansible-kong
