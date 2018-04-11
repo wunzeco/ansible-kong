@@ -2,11 +2,14 @@
 
 - debug: msg="Kong Version - {{ kong_version }}"
 
+- debug: msg="WARNING - api object deprecated in v0.13.0. Use route and service objects"
+  when: kong_version is version_compare('0.13', '>=')
+
 - name: Verify kong admin api available
   uri: url="{{ kong_admin_api_url|default('http://localhost:8001') }}"
 
 - name: Get list of service apis configured in kong
-  uri: 
+  uri:
     url: "{{ kong_admin_api_url|default('http://localhost:8001') }}/apis"
   register: apis
 
@@ -16,6 +19,6 @@
 
 - set_fact: _cmd=delete
   when: kong_delete_api_obj
-  
+
 - name: Kong API Object Config
   include: api_{{ _cmd }}.yml
