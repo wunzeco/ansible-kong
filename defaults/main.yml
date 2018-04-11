@@ -36,21 +36,21 @@ kong_admin_access_log:         "logs/access.log"
 kong_admin_error_log:          "logs/error.log"
 kong_custom_plugins:           []
 kong_anonymous_reports:        "on"
-kong_proxy_listen:             "0.0.0.0:8000"
-kong_proxy_listen_ssl:         "0.0.0.0:8443"
-kong_admin_listen:             "0.0.0.0:8001"
-kong_admin_listen_ssl:         "0.0.0.0:8444"
+kong_proxy_listen:             "0.0.0.0:8000"  # Or an array - [ "0.0.0.0:8000" ]
+kong_proxy_listen_ssl:         "0.0.0.0:8443"  # for 0.12.x and earlier. Deprecated in v0.13.x
+kong_admin_listen:             "127.0.0.1:8001"  # Or an array - [ "127.0.0.1:8001" ]
+kong_admin_listen_ssl:         "0.0.0.0:8444"  # for 0.12.x and earlier. Deprecated in v0.13.x
 kong_nginx_worker_processes:   auto
 kong_nginx_daemon:             "on"
 kong_mem_cache_size:           128m
 kong_ssl_cert:                                # /path/to/certificate.pem
 kong_ssl_cert_key:                            # /path/to/certificate.key
 kong_ssl_cipher_suite:         modern
-kong_ssl_ciphers: 
+kong_ssl_ciphers:
 kong_client_ssl:               "off"
 kong_client_ssl_cert:
 kong_client_ssl_cert_key:
-kong_admin_ssl:                "off"
+kong_admin_ssl:                "off"            # for 0.12.x and earlier. Deprecated in v0.13.x
 kong_admin_ssl_cert:
 kong_admin_ssl_cert_key:
 kong_upstream_keepalive:       60
@@ -58,8 +58,8 @@ kong_server_tokens:            "on"
 kong_latency_tokens:           "on"
 # Config properties new in 0.11.x
 kong_nginx_user:              "nobody nobody"
-kong_http2:                   "off"
-kong_admin_http2:             "off"
+kong_http2:                   "off"            # for 0.12.x and earlier. Deprecated in v0.13.x
+kong_admin_http2:             "off"            # for 0.12.x and earlier. Deprecated in v0.13.x
 kong_trusted_ips:             ""        # set to 0.0.0.0/0,::/0 to trust all IPs. WARNING: important for oauth2 plugin
 kong_real_ip_header:          "X-Real-IP"
 kong_real_ip_recursive:       "off"
@@ -101,7 +101,7 @@ kong_cassandra_username:
 kong_cassandra_password:
 kong_cassandra_data_centers:    []
 kong_cassandra_lb_policy: RoundRobin
-kong_cassandra_local_datacenter: 
+kong_cassandra_local_datacenter:
 kong_cassandra_repl_strategy:   SimpleStrategy
 kong_cassandra_repl_factor:     1
 kong_cassandra_schema_consensus_timeout: 10000
@@ -145,7 +145,7 @@ kong_lua_package_path:            ""
 kong_lua_package_cpath:           ""
 kong_lua_socket_pool_size:        30
 
-kong_max_files_limit:   65535               # if less than 4096 kong may perform poorly. 
+kong_max_files_limit:   65535               # if less than 4096 kong may perform poorly.
                                             # Under load it may raise:
                                             #   socket() failed (24: Too many open files) while connecting to upstream
 kong_upstream_host:     'nil'
@@ -154,10 +154,15 @@ kong_proxy_set_headers: {}                  # custom proxy headers to set at ngi
 
 
 ##################################
-##  API, Plugin & Consumer objects
+##  Route, Service, API, Plugin & Consumer objects
 ##  Note: Refer to https://getkong.org/docs/ for further information
 
 kong_admin_api_url: "http://localhost:8001"
+
+## API & Plugin Objects
+kong_delete_service_obj: false              # set to True to delete service object from kong
+
+kong_service_obj: {}
 
 ## API & Plugin Objects
 kong_delete_api_obj: false                  # set to True to delete api object from kong
@@ -206,36 +211,36 @@ kong_consumer_obj_acl_groups: []             # see consumer config example below
 ## kong_consumer_obj_custom_id: consumer123
 ## kong_consumer_obj_acl_group: [ groupOne, groupTwo ]
 ## kong_consumer_obj_auth_creds:
-##   - plugin: oauth2 
+##   - plugin: oauth2
 ##     parameters:
 ##       name: auth-service
 ##       client_id: SOME-CLIENT-ID
 ##       client_secret: SOME-CLIENT-SECRET
 ##       redirect_uri: http://some-domain/endpoint/
-##   - plugin: oauth2 
+##   - plugin: oauth2
 ##     parameters:
 ##       name: auth-master
 ##       client_id: ANOTHER-CLIENT-ID
 ##       client_secret: ANOTHER-CLIENT-SECRET
 ##       redirect_uri: http://another-domain/endpoint/
-##   - plugin: basic-auth 
+##   - plugin: basic-auth
 ##     parameters:
 ##       username: bob
 ##       password: bobSecret
-##   - plugin: basic-auth 
+##   - plugin: basic-auth
 ##     parameters:
 ##       username: jane
 ##       password: janeSecret
-##   - plugin: key-auth 
+##   - plugin: key-auth
 ##     parameters:
 ##       key: "7aed36b073f94313b75005b6ba46c633"
-##   - plugin: key-auth 
+##   - plugin: key-auth
 ##     parameters:
 ##       key: "c7faa3814c864d7d950d70f399cabffc"
-##   - plugin: hmac-auth 
+##   - plugin: hmac-auth
 ##     parameters:
 ##       username: john
-##   - plugin: hmac-auth 
+##   - plugin: hmac-auth
 ##     parameters:
 ##       username: flintstone
 ##       secret:   stoneSecret
@@ -252,8 +257,8 @@ kong_consumer_obj_acl_groups: []             # see consumer config example below
 # THOUGHTS - To consider
 #
 ## It may be desireable to declare several api objects in a list
-## e.g 
-##   kong_api_objs: 
+## e.g
+##   kong_api_objs:
 ##     - name:         mockbin
 ##       hosts: "mockbin.com"
 ##       uris: "/someservice"

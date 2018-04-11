@@ -18,7 +18,7 @@
   when: ansible_os_family|lower == 'debian'
 
 - name: Install kong prerequisites (Debian/Ubuntu only)
-  apt: 
+  apt:
     name: "{{ item }}"
     update_cache: yes
     state: present
@@ -37,7 +37,7 @@
   when: ansible_os_family|lower == 'redhat'
 
 - name: Install kong | RedHat
-  yum: 
+  yum:
     name: "/var/tmp/{{ kong_rpm_pkg }}"
     disable_gpg_check: yes
     state: present
@@ -53,7 +53,7 @@
 
 - name: Check for supported kong versions
   fail: msg="Kong {{ kong_version }} no longer supported"
-  when: kong_version|version_compare('0.10.0', '<')
+  when: kong_version|version_compare('0.11.0', '<')
 
 - name: Kong Server Config & Start
-  include: "server-{{ kong_major_minor_version }}.x.yml"
+  include: "server-config.yml"
