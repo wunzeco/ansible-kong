@@ -30,7 +30,7 @@
   notify:
     - Validate kong config
     - "{{ kong_restart }}"
-  when: "{{ kong_version is version_compare('0.13.0', '<') }}"
+  when: kong_version is version_compare('0.13.0', '<')
 
 - name: Create kong config file | v0.13.x or later
   template:
@@ -39,7 +39,7 @@
     owner: root
     group: root
     mode:  0644
-  when: "{{ kong_version is version_compare('0.13.0', '>=') }}"
+  when: kong_version is version_compare('0.13.0', '>=')
   notify:
     - Validate kong config
     - "{{ kong_restart }}"
