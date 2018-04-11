@@ -1,0 +1,64 @@
+---
+
+- name: Initialise service_exists variable
+  set_fact:
+    service_exists: false
+
+- name: Set service_exists if service object already exists
+  set_fact:
+    service_exists: true
+  when: kong_service_obj.name in services.json.data|map(attribute='name')
+
+- name: Add service object to kong
+  uri:
+    url:    "{{ kong_admin_api_url|default('http://localhost:8001') }}/services/"
+    method: POST
+    #body:   "{{ lookup('file','/tmp/service_obj.json') }}"
+    body:   "{{ kong_service_obj }}"
+    status_code: "201"
+    body_format: json
+  register: service
+  when: not service_exists
+
+- debug: msg="{{ kong_service_obj.name }} service object already exists - ({{ services.json.data|map(attribute='name')|join(',') }})"
+  when: service_exists
+
+# Note: Why remove "name" attribute from request body to update service object?
+#       Request fails with 409 status code if value of name in body matches existing name
+#       E.g
+#          < HTTP/1.1 409 Conflict
+#          {
+#            "message": "UNIQUE violation detected on '{name=\"svcAA\"}'",
+#            "code": 5,
+#            "name": "unique constraint violation",
+#            "fields": {
+#              "name": "svcAA"
+#            }
+#          }
+
+- name: Initialise kong_service_obj_update variable
+  set_fact:
+    kong_service_obj_update: {}
+
+- name: Set kong service object config for update
+  set_fact:
+    kong_service_obj_update: "{{ kong_service_obj_update|combine({ item.key: item.value })}}"
+  when: item.key != 'name'
+  with_dict: "{{ kong_service_obj }}"
+
+- name: Update service object configured in kong
+  uri:
+    url:    "{{ kong_admin_api_url|default('http://localhost:8001') }}/services/{{ kong_service_obj.name }}"
+    method: PATCH
+    #body:   "{{ lookup('file','/tmp/service_obj.json') }}"
+    body:   "{{ kong_service_obj_update }}"
+    status_code: "200"
+    body_format: json
+  register: service
+  when: service_exists
+
+#- debug: var=service
+
+# TODO:
+#- name: Kong Plugin for Service object
+#  include: plugin.yml

@@ -1,0 +1,25 @@
+---
+
+- debug: msg="Kong Version - {{ kong_version }}"
+
+- name: Check kong version
+  fail: msg="Service object requires v0.13+"
+  when: kong_version is version_compare('0.13', '<')
+
+- name: Verify kong admin api available
+  uri: url="{{ kong_admin_api_url|default('http://localhost:8001') }}"
+
+- name: Get list of service objects configured in kong
+  uri:
+    url: "{{ kong_admin_api_url|default('http://localhost:8001') }}/services"
+  register: services
+
+- debug: var=services
+
+- set_fact: _cmd=add
+
+- set_fact: _cmd=delete
+  when: kong_delete_service_obj
+
+- name: Kong Service Object Config
+  include: service_{{ _cmd }}.yml
