@@ -1,0 +1,71 @@
+---
+
+- debug: msg="Kong Version - {{ kong_version }}"
+
+- name: Check kong version
+  fail: msg="Service object requires v0.13+"
+  when: kong_version is version_compare('0.13', '<')
+
+- name: Verify kong admin api available
+  uri: url="{{ kong_admin_api_url|default('http://localhost:8001') }}"
+
+- name: Get list of plugin objects configured in kong
+  uri:
+    url: "{{ kong_admin_api_url|default('http://localhost:8001') }}/plugins"
+  register: plugins
+
+#- debug: var=plugins
+
+# Note:
+# This role supports adding of plugins for service and consumers entities only
+# The complexity associated with finding a route_id makes is very tricky to support
+# adding plugins for a route. Perhaps, one to consider implementing in the future.
+
+- name: Get service id if required to add plugin for a kong service object
+  uri:
+    url: "{{ kong_admin_api_url|default('http://localhost:8001') }}/services/{{ kong_plugin_config.service }}"
+  when: kong_plugin_config.service|default(false)
+  register: service
+
+- name: Get consumer id if required to add plugin for a kong consumer object
+  uri:
+    url: "{{ kong_admin_api_url|default('http://localhost:8001') }}/consumers/{{ kong_plugin_config.consumer }}"
+  when: kong_plugin_config.consumer|default(false)
+  register: consumer
+
+- name: Create temp request data file for kong plugin object
+  template:
+    src:  plugin_obj.j2
+    dest: "/tmp/{{ kong_plugin_config.name }}_plugin.obj"
+  delegate_to: 127.0.0.1
+  become: false
+
+#- debug: var=plugins
+#- debug: var=service
+#- debug: var=consumer
+
+- name: Find existing kong plugin that match config
+  template:
+    src:  matched_plugin_id.j2
+    dest: "/tmp/matched_plugin.id"
+  delegate_to: 127.0.0.1
+  become: false
+
+- name: Get matched plugin id
+  set_fact:
+    matched_plugin_id: "{{ lookup('file', '/tmp/matched_plugin.id') }}"
+
+
+- set_fact: _cmd=add
+
+- set_fact: _cmd=delete
+  when: kong_delete_plugin_obj
+
+- name: Kong Plugin Object Config
+  include: plugin_{{ _cmd }}.yml
+
+  #name
+  #consumer_id
+  #service_id
+  #route_id
+  #config {}

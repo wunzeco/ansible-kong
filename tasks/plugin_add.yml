@@ -1,0 +1,27 @@
+---
+
+- name: Initialise plugin_exists variable
+  set_fact:
+    plugin_exists: "{% if matched_plugin_id == '' %}{{ false }}{% else %}{{ true }}{% endif %}"
+
+- name: Add plugin object to kong
+  uri:
+    url:    "{{ kong_admin_api_url|default('http://localhost:8001') }}/plugins/"
+    method: POST
+    body:   "{{ lookup('file', '/tmp/' + kong_plugin_config.name + '_plugin.obj') }}"
+    status_code: "201"
+    body_format: json
+  register: p_add
+  when: not plugin_exists
+
+- name: Update plugin object to kong
+  uri:
+    url:    "{{ kong_admin_api_url|default('http://localhost:8001') }}/plugins/{{ matched_plugin_id }}"
+    method: PATCH
+    body:   "{{ lookup('file', '/tmp/' + kong_plugin_config.name + '_plugin.obj') }}"
+    status_code: "200"
+    body_format: json
+  register: p_update
+  when: plugin_exists
+
+#- debug: var=p_update

@@ -161,8 +161,29 @@ kong_admin_api_url: "http://localhost:8001"
 
 ## API & Plugin Objects
 kong_delete_service_obj: false              # set to True to delete service object from kong
+kong_service_config: {}                     # for service object and associated route objects
 
-kong_service_obj: {}
+# Kong service-routes config: This associates routes to a service.
+# Service-to-Route is 1-to-Many
+#kong_service_config:
+#  service:
+#    name: svcOne
+#    url: "http://upstream-svc.og.com/svcOne/api"
+#  routes:
+#    - hosts: []
+#      paths: []
+#      methods: []
+#      protocols: []
+#    - hosts: []
+#      paths: []
+#      methods: []
+#      protocols: []
+
+kong_delete_plugin_obj: false              # set to True to delete service object from kong
+kong_plugin_config: {}                     # for plugin object config
+
+kong_delete_consumer_obj: false              # set to True to delete service object from kong
+kong_consumer_config: {}                     # for consumer object config
 
 ## API & Plugin Objects
 kong_delete_api_obj: false                  # set to True to delete api object from kong

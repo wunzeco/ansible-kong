@@ -7,20 +7,21 @@
 - name: Set service_exists if service object already exists
   set_fact:
     service_exists: true
-  when: kong_service_obj.name in services.json.data|map(attribute='name')
+  when: kong_service_config.service.name in services.json.data|map(attribute='name')
 
 - name: Add service object to kong
   uri:
     url:    "{{ kong_admin_api_url|default('http://localhost:8001') }}/services/"
     method: POST
-    #body:   "{{ lookup('file','/tmp/service_obj.json') }}"
-    body:   "{{ kong_service_obj }}"
+    body:   "{{ kong_service_config.service }}"
     status_code: "201"
     body_format: json
-  register: service
+  register: s_add
   when: not service_exists
 
-- debug: msg="{{ kong_service_obj.name }} service object already exists - ({{ services.json.data|map(attribute='name')|join(',') }})"
+- debug: var=s_add
+
+- debug: msg="{{ kong_service_config.service.name }} service object already exists - ({{ services.json.data|map(attribute='name')|join(',') }})"
   when: service_exists
 
 # Note: Why remove "name" attribute from request body to update service object?
@@ -44,20 +45,28 @@
   set_fact:
     kong_service_obj_update: "{{ kong_service_obj_update|combine({ item.key: item.value })}}"
   when: item.key != 'name'
-  with_dict: "{{ kong_service_obj }}"
+  with_dict: "{{ kong_service_config.service }}"
 
 - name: Update service object configured in kong
   uri:
-    url:    "{{ kong_admin_api_url|default('http://localhost:8001') }}/services/{{ kong_service_obj.name }}"
+    url:    "{{ kong_admin_api_url|default('http://localhost:8001') }}/services/{{ kong_service_config.service.name }}"
     method: PATCH
-    #body:   "{{ lookup('file','/tmp/service_obj.json') }}"
     body:   "{{ kong_service_obj_update }}"
     status_code: "200"
     body_format: json
-  register: service
+  register: s_update
   when: service_exists
 
-#- debug: var=service
+- debug: var=s_update
+
+- name: Set service_id variable required for route object config
+  set_fact:
+    service_id: "{% if s_add.json|default(false) %}{{ s_add.json.id }}{% else %}{{ s_update.json.id }}{% endif %}"
+
+- debug: var=service_id
+
+- name: Kong Route for Service object
+  include: route.yml
 
 # TODO:
 #- name: Kong Plugin for Service object

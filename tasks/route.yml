@@ -1,0 +1,37 @@
+---
+
+- debug: msg="ROUTE | Kong Version - {{ kong_version }}"
+
+- name: Check kong version
+  fail: msg="Route object requires v0.13+"
+  when: kong_version is version_compare('0.13', '<')
+
+- name: Verify kong admin api available | route
+  uri: url="{{ kong_admin_api_url|default('http://localhost:8001') }}"
+
+- debug: msg="service id - {{ service_id }}"
+
+- name: Kong Route Object Add
+  include: route_add.yml
+  when: not kong_delete_service_obj
+  vars:
+    route_service_id: "{{ service_id }}"
+  with_items: "{{ kong_service_config.routes }}"
+  loop_control:
+    loop_var: outer_item
+
+
+# Note: How is updating (PATCH) an existing route achieved?
+#
+# Consider that a matching route is identified by
+#     route = hosts + paths + method + protocols
+#
+# Updating a route object finding "id" property of that route. However, it is
+# computationally cheaper to add the updated route object as a new route and
+# delete unmatched routes (which will include the outdated route) since kong
+# will happily add duplicate routes.
+# The approach taken is to add all routes defined for a service and delete any
+# existing route that isn't configured anymore for the service.
+
+- name: Kong Route Object Delete
+  include: route_delete.yml
