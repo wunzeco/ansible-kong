@@ -1,36 +1,61 @@
 ---
 
-- name: Create tmp file for request data required to configure kong consumer object
-  template: src=consumer_obj.j2 dest=/tmp/consumer.obj
-  delegate_to: 127.0.0.1
-  become: false
+- name: Initialise consumer_exists variable
+  set_fact:
+    consumer_exists: false
 
-# Create consumer object
-- name: Create kong consumer object
+- name: Set consumer_exists if consumer object already exists
+  set_fact:
+    consumer_exists: true
+  when: kong_consumer_config.username in consumers.json.data|map(attribute='username')
+
+- name: Add consumer object to kong
   uri:
-     url:    "{{ kong_admin_api_url }}/consumers/"
-     body:   "{{ lookup('file','/tmp/consumer.obj')|regex_replace('\n', '') }}"
-     method: POST
-     status_code: 201
-  register: new_consumers
-  when: not kong_consumer_obj_username in consumers.json.data|default([])|map(attribute='username') and not kong_delete_consumer_obj
+    url:    "{{ kong_admin_api_url|default('http://localhost:8001') }}/consumers/"
+    method: POST
+    body:   "{{ kong_consumer_config }}"
+    status_code: "201"
+    body_format: json
+  register: c_add
+  when: not consumer_exists
 
-# Update consumer object
-- name: Update kong consumer object
+- debug: var=c_add
+
+- debug: msg="{{ kong_consumer_config.username }} consumer object already exists - ({{ consumers.json.data|map(attribute='username')|join(',') }})"
+  when: consumer_exists
+
+## Note: Why remove "name" attribute from request body to update consumer object?
+##       Request fails with 409 status code if value of name in body matches existing name
+##       E.g
+##          < HTTP/1.1 409 Conflict
+##          {
+##            "message": "UNIQUE violation detected on '{name=\"svcAA\"}'",
+##            "code": 5,
+##            "name": "unique constraint violation",
+##            "fields": {
+##              "name": "svcAA"
+##            }
+##          }
+#
+#- name: Initialise kong_consumer_obj_update variable
+#  set_fact:
+#    kong_consumer_obj_update: {}
+#
+#- name: Set kong consumer object config for update
+#  set_fact:
+#    kong_consumer_obj_update: "{{ kong_consumer_obj_update|combine({ item.key: item.value })}}"
+#  when: item.key != 'name'
+#  with_dict: "{{ kong_consumer_config.consumer }}"
+
+- name: Update consumer object configured in kong
   uri:
-     url:    "{{ kong_admin_api_url }}/consumers/{{ kong_consumer_obj_username }}"
-     body:   "{{ lookup('file','/tmp/consumer.obj')|regex_replace('\n', '') }}"
-     method: PATCH
-     status_code: 200
-  register: updated
-  when: kong_consumer_obj_username in consumers.json.data|default([])|map(attribute='username') and not kong_delete_consumer_obj
+    url:    "{{ kong_admin_api_url|default('http://localhost:8001') }}/consumers/{{ kong_consumer_config.username }}"
+    method: PATCH
+    #body:   "{{ kong_consumer_obj_update }}"
+    body:   "{{ kong_consumer_config }}"
+    status_code: "200"
+    body_format: json
+  register: c_update
+  when: consumer_exists
 
-# Consumer Authentication credentials
-- name: Consumer Authentication Credentials
-  include: consumer_creds.yml
-  when: kong_consumer_obj_auth_creds|default([])
-
-# Consumer ACL Group
-- name: Consumer ACL Group
-  include: consumer_acl_groups.yml
-  when: kong_consumer_obj_acl_groups|default([])
+- debug: var=c_update

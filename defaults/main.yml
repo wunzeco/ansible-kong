@@ -157,6 +157,7 @@ kong_proxy_set_headers: {}                  # custom proxy headers to set at ngi
 ##  Route, Service, API, Plugin & Consumer objects
 ##  Note: Refer to https://getkong.org/docs/ for further information
 
+kong_use_old_config_format: true            # Set to false to use "new" config format
 kong_admin_api_url: "http://localhost:8001"
 
 ## API & Plugin Objects

@@ -1,0 +1,10 @@
+---
+
+# Delete consumer object
+- name: Delete kong consumer object
+  uri:
+     url:    "{{ kong_admin_api_url }}/consumers/{{ kong_consumer_obj_username }}"
+     method: DELETE
+     status_code: 204
+  register: deleted
+  when: kong_consumer_obj_username in consumers.json.data|default([])|map(attribute='username') and kong_delete_consumer_obj
