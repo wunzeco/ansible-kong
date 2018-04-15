@@ -35,7 +35,7 @@
   hosts: test-kitchen
 
   vars:
-    kong_version: 0.11.1
+    kong_version: 0.13.0
     kong_version_current: 0.0.0
     kong_prereqs: [ openssl, libpcre3, procps, perl ]
     kong_deb_pkg:     "kong-community-edition-{{ kong_version }}.{{ ansible_distribution_release }}.all.deb"

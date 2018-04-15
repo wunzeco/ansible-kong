@@ -1,0 +1,148 @@
+---
+- name: DEPRECATED | Kong Objects Configure
+  hosts: test-kitchen
+
+  vars:
+    kong_version: 0.13.0
+    kong_manage_init_script: true
+
+  pre_tasks:
+    - name: Install jq and curl
+      apt: name={{ item }} state=present
+      with_items: [ jq, curl ]
+      when: ansible_os_family|lower == 'debian'
+
+    - name: Install jq and curl
+      yum: name={{ item }} state=present
+      with_items: [ jq, curl ]
+      when: ansible_os_family|lower == 'redhat'
+
+  roles:
+    - role: ansible-kong            ## ADD serviceOne
+      kong_task: api
+      kong_api_obj_name: serviceOne
+      kong_api_obj_upstream_url: "https://service-upstream.ogonna.com/serviceOne/api"
+      kong_api_obj_uris: "/serviceOne"
+      kong_api_obj_strip_uri: true
+      kong_api_obj_preserve_host: true
+    - role: ansible-kong            ## ADD serviceTwo
+      kong_task: api
+      kong_api_obj_name: serviceTwo
+      kong_api_obj_upstream_url: "https://service-upstream.ogonna.com"
+      kong_api_obj_uris: "/serviceTwo"
+    - role: ansible-kong            ## UPDATE serviceTwo
+      kong_task: api
+      kong_api_obj_name: serviceTwo
+      kong_api_obj_upstream_url: "https://service-upstream.ogonna.com"
+      kong_api_obj_uris: "/serviceTwoUPDATED"
+      kong_api_obj_hosts: "service-upstream.ogonna.com"
+    - role: ansible-kong
+      kong_task: api
+      kong_api_obj_name: serviceThree
+      kong_api_obj_upstream_url: "https://service-upstream.ogonna.com"
+      kong_api_obj_uris: "/serviceThree"
+      kong_api_obj_preserve_host: true
+    - role: ansible-kong
+      kong_task: api
+      kong_api_obj_name: serviceThree
+      kong_api_obj_upstream_url: "https://service-upstream.ogonna.com"
+      kong_api_obj_uris: "/serviceThree"
+      kong_delete_api_obj: true
+    - role: ansible-kong
+      kong_task: api
+      kong_api_obj_name: serviceWithPlugins
+      kong_api_obj_upstream_url: "https://service-upstream.ogonna.com"
+      kong_api_obj_uris: "/serviceWithPlugins"
+      kong_api_obj_https_only: true
+      kong_api_obj_http_if_terminated: true
+      kong_api_obj_plugins:
+        - name: oauth2
+          consumer_id:
+          config_parameters:
+            - "config.enable_authorization_code=true"
+            - "config.scopes=email,phone,address"
+            - "config.mandatory_scope=true"
+        - name: cors
+          consumer_id:
+          config_parameters:
+            - "config.origins=*"
+
+            - "config.methods=GET, POST, PATCH, PUT, DELETE"
+            - "config.headers=Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Auth-Token, Access-Control-Allow-Origin, Authorization"
+            - "config.exposed_headers=X-Auth-Token"
+            - "config.credentials=true"
+            - "config.max_age=3600"
+    - role: ansible-kong          # update serviceWithPlugins api object to delete cors plugin
+      kong_task: api
+      kong_api_obj_name: serviceWithPlugins
+      kong_api_obj_upstream_url: "https://service-upstream.ogonna.com"
+      kong_api_obj_uris: "/serviceWithPlugins"
+      kong_api_obj_https_only: true
+      kong_api_obj_http_if_terminated: true
+      kong_api_obj_plugins:
+        - name: acl
+          config_parameters:
+            - "config.whitelist=groupOne, groupTwo"
+        - name: oauth2
+          consumer_id:
+          config_parameters:
+            - "config.enable_authorization_code=true"
+            - "config.scopes=email,phone,address"
+            - "config.mandatory_scope=true"
+        - name: basic-auth
+          config_parameters:
+            - "config.hide_credentials=true"
+    - role: ansible-kong
+      kong_task: consumer
+      kong_consumer_obj_username:   clientOne
+      kong_consumer_obj_custom_id:  consumer123
+      kong_consumer_obj_acl_groups: [ groupOne, groupTwo ]
+      kong_consumer_obj_auth_creds:
+        - plugin: oauth2
+          parameters:
+            name: auth-service
+            client_id: SOME-CLIENT-ID
+            client_secret: SOME-CLIENT-SECRET
+            redirect_uri: http://some-domain/endpoint/
+        - plugin: oauth2
+          parameters:
+            name: auth-master
+            client_id: ANOTHER-CLIENT-ID
+            client_secret: ANOTHER-CLIENT-SECRET
+            redirect_uri: http://another-domain/endpoint/
+        - plugin: basic-auth
+          parameters:
+            username: bob
+            password: bobSecret
+        - plugin: basic-auth
+          parameters:
+            username: jane
+            password: janeSecret
+        - plugin: key-auth
+          parameters:
+            key: "7aed36b073f94313b75005b6ba46c633"
+        - plugin: key-auth
+          parameters:
+            key: "c7faa3814c864d7d950d70f399cabffc"
+        - plugin: hmac-auth
+          parameters:
+            username: john
+        - plugin: hmac-auth
+          parameters:
+            username: flintstone
+            secret:   stoneSecret
+        - plugin: jwt
+          parameters:
+            key:       "5addde658a1b4b6e869d57d35dc8b1fd"
+            secret:    "30f8825a9f0e44a0bfb18f7dacf0783a"
+            algorithm: "HS256"
+        - plugin: jwt
+          parameters:
+            key: "c4221446f5d845f48bd473df8242924b"
+    - role: ansible-kong
+      kong_task: consumer
+      kong_consumer_obj_username: clientTwo
+    - role: ansible-kong
+      kong_task: consumer
+      kong_consumer_obj_username: clientTwo
+      kong_delete_consumer_obj: true

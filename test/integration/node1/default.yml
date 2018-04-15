@@ -3,7 +3,7 @@
   hosts: test-kitchen
 
   vars:
-    kong_version: 0.11.1
+    kong_version: 0.13.0
     kong_version_current: 0.0.0
     kong_host:  "{{ ansible_eth1.ipv4.address }}"
     kong_cassandra_host: "172.29.129.11"
@@ -31,7 +31,7 @@
   hosts: test-kitchen
 
   vars:
-    kong_version: 0.11.1
+    kong_version: 0.13.0
     kong_manage_init_script: true
 
   pre_tasks:
@@ -46,131 +46,82 @@
       when: ansible_os_family|lower == 'redhat'
 
   roles:
-    - role: ansible-kong            ## ADD serviceOne
-      kong_task: api
-      kong_api_obj_name: serviceOne
-      kong_api_obj_upstream_url: "https://service-upstream.ogonna.com/serviceOne/api"
-      kong_api_obj_uris: "/serviceOne"
-      kong_api_obj_strip_uri: true
-      kong_api_obj_preserve_host: true
-    - role: ansible-kong            ## ADD serviceTwo
-      kong_task: api
-      kong_api_obj_name: serviceTwo
-      kong_api_obj_upstream_url: "https://service-upstream.ogonna.com"
-      kong_api_obj_uris: "/serviceTwo"
-    - role: ansible-kong            ## UPDATE serviceTwo
-      kong_task: api
-      kong_api_obj_name: serviceTwo
-      kong_api_obj_upstream_url: "https://service-upstream.ogonna.com"
-      kong_api_obj_uris: "/serviceTwoUPDATED"
-      kong_api_obj_hosts: "service-upstream.ogonna.com"
-    - role: ansible-kong
-      kong_task: api
-      kong_api_obj_name: serviceThree
-      kong_api_obj_upstream_url: "https://service-upstream.ogonna.com"
-      kong_api_obj_uris: "/serviceThree"
-      kong_api_obj_preserve_host: true
-    - role: ansible-kong
-      kong_task: api
-      kong_api_obj_name: serviceThree
-      kong_api_obj_upstream_url: "https://service-upstream.ogonna.com"
-      kong_api_obj_uris: "/serviceThree"
-      kong_delete_api_obj: true
-    - role: ansible-kong
-      kong_task: api
-      kong_api_obj_name: serviceWithPlugins
-      kong_api_obj_upstream_url: "https://service-upstream.ogonna.com"
-      kong_api_obj_uris: "/serviceWithPlugins"
-      kong_api_obj_https_only: true
-      kong_api_obj_http_if_terminated: true
-      kong_api_obj_plugins:
-        - name: oauth2
-          consumer_id:
-          config_parameters:
-            - "config.enable_authorization_code=true"
-            - "config.scopes=email,phone,address"
-            - "config.mandatory_scope=true"
-        - name: cors
-          consumer_id:
-          config_parameters:
-            - "config.origins=*"
-
-            - "config.methods=GET, POST, PATCH, PUT, DELETE"
-            - "config.headers=Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Auth-Token, Access-Control-Allow-Origin, Authorization"
-            - "config.exposed_headers=X-Auth-Token"
-            - "config.credentials=true"
-            - "config.max_age=3600"
-    - role: ansible-kong          # update serviceWithPlugins api object to delete cors plugin
-      kong_task: api
-      kong_api_obj_name: serviceWithPlugins
-      kong_api_obj_upstream_url: "https://service-upstream.ogonna.com"
-      kong_api_obj_uris: "/serviceWithPlugins"
-      kong_api_obj_https_only: true
-      kong_api_obj_http_if_terminated: true
-      kong_api_obj_plugins:
-        - name: acl
-          config_parameters:
-            - "config.whitelist=groupOne, groupTwo"
-        - name: oauth2
-          consumer_id:
-          config_parameters:
-            - "config.enable_authorization_code=true"
-            - "config.scopes=email,phone,address"
-            - "config.mandatory_scope=true"
-        - name: basic-auth
-          config_parameters:
-            - "config.hide_credentials=true"
-    - role: ansible-kong
+    - role: ansible-kong            ## ADD service obj for svcOne
+      kong_task: service
+      kong_service_config:
+        service:
+          name: svcOne
+          url: "https://service-upstream.ogonna.com/svcOne/api"
+        routes:
+          - paths: [ "/svcOnePlus" ]
+            hosts: [ "a.com", "og.com" ]
+          - paths: [ "/svcOne" ]
+      kong_delete_service_obj: false
+    - role: ansible-kong            ## ADD plugin obj for svcOne service
+      kong_task: plugin
+      kong_plugin_config:
+        name: rate-limiting
+        service: svcOne
+        #consumer: clientOne
+        config: { minute: 20, hour: 500 }
+      kong_delete_plugin_obj: false
+    - role: ansible-kong            ## ADD plugin obj
+      kong_task: plugin
+      kong_plugin_config:
+        name: rate-limiting
+        config: { minute: 50, hour: 500 }
+      kong_delete_plugin_obj: false
+    - role: ansible-kong            ## UPDATE plugin obj
+      kong_task: plugin
+      kong_plugin_config:
+        name: rate-limiting
+        config: { minute: 100, hour: 500 }
+      kong_delete_plugin_obj: false
+    #- role: ansible-kong            ## DELETE plugin obj for svcOne service
+    #  kong_task: plugin
+    #  kong_plugin_config:
+    #    name: rate-limiting
+    #    service: svcOne
+    #    config: { minute: 20, hour: 500 }
+    #  kong_delete_plugin_obj: true
+    #- role: ansible-kong            ## DELETE service obj for svcOne
+    #  kong_task: service
+    #  kong_service_config:
+    #    service:
+    #      name: svcOne
+    #  kong_delete_service_obj: true
+    - role: ansible-kong            ## ADD consumer obj for consumerOne
       kong_task: consumer
-      kong_consumer_obj_username:   clientOne
-      kong_consumer_obj_custom_id:  consumer123
-      kong_consumer_obj_acl_groups: [ groupOne, groupTwo ]
-      kong_consumer_obj_auth_creds:
-        - plugin: oauth2
-          parameters:
-            name: auth-service
-            client_id: SOME-CLIENT-ID
-            client_secret: SOME-CLIENT-SECRET
-            redirect_uri: http://some-domain/endpoint/
-        - plugin: oauth2
-          parameters:
-            name: auth-master
-            client_id: ANOTHER-CLIENT-ID
-            client_secret: ANOTHER-CLIENT-SECRET
-            redirect_uri: http://another-domain/endpoint/
-        - plugin: basic-auth
-          parameters:
-            username: bob
-            password: bobSecret
-        - plugin: basic-auth
-          parameters:
-            username: jane
-            password: janeSecret
-        - plugin: key-auth
-          parameters:
-            key: "7aed36b073f94313b75005b6ba46c633"
-        - plugin: key-auth
-          parameters:
-            key: "c7faa3814c864d7d950d70f399cabffc"
-        - plugin: hmac-auth
-          parameters:
-            username: john
-        - plugin: hmac-auth
-          parameters:
-            username: flintstone
-            secret:   stoneSecret
-        - plugin: jwt
-          parameters:
-            key:       "5addde658a1b4b6e869d57d35dc8b1fd"
-            secret:    "30f8825a9f0e44a0bfb18f7dacf0783a"
-            algorithm: "HS256"
-        - plugin: jwt
-          parameters:
-            key: "c4221446f5d845f48bd473df8242924b"
-    - role: ansible-kong
+      kong_consumer_config:
+        username: consumerOne
+        custom_id: con-1111
+      kong_delete_consumer_obj: false
+      kong_use_old_config_format: false
+    - role: ansible-kong            ## ADD consumer obj for consumerTwo
       kong_task: consumer
-      kong_consumer_obj_username: clientTwo
-    - role: ansible-kong
+      kong_consumer_config:
+        username: consumerTwo
+        custom_id: con-2222
+      kong_delete_consumer_obj: false
+      kong_use_old_config_format: false
+    - role: ansible-kong            ## ADD consumer obj for consumerThree
       kong_task: consumer
-      kong_consumer_obj_username: clientTwo
+      kong_consumer_config:
+        username: consumerThree
+      kong_delete_consumer_obj: false
+      kong_use_old_config_format: false
+    - role: ansible-kong            ## UPDATE consumer obj for consumerOne
+      kong_task: consumer
+      kong_consumer_config:
+        username: consumerOne
+        custom_id: con-1001
+      kong_delete_consumer_obj: false
+      kong_use_old_config_format: false
+    - role: ansible-kong            ## DELETE consumer obj for consumerTwo
+      kong_task: consumer
+      kong_consumer_config:
+        username: consumerTwo
       kong_delete_consumer_obj: true
+      kong_use_old_config_format: false
+
+- include: roles/ansible-kong/test/integration/node1/deprecated-config-format.yml
