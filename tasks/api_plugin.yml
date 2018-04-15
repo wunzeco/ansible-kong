@@ -55,7 +55,6 @@
 - name: Delete kong plugins from api object | Plugins
   uri:
      url:    "{{ kong_admin_api_url }}/apis/{{ kong_api_obj_name }}/plugins/{{ lookup('file', '/tmp/' + item.name + '.id') }}"
-     body:   "{{ lookup('file','/tmp/' + item.name + '_plugin.obj')|regex_replace('\n', '') }}"
      method: DELETE
      status_code: 204
   with_items: "{{ api_plugins.json.data|default([]) }}"
