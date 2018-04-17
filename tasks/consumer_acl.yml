@@ -1,0 +1,30 @@
+---
+# ACL groups
+
+- debug: var=outer_item.parameters.groups
+
+- name: Get list of acl groups associated with consumer
+  uri:
+    url: "{{ kong_admin_api_url }}/consumers/{{ kong_consumer_config.username }}/acls"
+  register: current_acl_groups
+
+#- debug: var=current_acl_groups
+
+- name: Associate acl group with consumer
+  uri:
+     url:    "{{ kong_admin_api_url }}/consumers/{{ kong_consumer_config.username }}/acls"
+     body:   "group={{ item }}"
+     method: POST
+     status_code: 201
+  with_items: "{{ outer_item.parameters.groups }}"
+  register: created
+  when: not item in current_acl_groups.json.data|map(attribute='group')|list
+
+- name: Dissociate acl group from consumer
+  uri:
+     url:    "{{ kong_admin_api_url }}/consumers/{{ kong_consumer_config.username }}/acls/{{ item.id }}"
+     method: DELETE
+     status_code: 204
+  with_items: "{{ current_acl_groups.json.data|default([]) }}"
+  register: deleted
+  when: not item.group in outer_item.parameters.groups

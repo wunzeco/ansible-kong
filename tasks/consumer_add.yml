@@ -9,11 +9,19 @@
     consumer_exists: true
   when: kong_consumer_config.username in consumers.json.data|map(attribute='username')
 
+- name: Create temp consumer object request body file
+  template:
+    src: consumer_obj.j2
+    dest: /tmp/{{ kong_consumer_config.username }}_consumer.json
+  delegate_to: 127.0.0.1
+  become: false
+
 - name: Add consumer object to kong
   uri:
     url:    "{{ kong_admin_api_url|default('http://localhost:8001') }}/consumers/"
     method: POST
-    body:   "{{ kong_consumer_config }}"
+    #body:   "{{ kong_consumer_config }}"
+    body:   "{{ lookup('file','/tmp/' + kong_consumer_config.username + '_consumer.json') }}"
     status_code: "201"
     body_format: json
   register: c_add
@@ -24,38 +32,23 @@
 - debug: msg="{{ kong_consumer_config.username }} consumer object already exists - ({{ consumers.json.data|map(attribute='username')|join(',') }})"
   when: consumer_exists
 
-## Note: Why remove "name" attribute from request body to update consumer object?
-##       Request fails with 409 status code if value of name in body matches existing name
-##       E.g
-##          < HTTP/1.1 409 Conflict
-##          {
-##            "message": "UNIQUE violation detected on '{name=\"svcAA\"}'",
-##            "code": 5,
-##            "name": "unique constraint violation",
-##            "fields": {
-##              "name": "svcAA"
-##            }
-##          }
-#
-#- name: Initialise kong_consumer_obj_update variable
-#  set_fact:
-#    kong_consumer_obj_update: {}
-#
-#- name: Set kong consumer object config for update
-#  set_fact:
-#    kong_consumer_obj_update: "{{ kong_consumer_obj_update|combine({ item.key: item.value })}}"
-#  when: item.key != 'name'
-#  with_dict: "{{ kong_consumer_config.consumer }}"
-
 - name: Update consumer object configured in kong
   uri:
     url:    "{{ kong_admin_api_url|default('http://localhost:8001') }}/consumers/{{ kong_consumer_config.username }}"
     method: PATCH
-    #body:   "{{ kong_consumer_obj_update }}"
-    body:   "{{ kong_consumer_config }}"
+    #body:   "{{ kong_consumer_config }}"
+    body:   "{{ lookup('file','/tmp/' + kong_consumer_config.username + '_consumer.json') }}"
     status_code: "200"
     body_format: json
   register: c_update
   when: consumer_exists
 
 - debug: var=c_update
+
+
+# Configure plugins for Consumer
+- name: Consumer Plugin Config | {{ outer_item.plugin|upper }}
+  include: consumer_{{ outer_item.name }}.yml
+  with_items: "{{ kong_consumer_config.plugins|default([]) }}"
+  loop_control:
+    loop_var: outer_item

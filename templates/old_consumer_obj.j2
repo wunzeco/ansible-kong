@@ -1,0 +1,5 @@
+username={{ kong_consumer_obj_username }}
+
+{% if kong_consumer_obj_custom_id|default(false) %}
+&custom_id={{ kong_consumer_obj_custom_id }}
+{% endif %}

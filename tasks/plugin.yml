@@ -55,6 +55,7 @@
   set_fact:
     matched_plugin_id: "{{ lookup('file', '/tmp/matched_plugin.id') }}"
 
+- debug: msg="Plugin - {{ kong_plugin_config.name }}"
 
 - set_fact: _cmd=add
 
