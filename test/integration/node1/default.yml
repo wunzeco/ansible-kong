@@ -222,6 +222,18 @@
           - name: key-auth
             parameters:
               key: "5750c67b5dc64888aa3b7f08023adb31"
+          - name: oauth2
+            parameters:
+              name: amazing-service
+              client_id: AMAZING-CLIENT-ID
+              client_secret: AMAZING-CLIENT-SECRET
+              redirect_uri: http://amazing-domain/endpoint/
+          - name: oauth2
+            parameters:
+              name: awe-some-service
+              client_id: AWESOME-CLIENT-ID
+              client_secret: AWESOME-CLIENT-SECRET
+              redirect_uri: http://awesome-domain/endpoint/
 
 
     #- role: ansible-kong
@@ -253,12 +265,6 @@
     #      parameters:
     #        username: jane
     #        password: janeSecret
-    #    - plugin: key-auth
-    #      parameters:
-    #        key: "7aed36b073f94313b75005b6ba46c633"
-    #    - plugin: key-auth
-    #      parameters:
-    #        key: "c7faa3814c864d7d950d70f399cabffc"
     #    - plugin: hmac-auth
     #      parameters:
     #        username: john
