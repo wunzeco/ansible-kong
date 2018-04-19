@@ -80,7 +80,7 @@
       kong_service_config:
         service:
           name: svcTwo
-          url: "https://service-upstream.ogonna.com/svc-two"
+          url: "https://service-upstream.ogonna.com/svc-two-new"
         routes:
           - paths: [ "/svc-two-updated" ]
             hosts: [ "awe.some.com" ]
@@ -90,6 +90,91 @@
       kong_service_config:
         service:
           name: svcThree
+    #****************#
+    #    PLUGINS     #
+    #****************#
+    - role: ansible-kong            ## ADD rate-limiting plugin obj (global)
+      kong_task: plugin
+      kong_plugin_config:
+        name: rate-limiting
+        config: { minute: 50, hour: 500 }
+    - role: ansible-kong            ## UPDATE rate-limiting plugin obj (global)
+      kong_task: plugin
+      kong_plugin_config:
+        name: rate-limiting
+        config: { minute: 100, hour: 500 }
+      kong_delete_plugin_obj: false
+    - role: ansible-kong            ## ADD rate-limiting plugin obj for svcOne service and consumerOne consumer
+      kong_task: plugin
+      kong_plugin_config:
+        name: rate-limiting
+        service: svcOne
+        consumer: consumerOne
+        config: { minute: 20, hour: 500 }
+      kong_delete_plugin_obj: false
+    - role: ansible-kong            ## DELETE rate-limiting plugin obj for svcOne service and consumerOne consumer
+      kong_task: plugin
+      kong_plugin_config:
+        name: rate-limiting
+        service: svcOne
+        consumer: consumerOne
+        config: { minute: 20, hour: 500 }
+      kong_delete_plugin_obj: true
+    - role: ansible-kong            ## ADD plugin obj for svcOne service
+      kong_task: plugin
+      kong_plugin_config:
+        name: oauth2
+        service: svcOne
+        config:
+          enable_authorization_code: true
+          scopes: "email,phone,address"
+          mandatory_scope: true
+    - role: ansible-kong            ## ADD plugin obj for svcOne service
+      kong_task: plugin
+      kong_plugin_config:
+        name: cors
+        service: svcOne
+        config:
+          origins: "*"
+          methods: "GET, POST, PATCH, PUT, DELETE"
+          headers: "Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Auth-Token, Access-Control-Allow-Origin, Authorization"
+          exposed_headers: "X-Auth-Token"
+          credentials: true
+          max_age: 3600
+    - role: ansible-kong            ## ADD plugin obj for svcOne service and consumerOne consumer
+      kong_task: plugin
+      kong_plugin_config:
+        name: acl
+        service: svcOne
+        config: { whitelist: "groupOne, groupTwo" }
+    - role: ansible-kong            ## ADD plugin obj for svcTwo service
+      kong_task: plugin
+      kong_plugin_config:
+        name: oauth2
+        service: svcTwo
+        config:
+          enable_authorization_code: true
+          scopes: "email,phone,address"
+          mandatory_scope: true
+    - role: ansible-kong            ## ADD plugin obj for svcTwo service
+      kong_task: plugin
+      kong_plugin_config:
+        name: basic-auth
+        service: svcTwo
+        config: { hide_credentials: true }
+    - role: ansible-kong            ## ADD plugin obj for svcTwo service
+      kong_task: plugin
+      kong_plugin_config:
+        name: key-auth
+        service: svcTwo
+        config: { key_names: X-Api-Key }
+    - role: ansible-kong            ## ADD plugin obj for svcTwo service
+      kong_task: plugin
+      kong_plugin_config:
+        name: acl
+        service: svcTwo
+        config: { whitelist: svcTwo-user-group }
+
     #*****************#
     #    CONSUMERS    #
     #*****************#
@@ -122,91 +207,7 @@
       kong_consumer_config:
         username: consumerTwo
       kong_delete_consumer_obj: true
-    #****************#
-    #    PLUGINS     #
-    #****************#
-    - role: ansible-kong            ## ADD rate-limiting plugin obj for svcOne service and consumerOne consumer
-      kong_task: plugin
-      kong_plugin_config:
-        name: rate-limiting
-        service: svcOne
-        consumer: consumerOne
-        config: { minute: 20, hour: 500 }
-    - role: ansible-kong            ## ADD rate-limiting plugin obj (global)
-      kong_task: plugin
-      kong_plugin_config:
-        name: rate-limiting
-        config: { minute: 50, hour: 500 }
-      kong_delete_plugin_obj: false
-    - role: ansible-kong            ## UPDATE rate-limiting plugin obj (global)
-      kong_task: plugin
-      kong_plugin_config:
-        name: rate-limiting
-        config: { minute: 100, hour: 500 }
-      kong_delete_plugin_obj: false
-    - role: ansible-kong            ## DELETE rate-limiting plugin obj for svcOne service and consumerOne consumer
-      kong_task: plugin
-      kong_plugin_config:
-        name: rate-limiting
-        service: svcOne
-        consumer: consumerOne
-        config: { minute: 20, hour: 500 }
-      kong_delete_plugin_obj: true
-    - role: ansible-kong            ## ADD plugin obj for svcOne service and consumerOne consumer
-      kong_task: plugin
-      kong_plugin_config:
-        name: oauth2
-        service: svcOne
-        config:
-          enable_authorization_code: true
-          scopes: "email,phone,address"
-          mandatory_scope: true
-    - role: ansible-kong            ## ADD plugin obj for svcOne service and consumerOne consumer
-      kong_task: plugin
-      kong_plugin_config:
-        name: cors
-        service: svcOne
-        config:
-          origins: "*"
-          methods: "GET, POST, PATCH, PUT, DELETE"
-          headers: "Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Auth-Token, Access-Control-Allow-Origin, Authorization"
-          exposed_headers: "X-Auth-Token"
-          credentials: true
-          max_age: 3600
-    - role: ansible-kong            ## ADD plugin obj for svcOne service and consumerOne consumer
-      kong_task: plugin
-      kong_plugin_config:
-        name: acl
-        service: svcOne
-        config: { whitelist: "groupOne, groupTwo" }
-    - role: ansible-kong            ## ADD plugin obj for svcTwo service
-      kong_task: plugin
-      kong_plugin_config:
-        name: oauth2
-        service: svcTwo
-        config:
-          enable_authorization_code: true
-          scopes: "email,phone,address"
-          mandatory_scope: true
-    - role: ansible-kong            ## ADD plugin obj for svcTwo service (global)
-      kong_task: plugin
-      kong_plugin_config:
-        name: basic-auth
-        config: { hide_credentials: true }
-    - role: ansible-kong            ## ADD plugin obj for svcTwo service (global)
-      kong_task: plugin
-      kong_plugin_config:
-        name: key-auth
-        service: svcTwo
-        config: { key_names: X-Api-Key }
-    - role: ansible-kong            ## ADD plugin obj for svcTwo service (global)
-      kong_task: plugin
-      kong_plugin_config:
-        name: acl
-        service: svcTwo
-        config: { whitelist: svcTwo-user-group }
-
-    - role: ansible-kong            ## ADD consumer obj for consumerThree
+    - role: ansible-kong            ## Update consumer obj for consumerThree with plugin configs
       kong_use_old_config_format: false
       kong_task: consumer
       kong_consumer_config:
