@@ -43,9 +43,9 @@ describe file("/etc/init.d/kong") do
   it { should be_owned_by 'root' }
 end
 
-describe file("/etc/rc2.d/S20kong") do
-  it { should be_symlink }
-  it { should be_linked_to '../init.d/kong' }
+describe service('kong') do
+  it { should be_enabled }
+  it { should be_running }
 end
 
 describe command("/usr/local/bin/kong version") do
