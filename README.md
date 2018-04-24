@@ -36,6 +36,9 @@ information on Routes, Services, Consumer and Plugins configuration.
 ```
 - hosts: my-kong-host
 
+  vars:
+    kong_use_old_config_format: false
+
   roles:
     #****************#
     #    SERVICES    #

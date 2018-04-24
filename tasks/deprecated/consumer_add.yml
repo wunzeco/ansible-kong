@@ -32,5 +32,5 @@
 
 # Consumer ACL Group
 - name: Consumer ACL Group
-  include: consumer_acl_groups.yml
+  include: "deprecated/consumer_acl_groups.yml"
   when: kong_consumer_obj_acl_groups|default([])
