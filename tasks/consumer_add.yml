@@ -1,36 +1,54 @@
 ---
 
-- name: Create tmp file for request data required to configure kong consumer object
-  template: src=consumer_obj.j2 dest=/tmp/consumer.obj
+- name: Initialise consumer_exists variable
+  set_fact:
+    consumer_exists: false
+
+- name: Set consumer_exists if consumer object already exists
+  set_fact:
+    consumer_exists: true
+  when: kong_consumer_config.username in consumers.json.data|map(attribute='username')
+
+- name: Create temp consumer object request body file
+  template:
+    src: consumer_obj.j2
+    dest: /tmp/{{ kong_consumer_config.username }}_consumer.json
   delegate_to: 127.0.0.1
   become: false
 
-# Create consumer object
-- name: Create kong consumer object
+- name: Add consumer object to kong
   uri:
-     url:    "{{ kong_admin_api_url }}/consumers/"
-     body:   "{{ lookup('file','/tmp/consumer.obj')|regex_replace('\n', '') }}"
-     method: POST
-     status_code: 201
-  register: new_consumers
-  when: not kong_consumer_obj_username in consumers.json.data|default([])|map(attribute='username') and not kong_delete_consumer_obj
+    url:    "{{ kong_admin_api_url|default('http://localhost:8001') }}/consumers/"
+    method: POST
+    #body:   "{{ kong_consumer_config }}"
+    body:   "{{ lookup('file','/tmp/' + kong_consumer_config.username + '_consumer.json') }}"
+    status_code: "201"
+    body_format: json
+  register: c_add
+  when: not consumer_exists
 
-# Update consumer object
-- name: Update kong consumer object
+- debug: var=c_add
+
+- debug: msg="{{ kong_consumer_config.username }} consumer object already exists - ({{ consumers.json.data|map(attribute='username')|join(',') }})"
+  when: consumer_exists
+
+- name: Update consumer object configured in kong
   uri:
-     url:    "{{ kong_admin_api_url }}/consumers/{{ kong_consumer_obj_username }}"
-     body:   "{{ lookup('file','/tmp/consumer.obj')|regex_replace('\n', '') }}"
-     method: PATCH
-     status_code: 200
-  register: updated
-  when: kong_consumer_obj_username in consumers.json.data|default([])|map(attribute='username') and not kong_delete_consumer_obj
+    url:    "{{ kong_admin_api_url|default('http://localhost:8001') }}/consumers/{{ kong_consumer_config.username }}"
+    method: PATCH
+    #body:   "{{ kong_consumer_config }}"
+    body:   "{{ lookup('file','/tmp/' + kong_consumer_config.username + '_consumer.json') }}"
+    status_code: "200"
+    body_format: json
+  register: c_update
+  when: consumer_exists
 
-# Consumer Authentication credentials
-- name: Consumer Authentication Credentials
-  include: consumer_creds.yml
-  when: kong_consumer_obj_auth_creds|default([])
+- debug: var=c_update
 
-# Consumer ACL Group
-- name: Consumer ACL Group
-  include: consumer_acl_groups.yml
-  when: kong_consumer_obj_acl_groups|default([])
+
+# Configure plugins for Consumer
+- name: Consumer Plugin Config | {{ outer_item.plugin|upper }}
+  include: consumer_{{ outer_item.name }}.yml
+  with_items: "{{ kong_consumer_config.plugins|default([]) }}"
+  loop_control:
+    loop_var: outer_item

@@ -1,5 +1,11 @@
-username={{ kong_consumer_obj_username }}
-
-{% if kong_consumer_obj_custom_id|default(false) %}
-&custom_id={{ kong_consumer_obj_custom_id }}
+{# The purpose of this file is to compute a valid json request body #}
+{# Note: Why the "if consumer_obj.update()" lines? Looks strange!   #}
+{#       Ans: A workaround due to "set" tag being limited to local variable scope only. #}
+{% set attributes = [ 'username', 'custom_id' ] %}
+{% set consumer_obj = {} %}
+{% for key, value in kong_consumer_config|dictsort %}
+{% if key in attributes %}
+{% if consumer_obj.update({key: value}) %}{% endif %}
 {% endif %}
+{% endfor %}
+{{ consumer_obj|to_nice_json }}

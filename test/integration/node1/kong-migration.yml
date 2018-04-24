@@ -19,9 +19,3 @@
     PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
   ignore_errors: true
   when: v.stdout|match(kong_version_current) and kong_version|version_compare(kong_version_current, '>')
-
-- name: Uninstall kong {{ kong_version_current }} | Debian
-  apt:
-    name: kong={{ kong_version_current }}
-    state: absent
-  when: ansible_os_family|lower == 'debian'

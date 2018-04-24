@@ -1,0 +1,68 @@
+---
+
+- name: Get list of route objects configured in kong associated with service
+  uri:
+    url: "{{ kong_admin_api_url|default('http://localhost:8001') }}/services/{{ kong_service_config.service.name }}/routes"
+  register: routes
+
+#- debug: var=routes
+
+# route = hosts + paths + method + protocols
+
+# Note: Why check for existing route objects?
+#   - To prevent configuring duplicate (and redundant) route objects
+#   - Kong will happy create route objects with exactly same properties for a service.
+#     In other words, redundant routes that add no value but could be a housecleaning
+#     nightmare.
+#
+# It is essential to check for existing routes configured for a service so as not to
+# attempt adding the routes again. Unfortunately, there isn't a single easily
+# identifiable property in the route object (e.g. name) to facilitate matching routes
+# already configured.
+# The approach taken here is to compare hosts, paths, methods and protocols properties
+# of the config item against all routes associated to the service since a combination
+# of these properties match a route.
+#
+# The steps below is to prevent duplicate routes.
+
+- name: Find ids of existing routes that match route object config
+  template:
+    src: matched_route_ids.j2
+    dest: /tmp/matched_route_ids.result
+  delegate_to: 127.0.0.1
+  become: false
+
+- name: Set ids of existing routes that matche route object config
+  set_fact: matched_route_ids="{{ lookup('file', '/tmp/matched_route_ids.result') }}"
+
+- name: Initialise route_exists variable
+  set_fact:
+    route_exists: "{% if matched_route_ids != '' %}{{ true }}{% else %}{{ false }}{% endif %}"
+
+- debug: var=matched_route_ids
+- debug: var=route_exists
+
+- name: Include service id in route obj config
+  set_fact:
+    _kong_route_obj: "{{ outer_item|combine({'service': {'id': route_service_id}}) }}"
+
+- debug: var=_kong_route_obj
+
+- name: Add new route object to kong service object
+  uri:
+    url:    "{{ kong_admin_api_url|default('http://localhost:8001') }}/routes/"
+    method: POST
+    body:   "{{ _kong_route_obj }}"
+    status_code: "201"
+    body_format: json
+  register: route
+  when: not route_exists
+
+- debug: var=route
+
+- debug: msg="Similar route object already exists for {{ kong_service_config.service.name }} service"
+  when: route_exists
+
+# TODO:
+#- name: Kong Plugin for Route object
+#  include: plugin.yml

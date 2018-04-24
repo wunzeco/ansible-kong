@@ -1,0 +1,19 @@
+{# The purpose of this template is to compute route ids to delete #}
+{% set matched_route_ids = [] %}
+{% for r in all_routes.json.data %}
+{% for key, value in r|dictsort %}
+{% for config in kong_service_config.routes|default([]) %}
+{% if key in config.keys() and config[key] == value %}
+{# Note: Can't use 'set' tag because variable assignment with set only has local scope #}
+{% if matched_route_ids.append(r.id) %}{% endif %}
+{% endif %}
+{% endfor %}
+{% endfor %}
+{% endfor %}
+{% set all_route_ids = all_routes.json.data|map(attribute='id')|list %}
+{% if kong_delete_service_obj %}
+{% set unmatched_route_ids = all_route_ids %}
+{% else %}
+{% set unmatched_route_ids = all_route_ids|difference(matched_route_ids) %}
+{% endif %}
+{{ unmatched_route_ids|join(' ') }}

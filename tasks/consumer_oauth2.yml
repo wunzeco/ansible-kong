@@ -1,0 +1,73 @@
+---
+# oauth2
+
+# WARNING: oauth2 plugin expects unique client_id and client_secret tuple
+
+#- debug: var=outer_item
+
+# Get list of auth creds
+- name: Get list of authentication credential configs for consumer | {{ outer_item.name }}
+  uri:
+    url: "{{ kong_admin_api_url }}/consumers/{{ kong_consumer_config.username }}/{{ outer_item.name }}"
+  register: current_oauth2_creds
+
+#- debug: var=current_oauth2_creds
+
+- name: md5 hash client_id and client_secrets for current credentials | {{ outer_item.name }}
+  set_fact: md5={{ (item.client_id + item.client_secret)|hash('md5') }}
+  with_items: "{{ current_oauth2_creds.json.data|default([]) }}"
+  register: creds_hash
+
+- name: md5 hash client_id and client_secret for credential to configure | {{ outer_item.name }}
+  set_fact: new_md5={{ (outer_item.parameters.client_id + outer_item.parameters.client_secret)|hash('md5') }}
+
+- name: Create tmp file for request data required to configure consumer authentication credentials
+  template: src=consumer_auth_creds_obj.j2 dest=/tmp/{{ outer_item.name }}_{{ new_md5 }}_creds.obj
+  delegate_to: 127.0.0.1
+  become: false
+
+- name: Create authentication credentials for consumer | {{ outer_item.name }}
+  uri:
+     url:    "{{ kong_admin_api_url }}/consumers/{{ kong_consumer_config.username }}/{{ outer_item.name }}"
+     body:   "{{ outer_item.parameters }}"
+     method: POST
+     status_code: 201
+     body_format: json
+  register: created
+  when: not new_md5 in creds_hash.results|map(attribute='ansible_facts.md5')|list
+
+- name: Get authentication credentials id | {{ outer_item.name }}
+  template:
+    src:  consumer_auth_id.j2
+    dest: /tmp/{{ outer_item.name }}_{{ (item.client_id + item.client_secret)|hash('md5') }}.id
+  with_items: "{{ current_oauth2_creds.json.data|default([]) }}"
+  delegate_to: 127.0.0.1
+  become: false
+
+- name: Update authentication credentials for consumer | {{ outer_item.name }}
+  uri:
+     url:    "{{ kong_admin_api_url }}/consumers/{{ kong_consumer_config.username }}/{{ outer_item.name }}/{{ lookup('file','/tmp/' + outer_item.name + '_' + new_md5 + '.id') }}"
+     body:   "{{ outer_item.parameters }}"
+     method: PATCH
+     status_code: 200
+     body_format: json
+  register: updated
+  when: new_md5 in creds_hash.results|map(attribute='ansible_facts.md5')|list
+
+- name: Identify authentication credentials configs for oauth2 credentials
+  set_fact: md5={{ (item.parameters.client_id + item.parameters.client_secret)|hash('md5') }}
+  with_items: "{{ kong_consumer_config.plugins }}"
+  register: r_oauth2
+  when: item.name == outer_item.name
+
+- name: Set list of md5 hashes of oauth2 creds objects
+  set_fact: oauth2_md5_list="{{ r_oauth2.results|selectattr('ansible_facts', 'defined')|map(attribute='ansible_facts.md5')|list }}"
+
+- name: Delete authentication credentials for consumer | {{ outer_item.name }}
+  uri:
+     url:    "{{ kong_admin_api_url }}/consumers/{{ kong_consumer_config.username }}/{{ outer_item.name }}/{{ lookup('file','/tmp/' + outer_item.name + '_' + item + '.id') }}"
+     method: DELETE
+     status_code: 204
+  with_items: "{{ creds_hash.results|map(attribute='ansible_facts.md5')|list }}"
+  register: deleted
+  when: not item in oauth2_md5_list

@@ -4,11 +4,11 @@ Kong
 This role installs and configures Kong.
 
 Please refer to [Kong documentation](https://getkong.org/docs/) for further
-information on API, Consumer and Plugins configuration.
+information on Routes, Services, API, Consumer and Plugins configuration.
 
 > *WARNING:*
-> 
->     -  Support for v0.8.x and v0.9.x deprecated!!
+>
+>     -  Support for v0.10.x removed!!
 
 
 ## Example
@@ -19,7 +19,7 @@ information on API, Consumer and Plugins configuration.
 - hosts: konghost
 
   vars:
-    kong_version: 0.11.1
+    kong_version: 0.13.0
 	kong_cassandra_host: <my_cassandra_ip_or_fqdn>
 
   roles:
@@ -81,36 +81,36 @@ information on API, Consumer and Plugins configuration.
       kong_consumer_obj_custom_id:  consumer123      # Optional
       kong_consumer_obj_acl_groups: [ groupOne, groupTwo ]
       kong_consumer_obj_auth_creds:
-        - plugin: oauth2 
+        - plugin: oauth2
           parameters:
             name: auth-service
             client_id: SOME-CLIENT-ID
             client_secret: SOME-CLIENT-SECRET
             redirect_uri: http://some-domain/endpoint/
-        - plugin: oauth2 
+        - plugin: oauth2
           parameters:
             name: auth-master
             client_id: ANOTHER-CLIENT-ID
             client_secret: ANOTHER-CLIENT-SECRET
             redirect_uri: http://another-domain/endpoint/
-        - plugin: basic-auth 
+        - plugin: basic-auth
           parameters:
             username: bob
             password: bobSecret
-        - plugin: basic-auth 
+        - plugin: basic-auth
           parameters:
             username: jane
             password: janeSecret
-        - plugin: key-auth 
+        - plugin: key-auth
           parameters:
             key: "7aed36b073f94313b75005b6ba46c633"
-        - plugin: key-auth 
+        - plugin: key-auth
           parameters:
             key: "c7faa3814c864d7d950d70f399cabffc"
-        - plugin: hmac-auth 
+        - plugin: hmac-auth
           parameters:
             username: john
-        - plugin: hmac-auth 
+        - plugin: hmac-auth
           parameters:
             username: flintstone
             secret:   stoneSecret

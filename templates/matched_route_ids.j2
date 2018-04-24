@@ -1,0 +1,11 @@
+{# The purpose of this template is to compute route ids of routes that match attributes of route to configure #}
+{% for r in routes.json.data %}
+{% set route_ids = [] %}
+{% for key, value in r|dictsort %}
+{% if key in outer_item.keys() and outer_item[key] == value %}
+{# Note: Can't use 'set' tag because variable assignment with set only has local scope #}
+{% if route_ids.append(r.id) %}{% endif %}
+{% endif %}
+{% endfor %}
+{% if route_ids|length == outer_item.keys()|length %}{{ r.id }}{% endif %}
+{% endfor %}

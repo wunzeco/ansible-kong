@@ -1,0 +1,36 @@
+---
+
+- name: Create tmp file for request data required to configure kong consumer object
+  template: src=old_consumer_obj.j2 dest=/tmp/consumer.obj
+  delegate_to: 127.0.0.1
+  become: false
+
+# Create consumer object
+- name: Create kong consumer object
+  uri:
+     url:    "{{ kong_admin_api_url }}/consumers/"
+     body:   "{{ lookup('file','/tmp/consumer.obj')|regex_replace('\n', '') }}"
+     method: POST
+     status_code: 201
+  register: new_consumers
+  when: not kong_consumer_obj_username in consumers.json.data|default([])|map(attribute='username') and not kong_delete_consumer_obj
+
+# Update consumer object
+- name: Update kong consumer object
+  uri:
+     url:    "{{ kong_admin_api_url }}/consumers/{{ kong_consumer_obj_username }}"
+     body:   "{{ lookup('file','/tmp/consumer.obj')|regex_replace('\n', '') }}"
+     method: PATCH
+     status_code: 200
+  register: updated
+  when: kong_consumer_obj_username in consumers.json.data|default([])|map(attribute='username') and not kong_delete_consumer_obj
+
+# Consumer Authentication credentials
+- name: Consumer Authentication Credentials
+  include: consumer_creds.yml
+  when: kong_consumer_obj_auth_creds|default([])
+
+# Consumer ACL Group
+- name: Consumer ACL Group
+  include: consumer_acl_groups.yml
+  when: kong_consumer_obj_acl_groups|default([])

@@ -6,9 +6,6 @@ provisioner:
   name: ansible_playbook
   hosts: test-kitchen
   requirements_path: requirements.yml
-  require_pip: true
-  require_ansible_repo: false
-  ansible_version:  2.3.2.0
   ansible_verbose:  false
   ansible_verbosity: 2
   ansible_diff: true
@@ -19,7 +16,10 @@ provisioner:
 platforms:
   - name: ubuntu-14.04
     driver:
-      box: bento/ubuntu-14.04
+      box: ubuntu/trusty64
+  #- name: ubuntu-16.04
+  #  driver:
+  #    box: ubuntu/xenial64
   - name: centos-7.2
     driver:
       box: bento/centos-7.2

@@ -1,0 +1,15 @@
+---
+
+- name: Initialise plugin_exists variable
+  set_fact:
+    plugin_exists: "{% if matched_plugin_id == '' %}{{ false }}{% else %}{{ true }}{% endif %}"
+
+- name: Delete plugin object to kong
+  uri:
+    url:    "{{ kong_admin_api_url|default('http://localhost:8001') }}/plugins/{{ matched_plugin_id }}"
+    method: DELETE
+    status_code: "204,404"
+  register: p_delete
+  when: plugin_exists
+
+- debug: var=p_delete

@@ -1,15 +1,16 @@
 #!/bin/bash
 
-CASSANDRA_HOST=$1
+PG_HOST=$1
+PG_CMD=/usr/local/bin/psql.sh
 
 function print_schema_migrations() {
     echo "&&&&&&&&  $(date)"
 
     echo "Print kong.schema_migrations table"
-    cqlsh ${CASSANDRA_HOST} -e "select * from kong.schema_migrations;"
+    echo "select * from schema_migrations;" | sudo ${PG_CMD}
 
-    echo "Print count of entries in kong.schema_migrations table"
-    cqlsh ${CASSANDRA_HOST} -e "select count(*) from kong.schema_migrations;"
+    echo "Print count of entries in schema_migrations table"
+    echo "select count(*) from schema_migrations;" | sudo ${PG_CMD}
 }
 
 function print_tables_count() {
@@ -18,7 +19,7 @@ function print_tables_count() {
     for table in apis consumers plugins
     do
         echo "Print count of entries in kong.${table} table"
-        cqlsh ${CASSANDRA_HOST} -e "select count(*) from kong.${table};"
+        echo "select count(*) from ${table};" | sudo ${PG_CMD}
     done
 }
 

@@ -1,32 +1,29 @@
 ---
 
 ##-------------------
-##  v0.11.x
+##  v0.11.x and above
 ##-------------------
 
-- name: set sysvinit for all kong service settings
-  set_fact:
-    ansible_service_mgr: "sysvinit"
-
-- name: Set init script handlers for playbook
-  set_fact:
-    kong_reload: "Reload kong with init script"
-    kong_restart: "Restart kong with init script"
-  when: kong_manage_init_script
-
-- name: Set native kong service handlers for playbook
-  set_fact:
-    kong_reload: "Reload kong"
-    kong_restart: "Restart kong"
-  when: not kong_manage_init_script
-
-- name: Create kong config file | v0.11.x
+- name: Create kong config file | v0.12.x or earlier
   template:
     src:  "0.11.x-kong.conf.j2"
     dest: "{{ kong_conf_dir }}/kong.conf"
     owner: root
     group: root
     mode:  0644
+  notify:
+    - Validate kong config
+    - "{{ kong_restart }}"
+  when: kong_version is version_compare('0.13.0', '<')
+
+- name: Create kong config file | v0.13.x or later
+  template:
+    src:  "kong.conf.j2"
+    dest: "{{ kong_conf_dir }}/kong.conf"
+    owner: root
+    group: root
+    mode:  0644
+  when: kong_version is version_compare('0.13.0', '>=')
   notify:
     - Validate kong config
     - "{{ kong_restart }}"
@@ -38,7 +35,7 @@
 # reloading nginx. So the outdated nginx-kong.conf fails nginx config validation
 # and nginx errors out.
 # So it is safer to Restart
-- name: Create kong custom nginx config file | v0.11.x or later
+- name: Create kong custom nginx config file
   template:
     src:  custom-nginx.template.j2
     dest: "{{ kong_conf_dir }}/custom-nginx.template"
@@ -49,7 +46,7 @@
     - Validate kong config
     - "{{ kong_restart }}"
 
-- name: Prepare kong prefix directory | v0.11.x or earlier
+- name: Prepare kong prefix directory
   shell: >
       kong prepare --prefix {{ kong_prefix_dir }} --conf {{ kong_conf_dir }}/kong.conf
   environment:
@@ -61,14 +58,14 @@
   set_fact:
     run_status: up
 
-- name: Check kong health status | v0.11.x or later
+- name: Check kong health status
   shell: kong health || true
   environment:
     PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
   changed_when: false
   register: health
 
-- name: Set kong run status | v0.11.x or later
+- name: Set kong run status
   set_fact:
     run_status: down
   when: health.stderr.find('Kong is not running') != -1
@@ -76,7 +73,7 @@
 - debug: var=health
 - debug: var=run_status
 
-- name: Update kong database schema | v0.11.x or earlier
+- name: Update kong database schema
   shell: >
       kong migrations up --conf {{ kong_conf_dir }}/kong.conf
   environment:
@@ -100,7 +97,7 @@
     enabled: yes
   when: kong_manage_init_script
 
-- name: Start kong natively | v0.11.x or earlier
+- name: Start kong natively
   shell: >
       ulimit -n "{{ kong_max_files_limit }}" && \
         kong start --conf {{ kong_conf_dir }}/kong.conf --nginx-conf {{ kong_conf_dir }}/custom-nginx.template
@@ -109,7 +106,7 @@
   when: run_status == "down" and not kong_manage_init_script
   register: start
 
-- name: Start kong via init | v0.11.x or earlier
+- name: Start kong via init
   service:
     name: kong
     state: started
