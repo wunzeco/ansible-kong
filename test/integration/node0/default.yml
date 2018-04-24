@@ -24,18 +24,13 @@
     - name: Wait for postgresql container to start
       wait_for: host="127.0.0.1" port=5432
 
-    #- pause: minutes=10
-
 
 - name: Kong Install
   hosts: test-kitchen
 
   vars:
-    kong_version: 0.11.1
+    kong_version: 0.12.3
     kong_version_current: 0.0.0
-    kong_prereqs: [ openssl, libpcre3, procps, perl ]
-    kong_deb_pkg:     "kong-community-edition-{{ kong_version }}.{{ ansible_distribution_release }}.all.deb"
-    kong_deb_pkg_url: "https://bintray.com/kong/kong-community-edition-deb/download_file?file_path=dists/{{ kong_deb_pkg }}"
 
     kong_conf_dir: /etc/kong
     kong_host:  "{{ ansible_eth1.ipv4.address }}"
