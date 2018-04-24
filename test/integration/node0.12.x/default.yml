@@ -1,49 +1,49 @@
 ---
-- name: Cassandra Install
+- name: Postgres start
   hosts: test-kitchen
 
   vars:
-    java_package: oracle-java8-installer
-    cassandra_version: 3.7.0
-    cassandra_cluster_name: kitchenCluster
-    cassandra_listen_address: "{{ ansible_eth1.ipv4.address }}"
-    cassandra_rpc_address:    "{{ cassandra_listen_address }}"
-    cassandra_seeds:          [ "{{ cassandra_listen_address }}" ]
-    cassandra_reinitialize_cluster: false
-
-  pre_tasks:
-    - name: Set cassandra listen address | RedHat
-      set_fact: cassandra_listen_address="{{ ansible_enp0s8.ipv4.address }}"
-      when: ansible_os_family|lower == 'redhat'
+    docker_compose_version: 1.21.0
 
   roles:
-    - wunzeco.java
-    - wunzeco.cassandra
+    - wunzeco.docker
 
   post_tasks:
-    - name: Wait for cassandra to start fully | Debian
-      wait_for: host="{{ ansible_eth1.ipv4.address }}" port=9042
-      when: ansible_os_family|lower == 'debian'
+    - name: Start postgresql container for kong
+      docker_container:
+        name:  kong-database
+        image: "postgres:10"
+        state: started
+        published_ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: kong
+          POSTGRES_DB:   kong
+      register: pgdb
 
-    - name: Wait for cassandra to start fully | RedHat
-      wait_for: host="{{ ansible_enp0s8.ipv4.address }}" port=9042
-      when: ansible_os_family|lower == 'redhat'
+    - name: Wait for postgresql container to start
+      wait_for: host="127.0.0.1" port=5432
 
 
 - name: Kong Install
   hosts: test-kitchen
 
   vars:
-    kong_version: 0.10.3
+    kong_version: 0.12.3
+
+    kong_conf_dir: /etc/kong
     kong_host:  "{{ ansible_eth1.ipv4.address }}"
-    kong_cassandra_host:          "{{ kong_host }}"
-    kong_proxy_listen:            "{{ kong_host }}:8000"
-    kong_proxy_listen_ssl:        "{{ kong_host }}:8443"
-    kong_cluster_listen:          "{{ kong_host }}:7946"
-    kong_proxy_set_headers: 
+    kong_database:         postgres
+    kong_pg_host:          "{{ kong_host }}"
+    kong_proxy_listen:     "{{ kong_host }}:8000"
+    kong_proxy_listen_ssl: "{{ kong_host }}:8443"
+    kong_cluster_listen:   "{{ kong_host }}:7946"
+    kong_proxy_set_headers:
       "X-Forwarded-Prefix": '$http_x_forwarded_prefix'
     kong_nginx_custom_log_fields: [ realip_remote_addr, http_x_forwarded_prefix, http_x_forwarded_for, http_x_forwarded_proto ]
     kong_nginx_json_log_format_enable: true
+    kong_db_update_propagation: 1
+    kong_manage_init_script: true
 
   pre_tasks:
     - name: Set kong host | RedHat
@@ -56,6 +56,9 @@
 
 - name: Kong Objects Configure
   hosts: test-kitchen
+
+  vars:
+    kong_version: 0.12.3
 
   pre_tasks:
     - name: Install jq and curl
@@ -148,36 +151,36 @@
       kong_consumer_obj_custom_id:  consumer123
       kong_consumer_obj_acl_groups: [ groupOne, groupTwo ]
       kong_consumer_obj_auth_creds:
-        - plugin: oauth2 
+        - plugin: oauth2
           parameters:
             name: auth-service
             client_id: SOME-CLIENT-ID
             client_secret: SOME-CLIENT-SECRET
             redirect_uri: http://some-domain/endpoint/
-        - plugin: oauth2 
+        - plugin: oauth2
           parameters:
             name: auth-master
             client_id: ANOTHER-CLIENT-ID
             client_secret: ANOTHER-CLIENT-SECRET
             redirect_uri: http://another-domain/endpoint/
-        - plugin: basic-auth 
+        - plugin: basic-auth
           parameters:
             username: bob
             password: bobSecret
-        - plugin: basic-auth 
+        - plugin: basic-auth
           parameters:
             username: jane
             password: janeSecret
-        - plugin: key-auth 
+        - plugin: key-auth
           parameters:
             key: "7aed36b073f94313b75005b6ba46c633"
-        - plugin: key-auth 
+        - plugin: key-auth
           parameters:
             key: "c7faa3814c864d7d950d70f399cabffc"
-        - plugin: hmac-auth 
+        - plugin: hmac-auth
           parameters:
             username: john
-        - plugin: hmac-auth 
+        - plugin: hmac-auth
           parameters:
             username: flintstone
             secret:   stoneSecret
