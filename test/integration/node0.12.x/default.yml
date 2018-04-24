@@ -2,9 +2,6 @@
 - name: Postgres start
   hosts: test-kitchen
 
-  vars:
-    docker_compose_version: 1.21.0
-
   roles:
     - wunzeco.docker
 
