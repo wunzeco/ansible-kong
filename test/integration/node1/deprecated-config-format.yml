@@ -3,8 +3,7 @@
   hosts: test-kitchen
 
   vars:
-    kong_version: 0.13.0
-    kong_manage_init_script: true
+    kong_version: 0.12.3
 
   pre_tasks:
     - name: Install jq and curl
