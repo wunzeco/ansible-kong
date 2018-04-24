@@ -1,7 +1,7 @@
 ---
 
 - name: Create tmp file for request data required to configure kong consumer object
-  template: src=consumer_obj.j2 dest=/tmp/consumer.obj
+  template: src=old_consumer_obj.j2 dest=/tmp/consumer.obj
   delegate_to: 127.0.0.1
   become: false
 
