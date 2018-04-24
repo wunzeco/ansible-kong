@@ -177,7 +177,7 @@ information on Routes, Services, Consumer and Plugins configuration.
 To run this role's integration tests
 
 ```
-PLATFORM=ubuntu                              # OR centos
+PLATFORM=ubuntu-1404      # OR ubuntu-1604, centos
 kitchen verify $PLATFORM && kitchen destroy $PLATFORM
 ```
 

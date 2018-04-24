@@ -43,9 +43,9 @@
     kong_manage_init_script: true
 
   pre_tasks:
-    - name: Set kong host | RedHat
+    - name: Set kong host
       set_fact: kong_host="{{ ansible_enp0s8.ipv4.address }}"
-      when: ansible_os_family|lower == 'redhat'
+      when: ansible_service_mgr == 'systemd'
 
   roles:
     - ansible-kong
