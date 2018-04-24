@@ -6,7 +6,7 @@
   become: false
 
 - name: Add api object to kong
-  uri: 
+  uri:
     url:    "{{ kong_admin_api_url|default('http://localhost:8001') }}/apis/"
     method: POST
     body:   "{{ lookup('file','/tmp/api_obj.json') }}"
@@ -19,7 +19,7 @@
   when: kong_api_obj_name in apis.json.data|map(attribute='name')
 
 - name: Update api object configured in kong
-  uri: 
+  uri:
     url:    "{{ kong_admin_api_url|default('http://localhost:8001') }}/apis/{{ kong_api_obj_name }}"
     method: PATCH
     body:   "{{ lookup('file','/tmp/api_obj.json') }}"
@@ -31,4 +31,4 @@
 #- debug: var=api
 
 - name: Kong Plugin for API object
-  include: api_plugin.yml
+  include: "deprecated/api_plugin.yml"

@@ -153,18 +153,26 @@ kong_upstream_url:      'nil'
 kong_proxy_set_headers: {}                  # custom proxy headers to set at nginx http context
 
 
-##################################
-##  Route, Service, API, Plugin & Consumer objects
+##################################################
+##  Route, Service, Plugin & Consumer objects
 ##  Note: Refer to https://getkong.org/docs/ for further information
 
 kong_use_old_config_format: true            # Set to false to use "new" config format
 kong_admin_api_url: "http://localhost:8001"
 
-## API & Plugin Objects
 kong_delete_service_obj: false              # set to True to delete service object from kong
 kong_service_config: {}                     # for service object and associated route objects
+# Kong service-routes config associates routes to a service.
+# Service-to-Route is 1-to-Many relationship
 
-# Kong service-routes config: This associates routes to a service.
+kong_delete_plugin_obj: false               # set to True to delete service object from kong
+kong_plugin_config: {}                      # for plugin object config
+
+## Consumer Object
+kong_delete_consumer_obj: false             # set to True to delete consumer object from kong
+kong_consumer_config: {}                    # for consumer object config
+
+# Kong service-routes config associates routes to a service.
 # Service-to-Route is 1-to-Many
 #kong_service_config:
 #  service:
@@ -180,12 +188,12 @@ kong_service_config: {}                     # for service object and associated 
 #      methods: []
 #      protocols: []
 
-kong_delete_plugin_obj: false              # set to True to delete service object from kong
-kong_plugin_config: {}                     # for plugin object config
 
+##############################
+## OLD config format for API, Consumer and Plugin objects
+##
 ## API & Plugin Objects
 kong_delete_api_obj: false                  # set to True to delete api object from kong
-
 kong_api_obj_name:                          # see api config example below
 kong_api_obj_hosts:                         # see api config example below (WARN: valid for 0.10.x and later)
 kong_api_obj_uris:                          # see api config example below (WARN: valid for 0.10.x and later)
@@ -195,10 +203,6 @@ kong_api_obj_strip_uri: false               # see api config example below (WARN
 kong_api_obj_plugins: []
 
 ## Consumer Object
-kong_delete_consumer_obj: false              # set to True to delete consumer object from kong
-kong_consumer_config: {}                     # for consumer object config
-
-# old config format
 kong_consumer_obj_username:                  # see consumer config example below
 kong_consumer_obj_custom_id:                 # see consumer config example below
 kong_consumer_obj_auth_creds: {}             # see consumer config example below
@@ -206,92 +210,10 @@ kong_consumer_obj_acl_groups: []             # see consumer config example below
 
 
 ##############################
-## API & Plugin Config Example
+## Examples:
 ##
-## kong_task: api
-## kong_api_obj_name:         Mockbin
-## kong_api_obj_hosts: "mockbin.com"
-## kong_api_obj_uris: "/someservice"
-## kong_api_obj_upstream_url: "https://mockbin.com"
-## kong_api_obj_preserve_host: false
-## kong_api_obj_strip_uri: false
-## kong_api_obj_https_only: true
-## kong_api_obj_http_if_terminated: true
-## kong_api_obj_plugins:
-##   - name: oauth2
-##     consumer_id:                       # Optional
-##     config_parameters:
-##       - "config.enable_authorization_code=true"
-##       - "config.scopes=email,phone,address"
-##       - "config.mandatory_scope=true"
-
-##########################
-## Consumer Config Example
+## New kong objects config format (i.e. kong 0.13.x and later)
+##   - See example usage in test/integration/node1/default.yml
 ##
-## kong_task: consumer
-## kong_consumer_obj_username: clientOne
-## kong_consumer_obj_custom_id: consumer123
-## kong_consumer_obj_acl_group: [ groupOne, groupTwo ]
-## kong_consumer_obj_auth_creds:
-##   - plugin: oauth2
-##     parameters:
-##       name: auth-service
-##       client_id: SOME-CLIENT-ID
-##       client_secret: SOME-CLIENT-SECRET
-##       redirect_uri: http://some-domain/endpoint/
-##   - plugin: oauth2
-##     parameters:
-##       name: auth-master
-##       client_id: ANOTHER-CLIENT-ID
-##       client_secret: ANOTHER-CLIENT-SECRET
-##       redirect_uri: http://another-domain/endpoint/
-##   - plugin: basic-auth
-##     parameters:
-##       username: bob
-##       password: bobSecret
-##   - plugin: basic-auth
-##     parameters:
-##       username: jane
-##       password: janeSecret
-##   - plugin: key-auth
-##     parameters:
-##       key: "7aed36b073f94313b75005b6ba46c633"
-##   - plugin: key-auth
-##     parameters:
-##       key: "c7faa3814c864d7d950d70f399cabffc"
-##   - plugin: hmac-auth
-##     parameters:
-##       username: john
-##   - plugin: hmac-auth
-##     parameters:
-##       username: flintstone
-##       secret:   stoneSecret
-##   - plugin: jwt
-##     parameters:
-##       key:       "5addde658a1b4b6e869d57d35dc8b1fd"
-##       secret:    "30f8825a9f0e44a0bfb18f7dacf0783a"
-##       algorithm: "HS256"
-##   - plugin: jwt
-##     parameters:
-##       key: "c4221446f5d845f48bd473df8242924b"
-
-
-# THOUGHTS - To consider
-#
-## It may be desireable to declare several api objects in a list
-## e.g
-##   kong_api_objs:
-##     - name:         mockbin
-##       hosts: "mockbin.com"
-##       uris: "/someservice"
-##       upstream_url: "https://mockbin.com"
-##       preserve_host: false
-##       strip_uri: false
-##     - name:         payments
-##       hosts: "mockbin.com"
-##       uris: "/payments-service"
-##       upstream_url: "https://mockbin.com"
-##       preserve_host: false
-##       strip_uri: false
-##
-##  kong_delete_api_objs: []
+## Old kong objects config format (i.e. kong 0.12.x and earlier)
+##   -  See example usage in test/integration/node1/deprecated-config-format.yml

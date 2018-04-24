@@ -22,7 +22,7 @@
 
 - name: Set version of consumer tasks file to use
   set_fact:
-    _format: "{% if kong_use_old_config_format %}old_{% else %}{{ '' }}{% endif %}"
+    _format: "{% if kong_use_old_config_format %}deprecated/{% else %}{{ '' }}{% endif %}"
 
 - set_fact: _cmd="add"
 
