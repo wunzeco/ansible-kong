@@ -1,41 +1,37 @@
 ---
-- name: Cassandra Install
+- name: Postgres start
   hosts: test-kitchen
 
   vars:
-    java_package: oracle-java8-installer
-    cassandra_distro: apache
-    cassandra_version: 3.11.2
-    cassandra_cluster_name: kitchenCluster
-    cassandra_listen_address: "{{ ansible_eth1.ipv4.address }}"
-    cassandra_rpc_address:    "{{ cassandra_listen_address }}"
-    cassandra_seeds:          [ "{{ cassandra_listen_address }}" ]
-    cassandra_reinitialize_cluster: false
-
-  pre_tasks:
-    - name: Set cassandra listen address | RedHat
-      set_fact: cassandra_listen_address="{{ ansible_enp0s8.ipv4.address }}"
-      when: ansible_service_mgr == 'systemd'
+    #docker_compose_version: 1.21.0
 
   roles:
-    - wunzeco.java
-    - wunzeco.cassandra
+    - wunzeco.docker
 
   post_tasks:
-    - name: Wait for cassandra to start fully | Debian
-      wait_for: host="{{ ansible_eth1.ipv4.address }}" port=9042
-      when: ansible_service_mgr == 'upstart'
+    - name: Start postgresql container for kong
+      docker_container:
+        name:  kong-database
+        image: "postgres:10"
+        state: started
+        published_ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: kong
+          POSTGRES_DB:   kong
+      register: pgdb
 
-    - name: Wait for cassandra to start fully | RedHat
-      wait_for: host="{{ ansible_enp0s8.ipv4.address }}" port=9042
-      when: ansible_service_mgr == 'systemd'
+    - name: Wait for postgresql container to start
+      wait_for: host="127.0.0.1" port=5432
+
+    #- pause: minutes=10
 
 
 - name: Kong Install
   hosts: test-kitchen
 
   vars:
-    kong_version: 0.13.0
+    kong_version: 0.11.1
     kong_version_current: 0.0.0
     kong_prereqs: [ openssl, libpcre3, procps, perl ]
     kong_deb_pkg:     "kong-community-edition-{{ kong_version }}.{{ ansible_distribution_release }}.all.deb"
@@ -43,11 +39,12 @@
 
     kong_conf_dir: /etc/kong
     kong_host:  "{{ ansible_eth1.ipv4.address }}"
-    kong_cassandra_host:          "{{ kong_host }}"
-    kong_proxy_listen:            "{{ kong_host }}:8000"
-    kong_proxy_listen_ssl:        "{{ kong_host }}:8443"
-    kong_admin_listen:            "{{ kong_host }}:8001"
-    kong_cluster_listen:          "{{ kong_host }}:7946"
+    kong_database:         postgres
+    kong_pg_host:          "{{ kong_host }}"
+    kong_proxy_listen:     "{{ kong_host }}:8000"
+    kong_proxy_listen_ssl: "{{ kong_host }}:8443"
+    kong_admin_listen:     "{{ kong_host }}:8001"
+    kong_cluster_listen:   "{{ kong_host }}:7946"
     kong_proxy_set_headers:
       "X-Forwarded-Prefix": '$http_x_forwarded_prefix'
     kong_nginx_custom_log_fields: [ realip_remote_addr, http_x_forwarded_prefix, http_x_forwarded_for, http_x_forwarded_proto ]
