@@ -4,22 +4,6 @@
 ##  v0.11.x and above
 ##-------------------
 
-- name: set sysvinit for all kong service settings
-  set_fact:
-    ansible_service_mgr: "sysvinit"
-
-- name: Set init script handlers for playbook
-  set_fact:
-    kong_reload: "Reload kong with init script"
-    kong_restart: "Restart kong with init script"
-  when: kong_manage_init_script
-
-- name: Set native kong service handlers for playbook
-  set_fact:
-    kong_reload: "Reload kong"
-    kong_restart: "Restart kong"
-  when: not kong_manage_init_script
-
 - name: Create kong config file | v0.12.x or earlier
   template:
     src:  "0.11.x-kong.conf.j2"
@@ -88,12 +72,6 @@
 
 - debug: var=health
 - debug: var=run_status
-
-# DELETEME: [OI] check `kong health` output when run on a node whose kong is down.
-#           Does it recognise that the cluster is up if at least one node is up?
-#           It will certainly be unnecessary to run migrations multiple times, which
-#           could happen if kong hosts are configured with `serial` property set in playbook.
-- debug: msg="CHECKPOINT | CHECKPOINT | CHECKPOINT - Question for you mate!"
 
 - name: Update kong database schema
   shell: >

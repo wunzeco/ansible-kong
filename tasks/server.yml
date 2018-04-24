@@ -1,12 +1,28 @@
 ---
 
+- name: set sysvinit for all kong service settings
+  set_fact:
+    ansible_service_mgr: "sysvinit"
+
+- name: Set init script handlers for playbook
+  set_fact:
+    kong_reload: "Reload kong with init script"
+    kong_restart: "Restart kong with init script"
+  when: kong_manage_init_script
+
+- name: Set native kong service handlers for playbook
+  set_fact:
+    kong_reload: "Reload kong"
+    kong_restart: "Restart kong"
+  when: not kong_manage_init_script
+
 - name: Set kong pkg download variables
   set_fact:
     kong_deb_pkg_url: "{{ kong_deb_pkg_url_pre_0_11_x }}"
     kong_rpm_pkg_url: "{{ kong_rpm_pkg_url_pre_0_11_x }}"
     kong_deb_pkg:     "kong-{{ kong_version }}.{{ ansible_distribution_release }}_all.deb"
     kong_rpm_pkg:     "kong-{{ kong_version }}.el7.noarch.rpm"
-  when: kong_version|version_compare('0.11.0', '<')
+  when: kong_version is version_compare('0.11.0', '<')
 
 # Debian
 - name: Download kong deb package | Debian
@@ -29,6 +45,8 @@
   apt:
     deb:   "/var/tmp/{{ kong_deb_pkg }}"
     state: present
+  notify:
+    - "{{ kong_restart }}"
   when: ansible_os_family|lower == 'debian'
 
 # RedHat
@@ -41,6 +59,8 @@
     name: "/var/tmp/{{ kong_rpm_pkg }}"
     disable_gpg_check: yes
     state: present
+  notify:
+    - "{{ kong_restart }}"
   when: ansible_os_family|lower == 'redhat'
 
 - name: Create logrotate config for kong logs
@@ -53,7 +73,7 @@
 
 - name: Check for supported kong versions
   fail: msg="Kong {{ kong_version }} no longer supported"
-  when: kong_version|version_compare('0.11.0', '<')
+  when: kong_version is version_compare('0.11.0', '<')
 
 - name: Kong Server Config & Start
   include: "server-config.yml"

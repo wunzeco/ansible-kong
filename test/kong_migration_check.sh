@@ -9,7 +9,7 @@ function print_schema_migrations() {
     echo "Print kong.schema_migrations table"
     echo "select * from schema_migrations;" | sudo ${PG_CMD}
 
-    echo "Print count of entries in kong.schema_migrations table"
+    echo "Print count of entries in schema_migrations table"
     echo "select count(*) from schema_migrations;" | sudo ${PG_CMD}
 }
 
