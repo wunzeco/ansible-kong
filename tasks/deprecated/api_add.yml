@@ -31,4 +31,4 @@
 #- debug: var=api
 
 - name: Kong Plugin for API object
-  include: "deprecated/api_plugin.yml"
+  include: "api_plugin.yml"

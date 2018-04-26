@@ -1,7 +1,7 @@
 ---
 
 - name: Consumer Authentication Credentials | {{ outer_item.plugin|upper }}
-  include: "deprecated/consumer_{{ outer_item.plugin }}_creds.yml"
+  include: "consumer_{{ outer_item.plugin }}_creds.yml"
   with_items: "{{ kong_consumer_obj_auth_creds|default([]) }}"
   loop_control:
     loop_var: outer_item
