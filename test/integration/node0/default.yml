@@ -26,7 +26,7 @@
   hosts: test-kitchen
 
   vars:
-    kong_version: 0.13.0
+    kong_version: 0.13.1
     kong_version_current: 0.0.0
 
     kong_conf_dir: /etc/kong

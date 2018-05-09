@@ -4,7 +4,7 @@
 
   vars:
     kong_database:         postgres
-    kong_version: 0.13.0
+    kong_version: 0.13.1
     kong_version_current: 0.0.0
     kong_host:  "{{ ansible_eth1.ipv4.address }}"
     kong_pg_host:          "172.29.129.11"
@@ -34,7 +34,7 @@
   hosts: test-kitchen
 
   vars:
-    kong_version: 0.13.0
+    kong_version: 0.13.1
 
   pre_tasks:
     - name: Install jq and curl

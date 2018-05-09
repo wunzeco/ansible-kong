@@ -26,10 +26,10 @@
 # Consider that a matching route is identified by
 #     route = hosts + paths + method + protocols
 #
-# Updating a route object finding "id" property of that route. However, it is
-# computationally cheaper to add the updated route object as a new route and
-# delete unmatched routes (which will include the outdated route) since kong
-# will happily add duplicate routes.
+# Updating a route object requires finding "id" property of that route.
+# However, it is computationally cheaper to add the updated route object
+# as a new route and delete unmatched routes (which will include the outdated
+# route) since kong will happily add duplicate routes.
 # The approach taken is to add all routes defined for a service and delete any
 # existing route that isn't configured anymore for the service.
 

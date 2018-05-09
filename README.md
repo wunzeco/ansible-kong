@@ -20,7 +20,7 @@ information on Routes, Services, Consumer and Plugins configuration.
 - hosts: konghost
 
   vars:
-    kong_version: 0.13.0
+    kong_version: 0.13.1
     kong_cassandra_host: <my_cassandra_ip_or_fqdn>
     ## OR for postgres backend
     ## kong_database: postgres
@@ -37,6 +37,7 @@ information on Routes, Services, Consumer and Plugins configuration.
 - hosts: my-kong-host
 
   vars:
+    kong_version: 0.13.1
     kong_use_old_config_format: false
 
   roles:
