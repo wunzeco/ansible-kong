@@ -1,3 +1,6 @@
+{% if all_routes.status == 404 %}
+{# No routes found and all_routes contains no "data" object. Do Nothing! #}
+{% else %}
 {# The purpose of this template is to compute route ids to delete #}
 {% set matched_route_ids = [] %}
 {% for r in all_routes.json.data %}
@@ -17,3 +20,4 @@
 {% set unmatched_route_ids = all_route_ids|difference(matched_route_ids) %}
 {% endif %}
 {{ unmatched_route_ids|join(' ') }}
+{% endif %}

@@ -3,6 +3,7 @@
 - name: Get list of route objects configured in kong associated with service
   uri:
     url: "{{ kong_admin_api_url|default('http://localhost:8001') }}/services/{{ kong_service_config.service.name }}/routes"
+    status_code: "200,404"
   register: all_routes
 
 #- debug: var=all_routes
