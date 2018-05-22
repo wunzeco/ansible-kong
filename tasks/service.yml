@@ -14,7 +14,7 @@
     url: "{{ kong_admin_api_url|default('http://localhost:8001') }}/services"
   register: services
 
-- debug: var=services
+#- debug: var=services
 
 - set_fact: _cmd=add
 

@@ -19,7 +19,7 @@
   register: s_add
   when: not service_exists
 
-- debug: var=s_add
+#- debug: var=s_add
 
 - debug: msg="{{ kong_service_config.service.name }} service object already exists - ({{ services.json.data|map(attribute='name')|join(',') }})"
   when: service_exists
@@ -57,13 +57,13 @@
   register: s_update
   when: service_exists
 
-- debug: var=s_update
+#- debug: var=s_update
 
 - name: Set service_id variable required for route object config
   set_fact:
     service_id: "{% if s_add.json|default(false) %}{{ s_add.json.id }}{% else %}{{ s_update.json.id }}{% endif %}"
 
-- debug: var=service_id
+#- debug: var=service_id
 
 - name: Kong Route for Service object
   include: route.yml

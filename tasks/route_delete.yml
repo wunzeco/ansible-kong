@@ -16,7 +16,7 @@
 - name: Set ids of routes to delete
   set_fact: unmatched_route_ids="{{ lookup('file', '/tmp/unmatched_route_ids.result') }}"
 
-- debug: var=unmatched_route_ids
+#- debug: var=unmatched_route_ids
 
 - name: Delete route object not associated to kong service object - {{ kong_service_config.service.name }}
   uri:

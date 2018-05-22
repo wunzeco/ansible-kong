@@ -39,14 +39,14 @@
   set_fact:
     route_exists: "{% if matched_route_ids != '' %}{{ true }}{% else %}{{ false }}{% endif %}"
 
-- debug: var=matched_route_ids
-- debug: var=route_exists
+#- debug: var=matched_route_ids
+#- debug: var=route_exists
 
 - name: Include service id in route obj config
   set_fact:
     _kong_route_obj: "{{ outer_item|combine({'service': {'id': route_service_id}}) }}"
 
-- debug: var=_kong_route_obj
+#- debug: var=_kong_route_obj
 
 - name: Add new route object to kong service object
   uri:
@@ -58,7 +58,7 @@
   register: route
   when: not route_exists
 
-- debug: var=route
+#- debug: var=route
 
 - debug: msg="Similar route object already exists for {{ kong_service_config.service.name }} service"
   when: route_exists

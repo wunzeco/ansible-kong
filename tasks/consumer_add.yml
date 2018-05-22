@@ -27,7 +27,7 @@
   register: c_add
   when: not consumer_exists
 
-- debug: var=c_add
+#- debug: var=c_add
 
 - debug: msg="{{ kong_consumer_config.username }} consumer object already exists - ({{ consumers.json.data|map(attribute='username')|join(',') }})"
   when: consumer_exists
@@ -43,7 +43,7 @@
   register: c_update
   when: consumer_exists
 
-- debug: var=c_update
+#- debug: var=c_update
 
 
 # Configure plugins for Consumer

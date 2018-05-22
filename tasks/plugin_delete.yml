@@ -12,4 +12,4 @@
   register: p_delete
   when: plugin_exists
 
-- debug: var=p_delete
+#- debug: var=p_delete
