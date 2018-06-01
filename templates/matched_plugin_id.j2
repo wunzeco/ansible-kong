@@ -14,7 +14,7 @@
 {% set consumer_id = consumer.json.id %}
 {% endif %}
 {# Compare values #}
-{% if name == p.name and service_id == p_service_id and consumer_id == p_consumer_id %}
+{% if ( (name == p.name and service_id == p_service_id) or (name == p.name and consumer_id == p_consumer_id) ) %}
 {{ p.id }}
 {% endif %}
 {% endfor %}
