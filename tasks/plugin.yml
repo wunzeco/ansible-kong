@@ -11,8 +11,7 @@
 
 - name: Get list of plugin objects configured in kong
   uri:
-    url: "{{ kong_admin_api_url|default('http://localhost:8001') }}/plugins"
-    body: "size=1000"
+    url: "{{ kong_admin_api_url|default('http://localhost:8001') }}/plugins?size=1000"
   register: plugins
 
 #- debug: var=plugins
