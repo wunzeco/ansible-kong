@@ -33,6 +33,18 @@
   when: kong_plugin_config.consumer|default(false)
   register: consumer
 
+- name: Initialise plugin_route_id
+  set_fact:
+    plugin_route_id: ''
+
+# Note: "/tmp/{{ route_name }}_route.id" is created in route_add.yml tasks file.
+- name: Get route id if required to add plugin for a kong route object
+  set_fact:
+    plugin_route_id: "{{ lookup('file', '/tmp/' + kong_plugin_config.route + '_route.id')}}"
+  when: kong_plugin_config.route|default(false)
+
+#- debug: var=plugin_route_id
+
 - name: Create temp request data file for kong plugin object
   template:
     src:  plugin_obj.j2
@@ -43,6 +55,13 @@
 #- debug: var=plugins
 #- debug: var=service
 #- debug: var=consumer
+
+#- name: DEBUG | Find existing kong plugin that match config
+#  template:
+#    src:  debug_matched_plugin_id.j2
+#    dest: "/tmp/debug_matched_plugin.id"
+#  delegate_to: 127.0.0.1
+#  become: false
 
 - name: Find existing kong plugin that match config
   template:
@@ -64,9 +83,3 @@
 
 - name: Kong Plugin Object Config
   include: plugin_{{ _cmd }}.yml
-
-  #name
-  #consumer_id
-  #service_id
-  #route_id
-  #config {}

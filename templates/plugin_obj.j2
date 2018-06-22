@@ -1,7 +1,7 @@
 {# The purpose of this file is to compute a valid json request body #}
 {# Note: Why the "if plugin_obj.update()" lines? Looks strange! #}
 {#       Ans: A workaround due to "set" tag being limited to local variable scope only. #}
-{% set params_to_replace = [ 'service', 'consumer' ] %}
+{% set params_to_replace = [ 'service', 'consumer', 'route' ] %}
 {% set plugin_obj = {} %}
 {% for key, value in kong_plugin_config|dictsort %}
 {% if key not in params_to_replace %}
@@ -10,6 +10,9 @@
 {% endfor %}
 {% if service.json|default(false) %}
 {% if plugin_obj.update({'service_id': service.json.id}) %}{% endif %}
+{% endif %}
+{% if plugin_route_id|default(false) %}
+{% if plugin_obj.update({'route_id': plugin_route_id}) %}{% endif %}
 {% endif %}
 {% if consumer.json|default(false) %}
 {% if plugin_obj.update({'consumer_id': consumer.json.id}) %}{% endif %}

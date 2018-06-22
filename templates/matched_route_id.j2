@@ -1,0 +1,39 @@
+{# The purpose of this template is to find a matching route object based on: #}
+{#     * route = hosts + paths + methods + protocols                         #}
+{% for r in routes.json.data %}
+{# Initialize variables #}
+{% set hosts = [] %}
+{% set paths = [] %}
+{% set methods = [] %}
+{% set protocols = ['http', 'https'] %}
+{% set r_hosts = [] %}
+{% set r_paths = [] %}
+{% set r_methods = [] %}
+{% set r_protocols = ['http', 'https'] %}
+{% if kong_route_config.hosts|default(false) %}
+{% set hosts = kong_route_config.hosts|sort %}
+{% endif %}
+{% if kong_route_config.paths|default(false) %}
+{% set paths = kong_route_config.paths|sort %}
+{% endif %}
+{% if kong_route_config.methods|default(false) %}
+{% set methods = kong_route_config.methods|sort %}
+{% endif %}
+{% if kong_route_config.protocols|default(false) %}
+{% set protocols = kong_route_config.protocols|sort %}
+{% endif %}
+{% if r.hosts %}
+{% set r_hosts = r.hosts|sort %}
+{% endif %}
+{% if r.paths %}
+{% set r_paths = r.paths|sort %}
+{% endif %}
+{% if r.methods %}
+{% set r_methods = r.methods|sort %}
+{% endif %}
+{% set r_protocols = r.protocols|sort %}
+{# Compare values #}
+{% if hosts == r_hosts and paths == r_paths and methods == r_methods and protocols == r_protocols %}
+{{ r.id }}
+{% endif %}
+{% endfor %}
