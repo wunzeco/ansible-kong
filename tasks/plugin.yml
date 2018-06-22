@@ -56,13 +56,6 @@
 #- debug: var=service
 #- debug: var=consumer
 
-#- name: DEBUG | Find existing kong plugin that match config
-#  template:
-#    src:  debug_matched_plugin_id.j2
-#    dest: "/tmp/debug_matched_plugin.id"
-#  delegate_to: 127.0.0.1
-#  become: false
-
 - name: Find existing kong plugin that match config
   template:
     src:  matched_plugin_id.j2
