@@ -8,7 +8,7 @@ information on Routes, Services, Consumer and Plugins configuration.
 
 > *WARNING:*
 >
->     -  Support for v0.10.x removed!!
+>     -  Support for v0.12.x and earlier deprecated!!
 >     -  Use Service and Route in place of API objects (v0.13+). API object deprecated in kong v0.13
 
 
@@ -31,7 +31,7 @@ information on Routes, Services, Consumer and Plugins configuration.
 ```
 
 
-### Add/Update/Delete Service and Route Objects in Kong
+### Add/Update/Delete kong objects
 
 ```
 - hosts: my-kong-host
@@ -41,25 +41,33 @@ information on Routes, Services, Consumer and Plugins configuration.
     kong_use_old_config_format: false
 
   roles:
-    #****************#
-    #    SERVICES    #
-    #****************#
-    - role: ansible-kong            ## ADD/UPDATE service and routes for svcOne service
+    #*************************#
+    #    SERVICES & ROUTES    #
+    #*************************#
+    - role: ansible-kong            ## ADD/UPDATE service obj for svcOne service
       kong_task: service
       kong_service_config:
-        service:
-          name: svcOne
-          url: "https://service-upstream.ogonna.com/svcOne/api"
-        routes:
-          - paths: [ "/svcOnePlus" ]
-            hosts: [ "a.com", "og.com" ]
-          - paths: [ "/svcOne" ]
+        name: svcOne
+        url: "https://service-upstream.ogonna.com/svcOne/api"
+    - role: ansible-kong            ## ADD route obj for svcOne
+      kong_task: route
+      kong_route_config:
+        name: svcOneRoute1
+        service: svcOne
+        paths: [ "/svcOne" ]
+        hosts: [ "og.com", "ab.com" ]
+    - role: ansible-kong            ## ADD route obj for svcOne
+      kong_task: route
+      kong_route_config:
+        name: svcOneRoute2
+        service: svcOne
+        paths: [ "/svcOnePlus" ]
+        methods: [ "GET", "POST", "PUT" ]
     - role: ansible-kong            ## DELETE service obj for svcThree
       kong_task: service
       kong_delete_service_obj: true
       kong_service_config:
-        service:
-          name: svcThree
+        name: svcThree
     #*****************#
     #    CONSUMERS    #
     #*****************#
@@ -115,6 +123,12 @@ information on Routes, Services, Consumer and Plugins configuration.
         name: rate-limiting
         config: { minute: 50, hour: 500 }
       kong_delete_plugin_obj: false
+    - role: ansible-kong            ## ADD rate-limiting plugin obj for svcOneRoute1 route
+      kong_task: plugin
+      kong_plugin_config:
+        name: rate-limiting
+        route: svcOneRoute1
+        config: { minute: 20, hour: 500 }
     - role: ansible-kong            ## ADD/UPDATE rate-limiting plugin obj for svcOne service and consumerOne consumer
       kong_task: plugin
       kong_plugin_config:

@@ -14,6 +14,7 @@
     kong_db_update_propagation: 1
     kong_proxy_set_headers:
       "X-Forwarded-Prefix": '$http_x_forwarded_prefix'
+    kong_admin_listen:     "0.0.0.0:8001"  # DELETEME PLS (Testing purpose ONLY)
 
   pre_tasks:
     - name: Kong Migrations
@@ -48,50 +49,92 @@
       when: ansible_os_family|lower == 'redhat'
 
   roles:
-    #****************#
-    #    SERVICES    #
-    #****************#
+    #*************************#
+    #    SERVICES & ROUTES    #
+    #*************************#
+    #---------------------#
+    #   svcOne & Routes   #
+    #---------------------#
     - role: ansible-kong            ## ADD service obj for svcOne
       kong_task: service
       kong_service_config:
-        service:
-          name: svcOne
-          url: "https://service-upstream.ogonna.com/svcOne/api"
-        routes:
-          - paths: [ "/svcOnePlus" ]
-            hosts: [ "a.com", "og.com" ]
-          - paths: [ "/svcOne" ]
+        name: svcOne
+        url: "https://service-upstream.ogonna.com/svcOne/api"
+    - role: ansible-kong            ## ADD route obj for svcOne
+      kong_task: route
+      kong_route_config:
+        name: svcOneRoute1
+        service: svcOne
+        paths: [ "/svcOne" ]
+        hosts: [ "og.com", "ab.com" ]
+    - role: ansible-kong            ## ADD route obj for svcOne
+      kong_task: route
+      kong_route_config:
+        name: svcOneRoute2
+        service: svcOne
+        paths: [ "/svcOnePlus" ]
+        methods: [ "GET", "POST", "PUT" ]
+    - role: ansible-kong            ## ADD route obj for svcOne
+      kong_task: route
+      kong_route_config:
+        name: svcOneRoute2
+        service: svcOne
+        paths: [ "/svcOnePlus" ]
+        methods: [ "GET", "POST", "PUT" ]
+      kong_delete_route_obj: true  ## DELETE svcOneRoute2 object
+    #---------------------#
+    #   svcTwo & Routes   #
+    #---------------------#
     - role: ansible-kong            ## ADD service obj for svcTwo
       kong_task: service
       kong_service_config:
-        service:
-          name: svcTwo
-          url: "https://service-upstream.ogonna.com/svc-two"
-        routes:
-          - paths: [ "/svcTwo" ]
-    - role: ansible-kong            ## ADD service obj for svcThre
-      kong_task: service
-      kong_service_config:
-        service:
-          name: svcThree
-          url: "https://service-upstream.ogonna.com/service-three"
-        routes:
-          - paths: [ "/svcThree" ]
+        name: svcTwo
+        url: "https://service-upstream.ogonna.com/svc-two"
+    - role: ansible-kong            ## ADD route obj for svcTwo
+      kong_task: route
+      kong_route_config:
+        name: svcTwoRoute1
+        service: svcTwo
+        paths: [ "/svcTwo" ]
     - role: ansible-kong            ## UPDATE service obj for svcTwo
       kong_task: service
       kong_service_config:
-        service:
-          name: svcTwo
-          url: "https://service-upstream.ogonna.com/svc-two-new"
-        routes:
-          - paths: [ "/svc-two-updated" ]
-            hosts: [ "awe.some.com" ]
+        name: svcTwo
+        url: "https://service-upstream.ogonna.com/svc-two-new"
+    # Note to UPDATE a route = Add new route + delete old route, like below
+    - role: ansible-kong            ## ADD REPLACEMENT route obj for svcTwo
+      kong_task: route
+      kong_route_config:
+        name: svcTwoRoute1-new
+        service: svcTwo
+        paths: [ "/svc-two-updated" ]
+        hosts: [ "awe.some.com" ]
+    - role: ansible-kong            ## DELETE route obj for svcTwo
+      kong_task: route
+      kong_route_config:
+        name: svcTwoRoute1
+        service: svcTwo
+        paths: [ "/svcTwo" ]
+      kong_delete_route_obj: true  ## DELETE svcTwoRoute1 object
+    #-----------------------#
+    #   svcThree & Routes   #
+    #-----------------------#
+    - role: ansible-kong            ## ADD service obj for svcThre
+      kong_task: service
+      kong_service_config:
+        name: svcThree
+        url: "https://service-upstream.ogonna.com/service-three"
+    - role: ansible-kong            ## ADD route obj for svcThree
+      kong_task: route
+      kong_route_config:
+        name: svcThreeRoute1
+        service: svcThree
+        paths: [ "/svcThree" ]
     - role: ansible-kong            ## DELETE service obj for svcThree
       kong_task: service
       kong_delete_service_obj: true
       kong_service_config:
-        service:
-          name: svcThree
+        name: svcThree
     #*****************#
     #    CONSUMERS    #
     #*****************#
@@ -189,6 +232,12 @@
         name: rate-limiting
         config: { minute: 100, hour: 500 }
       kong_delete_plugin_obj: false
+    - role: ansible-kong            ## ADD rate-limiting plugin obj for svcOneRoute1 route
+      kong_task: plugin
+      kong_plugin_config:
+        name: rate-limiting
+        route: svcOneRoute1
+        config: { minute: 20, hour: 500 }
     - role: ansible-kong            ## ADD rate-limiting plugin obj for svcOne service and consumerOne consumer
       kong_task: plugin
       kong_plugin_config:
@@ -260,4 +309,4 @@
         service: svcTwo
         config: { whitelist: svcTwo-user-group }
 
-- include: roles/ansible-kong/test/integration/node1/deprecated-config-format.yml
+#- include: roles/ansible-kong/test/integration/node1/deprecated-config-format.yml
