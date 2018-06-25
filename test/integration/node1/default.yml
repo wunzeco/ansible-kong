@@ -74,14 +74,6 @@
         service: svcOne
         paths: [ "/svcOnePlus" ]
         methods: [ "GET", "POST", "PUT" ]
-    - role: ansible-kong            ## ADD route obj for svcOne
-      kong_task: route
-      kong_route_config:
-        name: svcOneRoute2
-        service: svcOne
-        paths: [ "/svcOnePlus" ]
-        methods: [ "GET", "POST", "PUT" ]
-      kong_delete_route_obj: true  ## DELETE svcOneRoute2 object
     #---------------------#
     #   svcTwo & Routes   #
     #---------------------#

@@ -60,7 +60,18 @@ describe command("curl -s http://localhost:8001/services | jq '.data[] | {(.name
   its(:stdout) { should match 'svc-two-new' }
 end
 
-# verify number of enabled plugins of svcOne api object
+# verify routes of svcOne
+describe command("curl -s http://localhost:8001/services/svcOne/routes | jq '.data | length'") do
+  its(:exit_status) { should eq 0 }
+  its(:stdout) { should match '2' }
+end
+describe command("curl -s http://localhost:8001/services/svcOne/routes | jq '.data[].paths[]'") do
+  its(:exit_status) { should eq 0 }
+  its(:stdout) { should match '"/svcOne"' }
+  its(:stdout) { should match '"/svcOnePlus"' }
+end
+
+# verify number of enabled plugins of svcOne service object
 describe command("curl -s http://localhost:8001/services/svcOne/plugins | jq '.total'") do
   its(:exit_status) { should eq 0 }
   its(:stdout) { should match '3' }
