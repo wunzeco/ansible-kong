@@ -6,10 +6,16 @@ This role installs and configures Kong.
 Please refer to [Kong documentation](https://getkong.org/docs/) for further
 information on Routes, Services, Consumer and Plugins configuration.
 
+> *Breaking Changes:*
+>
+>     -  new `kong_route_config` variable introduced to decouple service and routes config previously in `kong_service_config`
+>     -  structure of `kong_service_config` updated (Breaking change)
+>
+> For the last version without breaking changes above please use tag [v1.9](https://github.com/wunzeco/ansible-kong/tree/v1.9)
+
 > *WARNING:*
 >
->     -  Support for v0.12.x and earlier deprecated!!
->     -  Use Service and Route in place of API objects (v0.13+). API object deprecated in kong v0.13
+>     -  Support for v0.12.x and earlier deprecated and will be removed SOON!!
 
 
 ## Example
