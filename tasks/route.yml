@@ -51,6 +51,7 @@
 #
 # The steps below is to prevent duplicate routes.
 
+# Route id stored in temporary file created here is used by plugin.yml
 - name: Find id of an existing route that matches route object config
   template:
     src: matched_route_id.j2

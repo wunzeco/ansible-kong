@@ -36,6 +36,15 @@
 
 #- debug: var=route
 
+# Route id stored in temporary file created here is used by plugin.yml
+- name: Store id of new route object added in a temp file
+  template:
+    src: new_route_id.j2
+    dest: "/tmp/{{ kong_route_config.name }}_route.id"
+  delegate_to: 127.0.0.1
+  become: false
+  when: not route_exists
+
 - debug: msg="Similar route object already exists for {{ kong_route_config.service }} service"
   when: route_exists
 
