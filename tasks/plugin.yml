@@ -38,10 +38,15 @@
     plugin_route_id: ''
 
 # Note: "/tmp/{{ route_name }}_route.id" is created in route_add.yml tasks file.
-- name: Get route id if required to add plugin for a kong route object
+#       A route id must exist in /tmp/{{ route_name }}_route.id .
+- name: Get route id required to add plugin for a kong route object
   set_fact:
     plugin_route_id: "{{ lookup('file', '/tmp/' + kong_plugin_config.route + '_route.id')}}"
   when: kong_plugin_config.route|default(false)
+
+- name: Ensure a route_id was fetched
+  fail: msg="No route id seen in /tmp/{{ kong_plugin_config.route }}_route.id"
+  when: kong_plugin_config.route|default(false) and plugin_route_id == ''
 
 #- debug: var=plugin_route_id
 
