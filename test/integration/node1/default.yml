@@ -127,6 +127,14 @@
       kong_delete_service_obj: true
       kong_service_config:
         name: svcThree
+    #-----------------------#
+    #   svcFour & Routes   #
+    #-----------------------#
+    - role: ansible-kong            ## DELETE service obj for svcThree
+      kong_task: service
+      kong_delete_service_obj: true
+      kong_service_config:
+        name: svcFour
     #*****************#
     #    CONSUMERS    #
     #*****************#
