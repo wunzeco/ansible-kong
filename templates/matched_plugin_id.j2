@@ -10,10 +10,10 @@
 {% set p_service_id  = p.service_id|default('') %}
 {% set p_route_id    = p.route_id|default('') %}
 {% set p_consumer_id = p.consumer_id|default('') %}
-{% if service.json|default(false) %}
+{% if service.status|default(false) == 200 %}
 {% set service_id = service.json.id %}
 {% endif %}
-{% if consumer.json|default(false) %}
+{% if consumer.status|default(false) == 200 %}
 {% set consumer_id = consumer.json.id %}
 {% endif %}
 {# Compare values #}
