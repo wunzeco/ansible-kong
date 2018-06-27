@@ -12,15 +12,14 @@
     status_code: "200,404"
   register: all_routes
 
-#- debug: var=routes
+#- debug: var=all_routes
 
 - name: Kong Route Object Delete for {{ kong_service_config.name }} service
   include: route_delete.yml
-  when: all_routes.json|default(false)
+  when: all_routes.json.data|default([])
   with_items: "{{ all_routes.json.data|map(attribute='id')|list }}"
   loop_control:
     loop_var: matched_route_id
-
 
 - name: Delete service object configured in kong
   uri:
