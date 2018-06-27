@@ -1,5 +1,10 @@
 ---
 
+# service_route_id is set in service_delete.yml which calls this task file.
+- set_fact:
+    matched_route_id: "{{ service_route_id }}"
+  when: service_route_id|default(false)
+
 - name: Delete route object associated to kong service object
   uri:
     url:    "{{ kong_admin_api_url|default('http://localhost:8001') }}/routes/{{ matched_route_id }}"

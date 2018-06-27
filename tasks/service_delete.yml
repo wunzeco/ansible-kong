@@ -19,7 +19,7 @@
   when: all_routes.status == 200
   with_items: "{{ all_routes.json.data|map(attribute='id')|list }}"
   loop_control:
-    loop_var: matched_route_id
+    loop_var: service_route_id
 
 - name: Delete service object configured in kong
   uri:
