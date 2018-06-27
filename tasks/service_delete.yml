@@ -16,7 +16,7 @@
 
 - name: Kong Route Object Delete for {{ kong_service_config.name }} service
   include: route_delete.yml
-  when: all_routes.json.data|default([])
+  when: all_routes.status == 200
   with_items: "{{ all_routes.json.data|map(attribute='id')|list }}"
   loop_control:
     loop_var: matched_route_id
