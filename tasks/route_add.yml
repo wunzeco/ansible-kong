@@ -1,50 +1,26 @@
 ---
 
-- name: Get list of route objects configured in kong associated with service
-  uri:
-    url: "{{ kong_admin_api_url|default('http://localhost:8001') }}/services/{{ kong_service_config.service.name }}/routes"
-  register: routes
-
-#- debug: var=routes
-
-# route = hosts + paths + method + protocols
-
-# Note: Why check for existing route objects?
-#   - To prevent configuring duplicate (and redundant) route objects
-#   - Kong will happy create route objects with exactly same properties for a service.
-#     In other words, redundant routes that add no value but could be a housecleaning
-#     nightmare.
-#
-# It is essential to check for existing routes configured for a service so as not to
-# attempt adding the routes again. Unfortunately, there isn't a single easily
-# identifiable property in the route object (e.g. name) to facilitate matching routes
-# already configured.
-# The approach taken here is to compare hosts, paths, methods and protocols properties
-# of the config item against all routes associated to the service since a combination
-# of these properties match a route.
-#
-# The steps below is to prevent duplicate routes.
-
-- name: Find ids of existing routes that match route object config
-  template:
-    src: matched_route_ids.j2
-    dest: /tmp/matched_route_ids.result
-  delegate_to: 127.0.0.1
-  become: false
-
-- name: Set ids of existing routes that matche route object config
-  set_fact: matched_route_ids="{{ lookup('file', '/tmp/matched_route_ids.result') }}"
-
 - name: Initialise route_exists variable
   set_fact:
-    route_exists: "{% if matched_route_ids != '' %}{{ true }}{% else %}{{ false }}{% endif %}"
+    route_exists: "{% if matched_route_id != '' %}{{ true }}{% else %}{{ false }}{% endif %}"
 
-#- debug: var=matched_route_ids
+#- debug: var=matched_route_id
 #- debug: var=route_exists
+#- debug: var=kong_route_config
+
+- name: Initialize kong_route_config_new
+  set_fact:
+    kong_route_config_new: {}
+
+- name: Sanitize kong_route_config dict
+  set_fact:
+    kong_route_config_new: "{{ kong_route_config_new|combine({item.key: item.value}) }}"
+  when: item.key not in ['name']
+  with_dict: "{{ kong_route_config }}"
 
 - name: Include service id in route obj config
   set_fact:
-    _kong_route_obj: "{{ outer_item|combine({'service': {'id': route_service_id}}) }}"
+    _kong_route_obj: "{{ kong_route_config_new|combine({'service': {'id': route_service_id}}) }}"
 
 #- debug: var=_kong_route_obj
 
@@ -60,9 +36,30 @@
 
 #- debug: var=route
 
-- debug: msg="Similar route object already exists for {{ kong_service_config.service.name }} service"
+# Route id stored in temporary file created here is used by plugin.yml
+- name: Store id of new route object added in a temp file
+  template:
+    src: new_route_id.j2
+    dest: "/tmp/{{ kong_route_config.name }}_route.id"
+  delegate_to: 127.0.0.1
+  become: false
+  when: not route_exists
+
+- debug: msg="Similar route object already exists for {{ kong_route_config.service }} service"
   when: route_exists
 
-# TODO:
-#- name: Kong Plugin for Route object
-#  include: plugin.yml
+# Why no task for updating an exiting route?
+#
+# The properties that are used to find a matching route are the very properties that
+# may change so as to update the route. Consider that:
+#     route = hosts + paths + methods + protocols
+# ...if any of the properties above change for a given route config then that implies
+# the new config won't be of any use in matching an existing route. It would have been
+# way easier if route object had a "name" property that should be unique and can be set.
+#
+# So for this very reason, it is not practical to have an `update route object` task.
+# Hence, it is omitted on purpose.
+#
+# How do you update an existing route object then?
+#     - create a replacement route object config
+#     - delete the existing route object config

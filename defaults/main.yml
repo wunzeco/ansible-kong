@@ -165,7 +165,10 @@ kong_service_config: {}                     # for service object and associated 
 # Kong service-routes config associates routes to a service.
 # Service-to-Route is 1-to-Many relationship
 
-kong_delete_plugin_obj: false               # set to True to delete service object from kong
+kong_delete_route_obj: false                # set to True to delete route object from kong
+kong_route_config: {}                       # for route object config
+
+kong_delete_plugin_obj: false               # set to True to delete plugin object from kong
 kong_plugin_config: {}                      # for plugin object config
 
 ## Consumer Object

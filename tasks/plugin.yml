@@ -24,14 +24,33 @@
 - name: Get service id if required to add plugin for a kong service object
   uri:
     url: "{{ kong_admin_api_url|default('http://localhost:8001') }}/services/{{ kong_plugin_config.service }}"
+    status_code: "200,404"
   when: kong_plugin_config.service|default(false)
   register: service
 
 - name: Get consumer id if required to add plugin for a kong consumer object
   uri:
     url: "{{ kong_admin_api_url|default('http://localhost:8001') }}/consumers/{{ kong_plugin_config.consumer }}"
+    status_code: "200,404"
   when: kong_plugin_config.consumer|default(false)
   register: consumer
+
+- name: Initialise plugin_route_id
+  set_fact:
+    plugin_route_id: ''
+
+# Note: "/tmp/{{ route_name }}_route.id" is created in route_add.yml tasks file.
+#       A route id must exist in /tmp/{{ route_name }}_route.id .
+- name: Get route id required to add plugin for a kong route object
+  set_fact:
+    plugin_route_id: "{{ lookup('file', '/tmp/' + kong_plugin_config.route + '_route.id')}}"
+  when: kong_plugin_config.route|default(false)
+
+- name: Ensure a route_id was fetched
+  fail: msg="No route id seen in /tmp/{{ kong_plugin_config.route }}_route.id"
+  when: kong_plugin_config.route|default(false) and plugin_route_id == ''
+
+#- debug: var=plugin_route_id
 
 - name: Create temp request data file for kong plugin object
   template:
@@ -64,9 +83,3 @@
 
 - name: Kong Plugin Object Config
   include: plugin_{{ _cmd }}.yml
-
-  #name
-  #consumer_id
-  #service_id
-  #route_id
-  #config {}

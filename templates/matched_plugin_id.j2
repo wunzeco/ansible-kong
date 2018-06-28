@@ -1,20 +1,23 @@
 {# The purpose of this template is to find a matching plugin object based on: #}
-{#    * plugin_name + service_id + consumer_id                                #}
+{#    * plugin_name + service_id + route_id + consumer_id                     #}
+{# In practice, either service_id or route_id may be specified and not both   #}
 {% for p in plugins.json.data %}
 {# Initialize variables #}
 {% set name = kong_plugin_config.name %}
-{% set service_id = '' %}
+{% set service_id  = '' %}
+{% set route_id    = plugin_route_id %}
 {% set consumer_id = '' %}
-{% set p_service_id = p.service_id|default('') %}
+{% set p_service_id  = p.service_id|default('') %}
+{% set p_route_id    = p.route_id|default('') %}
 {% set p_consumer_id = p.consumer_id|default('') %}
-{% if service.json|default(false) %}
+{% if service.status|default(false) == 200 %}
 {% set service_id = service.json.id %}
 {% endif %}
-{% if consumer.json|default(false) %}
+{% if consumer.status|default(false) == 200 %}
 {% set consumer_id = consumer.json.id %}
 {% endif %}
 {# Compare values #}
-{% if name == p.name and service_id == p_service_id and consumer_id == p_consumer_id %}
+{% if name == p.name and service_id == p_service_id and route_id == p_route_id and consumer_id == p_consumer_id %}
 {{ p.id }}
 {% endif %}
 {% endfor %}

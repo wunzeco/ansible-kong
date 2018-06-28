@@ -5,15 +5,29 @@
 #   HTTP/1.1 400 Bad Request
 #   {"fields":{"@referenced_by":"routes"},"name":"foreign key violation","code":4,"message":"an existing 'routes' entity references this 'services' entity"}
 #
-- include: route_delete.yml
+
+- name: Get list of route objects configured in kong associated to service
+  uri:
+    url: "{{ kong_admin_api_url|default('http://localhost:8001') }}/services/{{ kong_service_config.name }}/routes"
+    status_code: "200,404"
+  register: all_routes
+
+#- debug: var=all_routes
+
+- name: Kong Route Object Delete for {{ kong_service_config.name }} service
+  include: route_delete.yml
+  when: all_routes.status == 200
+  with_items: "{{ all_routes.json.data|map(attribute='id')|list }}"
+  loop_control:
+    loop_var: service_route_id
 
 - name: Delete service object configured in kong
   uri:
-    url:    "{{ kong_admin_api_url|default('http://localhost:8001') }}/services/{{ kong_service_config.service.name }}"
+    url:    "{{ kong_admin_api_url|default('http://localhost:8001') }}/services/{{ kong_service_config.name }}"
     method: DELETE
     status_code: "204,404"
   register: service
-  when: kong_service_config.service.name in services.json.data|map(attribute='name')
+  when: kong_service_config.name in services.json.data|map(attribute='name')
 
 #- debug: var=service
 
