@@ -95,6 +95,24 @@ describe command("curl -s http://localhost:8001/services/svcTwo/plugins | jq '.d
   its(:stdout) { should_not match 'cors' }
 end
 
+# verify number of upstream object
+describe command("curl -s http://localhost:8001/upstreams | jq '.total'") do
+  its(:exit_status) { should eq 0 }
+  its(:stdout) { should match '1' }
+end
+
+# verify upstream object
+describe command("curl -s http://localhost:8001/upstreams | jq '.data[].name'") do
+  its(:exit_status) { should eq 0 }
+  its(:stdout) { should match 'upstreamTwo' }
+end
+
+# verify targets of upstream object
+describe command("curl -s http://localhost:8001/upstreams/upstreamTwo/targets | jq '.data[].target'") do
+  its(:exit_status) { should eq 0 }
+  its(:stdout) { should match 'targetTwo' }
+end
+
 # verify consumerOne consumer object exists
 describe command("curl -s http://localhost:8001/consumers | jq '.data[] | .username'") do
   its(:exit_status) { should eq 0 }
