@@ -22,4 +22,4 @@
   when: kong_delete_service_obj
 
 - name: Kong Service Object Config
-  include: service_{{ _cmd }}.yml
+  include_tasks: service_{{ _cmd }}.yml

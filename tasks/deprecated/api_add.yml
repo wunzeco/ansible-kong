@@ -31,4 +31,4 @@
 #- debug: var=api
 
 - name: Kong Plugin for API object
-  include: "api_plugin.yml"
+  include_tasks: "api_plugin.yml"

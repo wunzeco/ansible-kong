@@ -48,7 +48,7 @@
     - name: START HERE
       debug: msg=starting
 
-    - include: "roles/ansible-kong/test/integration/node0/kong-migration.yml"
+    - include_tasks: "roles/ansible-kong/test/integration/node0/kong-migration.yml"
       when: ansible_os_family|lower == 'debian'
 
     #- pause: minutes=10

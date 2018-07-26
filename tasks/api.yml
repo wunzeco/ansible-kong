@@ -21,4 +21,4 @@
   when: kong_delete_api_obj
 
 - name: Kong API Object Config
-  include: "deprecated/api_{{ _cmd }}.yml"
+  include_tasks: "deprecated/api_{{ _cmd }}.yml"

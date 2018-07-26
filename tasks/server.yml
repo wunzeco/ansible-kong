@@ -76,4 +76,4 @@
   when: kong_version is version_compare('0.11.0', '<')
 
 - name: Kong Server Config & Start
-  include: "server-config.yml"
+  include_tasks: "server-config.yml"

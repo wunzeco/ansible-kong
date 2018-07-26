@@ -68,4 +68,4 @@
   when: kong_delete_route_obj
 
 - name: Kong Route Object Config
-  include: route_{{ _cmd }}.yml
+  include_tasks: route_{{ _cmd }}.yml

@@ -18,7 +18,7 @@
 
   pre_tasks:
     - name: Kong Migrations
-      include: "roles/ansible-kong/test/integration/node1/kong-migration.yml"
+      include_tasks: "roles/ansible-kong/test/integration/node1/kong-migration.yml"
       when: ansible_os_family|lower == 'debian'
 
     - name: Set kong host | RedHat
@@ -309,4 +309,4 @@
         service: svcTwo
         config: { whitelist: svcTwo-user-group }
 
-#- include: roles/ansible-kong/test/integration/node1/deprecated-config-format.yml
+#- include_tasks: roles/ansible-kong/test/integration/node1/deprecated-config-format.yml

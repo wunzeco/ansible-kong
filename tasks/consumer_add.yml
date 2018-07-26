@@ -48,7 +48,7 @@
 
 # Configure plugins for Consumer
 - name: Consumer Plugin Config | {{ outer_item.plugin|upper }}
-  include: consumer_{{ outer_item.name }}.yml
+  include_tasks: consumer_{{ outer_item.name }}.yml
   with_items: "{{ kong_consumer_config.plugins|default([]) }}"
   loop_control:
     loop_var: outer_item

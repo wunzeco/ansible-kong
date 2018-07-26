@@ -30,4 +30,4 @@
   when: kong_delete_consumer_obj
 
 - name: Kong Consumer Object Config
-  include: "{{ _format }}consumer_{{ _cmd }}.yml"
+  include_tasks: "{{ _format }}consumer_{{ _cmd }}.yml"

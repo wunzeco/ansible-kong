@@ -6,6 +6,9 @@ provisioner:
   name: ansible_playbook
   hosts: test-kitchen
   requirements_path: requirements.yml
+  require_pip: true
+  require_ansible_repo: false
+  ansible_version:  2.5.6.0
   ansible_verbose:  false
   ansible_verbosity: 2
   ansible_diff: true

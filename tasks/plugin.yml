@@ -82,4 +82,4 @@
   when: kong_delete_plugin_obj
 
 - name: Kong Plugin Object Config
-  include: plugin_{{ _cmd }}.yml
+  include_tasks: plugin_{{ _cmd }}.yml
