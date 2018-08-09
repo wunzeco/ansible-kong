@@ -9,13 +9,6 @@
 - name: Verify kong admin api available
   uri: url="{{ kong_admin_api_url|default('http://localhost:8001') }}"
 
-- name: Get list of plugin objects configured in kong
-  uri:
-    url: "{{ kong_admin_api_url|default('http://localhost:8001') }}/plugins?size=1000"
-  register: plugins
-
-#- debug: var=plugins
-
 # Note:
 # This role supports adding of plugins for service and consumers entities only
 # The complexity associated with finding a route_id makes is very tricky to support
@@ -27,6 +20,14 @@
     status_code: "200,404"
   when: kong_plugin_config.service|default(false)
   register: service
+
+- name: Get list of plugin objects configured in kong for the specified service
+  uri:
+    url: "{{ kong_admin_api_url|default('http://localhost:8001') }}/services/{{ service.json['id'] }}/plugins?size=1000"
+  register: plugins
+  when: kong_plugin_config.service is defined
+
+#- debug: var=plugins
 
 - name: Get consumer id if required to add plugin for a kong consumer object
   uri:
