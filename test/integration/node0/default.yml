@@ -43,19 +43,29 @@
     kong_nginx_json_log_format_enable: true
     kong_db_update_propagation: 1
     kong_manage_init_script: true
+    kong_nginx_custom_configs: 
+        - |-
+          # OpenID Connect config
+        - lua_shared_dict discovery 1m;
+        - lua_shared_dict jwks 1m;
+        - |
+          server {
+                  # Required so that OpenID doen't fail randomly...
+                  set $session_secret SomeAwesomeSecret;
+              }
 
   pre_tasks:
     - name: START HERE
       debug: msg=starting
 
+    - name: Set kong host
+      set_fact: kong_host="{{ ansible_enp0s8.ipv4.address }}"
+      when: ansible_service_mgr == 'systemd'
+
     - include_tasks: "roles/ansible-kong/test/integration/node0/kong-migration.yml"
       when: ansible_os_family|lower == 'debian'
 
     #- pause: minutes=10
-
-    - name: Set kong host | RedHat
-      set_fact: kong_host="{{ ansible_enp0s8.ipv4.address }}"
-      when: ansible_service_mgr == 'systemd'
 
   roles:
     - ansible-kong
