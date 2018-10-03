@@ -53,5 +53,9 @@ http {
 {% endif %}
 {% endfor %}
 
+{% if kong_nginx_custom_configs %}
+    {{ kong_nginx_custom_configs|join('\n    ') }}
+{% endif %}
+
     include 'nginx-kong.conf';
 }
