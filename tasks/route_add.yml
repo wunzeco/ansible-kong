@@ -48,18 +48,12 @@
 - debug: msg="Similar route object already exists for {{ kong_route_config.service }} service"
   when: route_exists
 
-# Why no task for updating an exiting route?
-#
-# The properties that are used to find a matching route are the very properties that
-# may change so as to update the route. Consider that:
-#     route = hosts + paths + methods + protocols
-# ...if any of the properties above change for a given route config then that implies
-# the new config won't be of any use in matching an existing route. It would have been
-# way easier if route object had a "name" property that should be unique and can be set.
-#
-# So for this very reason, it is not practical to have an `update route object` task.
-# Hence, it is omitted on purpose.
-#
-# How do you update an existing route object then?
-#     - create a replacement route object config
-#     - delete the existing route object config
+- name: Update matched route object of kong service object
+  uri:
+    url:    "{{ kong_admin_api_url|default('http://localhost:8001') }}/routes/{{ matched_route_id }}"
+    method: PATCH
+    body:   "{{ _kong_route_obj }}"
+    status_code: "200"
+    body_format: json
+  register: route
+  when: route_exists
