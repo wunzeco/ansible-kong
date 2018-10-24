@@ -14,7 +14,7 @@
   notify:
     - Validate kong config
     - "{{ kong_restart }}"
-  when: kong_version is version_compare('0.13.0', '<')
+  when: kong_version|version_compare('0.13.0', '<')
 
 - name: Create kong config file | v0.13.x or later
   template:
@@ -23,7 +23,7 @@
     owner: root
     group: root
     mode:  0644
-  when: kong_version is version_compare('0.13.0', '>=')
+  when: kong_version|version_compare('0.13.0', '>=')
   notify:
     - Validate kong config
     - "{{ kong_restart }}"
@@ -89,13 +89,21 @@
     owner: root
     group: root
     mode:  0744
-  when: kong_manage_init_script
+  when: kong_manage_init_script and ansible_service_mgr == 'upstart'
+  notify:
+    - "{{ kong_restart }}"
 
-- name: Create sysvinit symlinks
-  service:
-    name: kong
-    enabled: yes
-  when: kong_manage_init_script
+- name: Copy over kong systemd service unit
+  template:
+    src: kong.service.j2
+    dest: "{{ kong_systemd_units_dir }}/kong.service"
+    owner: root
+    group: root
+    mode:  0644
+  when: kong_manage_init_script and ansible_service_mgr == 'systemd'
+  notify:
+    - Reload systemd
+    - "{{ kong_restart }}"
 
 - name: Start kong natively
   shell: >
@@ -109,6 +117,7 @@
 - name: Start kong via init
   service:
     name: kong
+    enabled: yes
     state: started
   when: run_status == "down" and kong_manage_init_script
 

@@ -1,9 +1,5 @@
 ---
 
-- name: set sysvinit for all kong service settings
-  set_fact:
-    ansible_service_mgr: "sysvinit"
-
 - name: Set init script handlers for playbook
   set_fact:
     kong_reload: "Reload kong with init script"

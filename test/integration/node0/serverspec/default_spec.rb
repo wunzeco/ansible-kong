@@ -38,7 +38,14 @@ describe file("/usr/local/bin/kong") do
   it { should be_owned_by 'root' }
 end
 
-describe file("/etc/init.d/kong") do
+service_startup_file = '/lib/systemd/system/kong.service'
+if os[:family] =~ /ubuntu|debian/ and os[:release] == '14.04'
+  service_startup_file = '/etc/init.d/kong'
+elsif os[:family] =~ /centos|redhat/
+  service_startup_file = '/usr/lib/systemd/system/kong.service'
+end
+
+describe file(service_startup_file) do
   it { should be_file }
   it { should be_owned_by 'root' }
 end

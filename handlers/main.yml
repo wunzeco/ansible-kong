@@ -31,3 +31,7 @@
     name: kong
     state: restarted
     sleep: 2  # stop race conditions
+
+- name: Reload systemd
+  systemd:
+    daemon_reload: yes
