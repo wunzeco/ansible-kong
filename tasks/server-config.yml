@@ -105,13 +105,18 @@
     - Reload systemd
     - "{{ kong_restart }}"
 
+## next two tasks below to be removed post deprecation of 0.12.x support
 - name: Ensure kong init script does not clash with systemd service unit file
   file:
     path:  "/etc/init.d/kong"
     state: absent
   when: kong_manage_init_script and ansible_service_mgr == 'systemd'
-  notify:
-    - Reload systemd
+  register: del_init_script
+
+- name: Reload systemd if init script is deleted
+  systemd:
+    daemon_reload: yes
+  when: del_init_script|changed
 
 - name: Start kong natively
   shell: >
