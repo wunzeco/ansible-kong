@@ -105,6 +105,14 @@
     - Reload systemd
     - "{{ kong_restart }}"
 
+- name: Ensure kong init script does not clash with systemd service unit file
+  file:
+    path:  "/etc/init.d/kong"
+    state: absent
+  when: kong_manage_init_script and ansible_service_mgr == 'systemd'
+  notify:
+    - Reload systemd
+
 - name: Start kong natively
   shell: >
       ulimit -n "{{ kong_max_files_limit }}" && \
