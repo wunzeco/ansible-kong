@@ -1,0 +1,21 @@
+---
+
+- debug: msg="Kong Version - {{ kong_version }}"
+
+- name: Verify kong admin api available
+  uri: url="{{ kong_admin_api_url|default('http://localhost:8001') }}"
+
+- name: Get list of upstream objects configured in kong
+  uri:
+    url: "{{ kong_admin_api_url|default('http://localhost:8001') }}/upstreams"
+  register: upstreams
+
+#- debug: var=upstreams
+
+- set_fact: _cmd=add
+
+- set_fact: _cmd=delete
+  when: kong_delete_upstream_obj
+
+- name: Kong Upstream Object Config
+  include_tasks: upstream_{{ _cmd }}.yml

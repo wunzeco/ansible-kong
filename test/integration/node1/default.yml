@@ -128,13 +128,77 @@
       kong_service_config:
         name: svcThree
     #-----------------------#
-    #   svcFour & Routes   #
+    #   svcFour & Routes    #
     #-----------------------#
     - role: ansible-kong            ## DELETE service obj for svcThree
       kong_task: service
       kong_delete_service_obj: true
       kong_service_config:
         name: svcFour
+    #*************************#
+    #   UPSTREAMS & TARGETS   #
+    #*************************#
+    #--------------------------#
+    #   upstreamOne & Targets  #
+    #--------------------------#
+    - role: ansible-kong            ## ADD upstream obj for upstreamOne
+      kong_task: upstream
+      kong_upstream_config:
+        name: upstreamOne
+        slots: 200
+    - role: ansible-kong            ## ADD taget obj for upstreamOne
+      kong_task: target
+      kong_target_config:
+        upstream: upstreamOne
+        target: targetOne
+        weight: 100
+    - role: ansible-kong            ## DELETE upstream obj for upstreamOne
+      kong_task: upstream
+      kong_delete_upstream_obj: true
+      kong_upstream_config:
+        name: upstreamOne
+    #--------------------------#
+    #   upstreamTwo & Targets  #
+    #--------------------------#
+    - role: ansible-kong            ## ADD upstream obj for upstreamTwo
+      kong_task: upstream
+      kong_upstream_config:
+        name: upstreamTwo
+        slots: 200
+        hash_on: ip
+        hash_fallback: header
+        hash_on_header: hashHeaderOne
+        hash_fallback_header: hashHeaderTwo
+        healthchecks:
+          active:
+            timeout: 10
+            concurrency: 5
+            http_path: /status
+            healthy:
+              interval: 3
+              http_statuses: [200, 202]
+              successes: 3
+            unhealthy:
+              interval: 5
+              http_statuses: [400]
+              tcp_failures: 5
+              timeouts: 5
+              http_failures: 4
+          passive:
+            healthy:
+              http_statuses: [200, 201, 202]
+              successes: 3
+            unhealthy:
+              http_statuses: [500, 503]
+              tcp_failures: 3
+              timeouts: 5
+              http_failures: 6
+    - role: ansible-kong            ## ADD taget obj for upstreamTwo
+      kong_task: target
+      kong_target_config:
+        upstream: upstreamTwo
+        target: targetTwo
+        weight: 100
     #*****************#
     #    CONSUMERS    #
     #*****************#
