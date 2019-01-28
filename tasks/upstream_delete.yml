@@ -1,0 +1,13 @@
+---
+
+- name: Delete upstream object configured in kong
+  uri:
+    url:    "{{ kong_admin_api_url|default('http://localhost:8001') }}/upstreams/{{ kong_upstream_config.name }}"
+    method: DELETE
+    status_code: "204,404"
+  register: upstream
+  when: kong_upstream_config.name in upstreams.json.data|map(attribute='name')
+
+#- debug: var=upstream
+
+# Note: Deleting a upstream object also deletes target objects configured for it

@@ -1,0 +1,11 @@
+---
+
+- name: Delete target object associated to kong upstream object
+  uri:
+    url:    "{{ kong_admin_api_url|default('http://localhost:8001') }}/upstreams/{{ kong_target_config.upstream }}/targets/{{ kong_target_config.target }}"
+    method: DELETE
+    status_code: "204,404"
+  register: target_del
+  when: kong_target_config.upstream != '' and kong_target_config.target != ''
+
+#- debug: var=target_del

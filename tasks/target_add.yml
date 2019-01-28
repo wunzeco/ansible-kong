@@ -1,0 +1,22 @@
+---
+
+- name: Initialize kong_target_config_new
+  set_fact:
+    kong_target_config_new: {}
+
+- name: Sanitize kong_target_config_new dict
+  set_fact:
+    kong_target_config_new: "{{ kong_target_config_new|combine({item.key: item.value}) }}"
+  when: item.key not in ['upstream']
+  with_dict: "{{ kong_target_config }}"
+
+- name: Add target object to kong
+  uri:
+    url:    "{{ kong_admin_api_url|default('http://localhost:8001') }}/upstreams/{{ kong_target_config.upstream }}/targets"
+    method: POST
+    body:   "{{ kong_target_config_new }}"
+    status_code: "201"
+    body_format: json
+  register: t_add
+
+#- debug: var=t_add

@@ -176,6 +176,14 @@ kong_plugin_config: {}                      # for plugin object config
 kong_delete_consumer_obj: false             # set to True to delete consumer object from kong
 kong_consumer_config: {}                    # for consumer object config
 
+## Upstream Object
+kong_delete_upstream_obj: false             # set to True to delete upstream object from kong
+kong_upstream_config: {}                    # for upstream object config
+
+## Target Object
+kong_delete_target_obj: false               # set to True to delete upstream object from kong
+kong_target_config: {}                      # for target object config
+
 # Kong service-routes config associates routes to a service.
 # Service-to-Route is 1-to-Many
 #kong_service_config:

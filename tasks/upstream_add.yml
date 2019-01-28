@@ -1,0 +1,60 @@
+---
+
+- name: Initialise upstream_exists variable
+  set_fact:
+    upstream_exists: false
+
+- name: Set upstream_exists if upstream object already exists
+  set_fact:
+    upstream_exists: true
+  when: kong_upstream_config.name in upstreams.json.data|map(attribute='name')
+
+- name: Add upstream object to kong
+  uri:
+    url:    "{{ kong_admin_api_url|default('http://localhost:8001') }}/upstreams/"
+    method: POST
+    body:   "{{ kong_upstream_config }}"
+    status_code: "201"
+    body_format: json
+  register: u_add
+  when: not upstream_exists
+
+#- debug: var=u_add
+
+- debug: msg="{{ kong_upstream_config.name }} upstream object already exists - ({{ upstreams.json.data|map(attribute='name')|join(',') }})"
+  when: upstream_exists
+
+# Note: Why remove "name" attribute from request body to update upstream object?
+#       Request fails with 409 status code if value of name in body matches existing name
+#       E.g
+#          < HTTP/1.1 409 Conflict
+#          {
+#            "message": "UNIQUE violation detected on '{name=\"svcAA\"}'",
+#            "code": 5,
+#            "name": "unique constraint violation",
+#            "fields": {
+#              "name": "svcAA"
+#            }
+#          }
+
+- name: Initialise kong_upstream_obj_update variable
+  set_fact:
+    kong_upstream_obj_update: {}
+
+- name: Set kong upstream object config for update
+  set_fact:
+    kong_upstream_obj_update: "{{ kong_upstream_obj_update|combine({ item.key: item.value })}}"
+  when: item.key != 'name'
+  with_dict: "{{ kong_upstream_config }}"
+
+- name: Update upstream object configured in kong
+  uri:
+    url:    "{{ kong_admin_api_url|default('http://localhost:8001') }}/upstreams/{{ kong_upstream_config.name }}"
+    method: PATCH
+    body:   "{{ kong_upstream_obj_update }}"
+    status_code: "200"
+    body_format: json
+  register: u_update
+  when: upstream_exists
+
+#- debug: var=u_update

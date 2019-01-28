@@ -1,0 +1,14 @@
+---
+
+- debug: msg="TARGET | Kong Version - {{ kong_version }}"
+
+- name: Verify kong admin api available | target
+  uri: url="{{ kong_admin_api_url|default('http://localhost:8001') }}"
+
+- set_fact: _cmd=add
+
+- set_fact: _cmd=delete
+  when: kong_delete_target_obj
+
+- name: Kong Target Object Config
+  include_tasks: target_{{ _cmd }}.yml

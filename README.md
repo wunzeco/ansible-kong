@@ -74,6 +74,25 @@ information on Routes, Services, Consumer and Plugins configuration.
       kong_delete_service_obj: true
       kong_service_config:
         name: svcThree
+    #*************************#
+    #    UPSTREAM & TARGETS   #
+    #*************************#
+    - role: ansible-kong            ## ADD/UPDATE upstream obj for svcOne upstream
+      kong_task: upstream
+      kong_upstream_config:
+        name: upstreamOne
+        slots: 1000
+    - role: ansible-kong            ## ADD target obj for upstreamOne
+      kong_task: target
+      kong_target_config:
+        upstream: upstreamOne
+        target: targetOne
+        weight: 200
+    - role: ansible-kong            ## DELETE upstreamOne with all targets
+      kong_task: upstream
+      kong_delete_upstream_obj: true
+      kong_upstream_config:
+        name: upstreamOne
     #*****************#
     #    CONSUMERS    #
     #*****************#
