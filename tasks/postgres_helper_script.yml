@@ -1,14 +1,14 @@
 ---
+- name: Download and install postgresql gpg public signing key
+  apt_key:
+    url:   "{{ postgresql_apt_key_url }}"
+    state: present
 
-- name: Set postgresql client package name
-  set_fact:
-    postgresql_client_package: postgresql-client
-  when: ansible_distribution == 'Ubuntu'
-
-- name: Set postgresql client package name
-  set_fact:
-    postgresql_client_package: postgresql
-  when: ansible_distribution != 'Ubuntu'
+- name: Add postgresql apt repository definition to apt sources list
+  apt_repository:
+    repo: "{{ postgresql_apt_repo }}"
+    update_cache: yes
+    state:  present
 
 - name: Install postgresql client package
   package:
