@@ -79,7 +79,7 @@ kong_logrotate_maxsize:   500M
 ##------------------
 ## DATASTORE
 ##------------------
-kong_database:        cassandra
+kong_database:        postgres
 #----  PostgreSQL  ----
 kong_pg_host:         127.0.0.1
 kong_pg_port:         5432
@@ -88,6 +88,11 @@ kong_pg_password:     kong
 kong_pg_database:     kong
 kong_pg_ssl:          "off"
 kong_pg_ssl_verify:   "off"
+
+postgresql_client_package: postgresql-client-10
+postgresql_apt_key_url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+postgresql_apt_repo: "deb http://apt.postgresql.org/pub/repos/apt/{{ ansible_distribution_release }}-pgdg main"
+
 #----  Cassandra  ----
 kong_cassandra_host: "{{ ansible_default_ipv4.address }}"
 kong_cassandra_contact_points:
