@@ -91,7 +91,7 @@ kong_pg_ssl_verify:   "off"
 
 postgresql_client_package: postgresql-client-10
 postgresql_apt_key_url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
-postgresql_apt_repo: "deb http://apt.postgresql.org/pub/repos/apt/{{ ansible_distribution_release }}-pgdg main"
+postgresql_apt_repo: "deb http://apt.postgresql.org/pub/repos/apt/ {{ ansible_distribution_release }}-pgdg main"
 
 #----  Cassandra  ----
 kong_cassandra_host: "{{ ansible_default_ipv4.address }}"
