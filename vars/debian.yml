@@ -1,3 +1,4 @@
 ---
 
 kong_systemd_units_dir: /lib/systemd/system
+postgresql_client_package: postgresql-client-10

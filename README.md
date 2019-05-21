@@ -33,7 +33,7 @@ information on Routes, Services, Consumer and Plugins configuration.
     ## kong_pg_host: <my_pg_ip_or_fqdn>
 
   roles:
-    - wunzeco.kong
+    - o2-priority.kong
 ```
 
 
@@ -211,18 +211,17 @@ information on Routes, Services, Consumer and Plugins configuration.
         config: { whitelist: "svcOne-user-group, another-user-group" }
 ```
 
-
 ## Testing
 
-To run this role's integration tests
+To run integration tests of this role
 
+PLATFORM = ubuntu or centos
 ```
-PLATFORM=ubuntu-1604      # OR ubuntu-1404, centos
-kitchen verify $PLATFORM && kitchen destroy $PLATFORM
+kitchen test $PLATFORM --destroy=never && docker kill node0 node1 && docker rm node0 node1
 ```
 
-
+> **Note:**
+> `--destroy=never` must be supplied because two nodes are required to be running for all the tests to pass. As a consequence of this `$PLATFORM` must also be specified for the `kitchen test` command otherwise it will not work because of the `instance_name` property. The `docker` commands remove the left over containers for the next platform run
 
 ## Dependencies
-
 none

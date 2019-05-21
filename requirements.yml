@@ -1,1 +1,4 @@
-- src: wunzeco.docker
+- src: git@github.com:o2-priority/ansible-docker.git
+  version: master
+  scm: git
+  name: o2-priority.docker

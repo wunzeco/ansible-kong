@@ -2,8 +2,11 @@
 - name: Postgres start
   hosts: test-kitchen
 
+  vars:
+    docker_package_version: '*'
+
   roles:
-    - wunzeco.docker
+    - o2-priority.docker
 
   post_tasks:
     - name: Start postgresql container for kong
@@ -30,13 +33,13 @@
     kong_version_current: 0.0.0
 
     kong_conf_dir: /etc/kong
-    kong_host:  "{{ ansible_eth1.ipv4.address }}"
+    kong_host:  "node0.internal"
     kong_database:         postgres
-    kong_pg_host:          "{{ kong_host }}"
-    kong_proxy_listen:     "{{ kong_host }}:8000"
-    kong_proxy_listen_ssl: "{{ kong_host }}:8443"
-    kong_admin_listen:     "{{ kong_host }}:8001"
-    kong_cluster_listen:   "{{ kong_host }}:7946"
+    kong_pg_host:          "node0.internal"
+    kong_proxy_listen:     "node0.internal:8000"
+    kong_proxy_listen_ssl: "node0.internal:8443"
+    kong_admin_listen:     "node0.internal:8001"
+    kong_cluster_listen:   "node0.internal:7946"
     kong_proxy_set_headers:
       "X-Forwarded-Prefix": '$http_x_forwarded_prefix'
     kong_nginx_custom_log_fields: [ realip_remote_addr, http_x_forwarded_prefix, http_x_forwarded_for, http_x_forwarded_proto ]
@@ -59,7 +62,7 @@
       debug: msg=starting
 
     - name: Set kong host
-      set_fact: kong_host="{{ ansible_enp0s8.ipv4.address }}"
+      set_fact: kong_host="{{ ansible_eth0.ipv4.address }}"
       when: ansible_service_mgr == 'systemd'
 
     - include_tasks: "roles/ansible-kong/test/integration/node0/kong-migration.yml"
