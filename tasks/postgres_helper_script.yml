@@ -3,12 +3,20 @@
   apt_key:
     url:   "{{ postgresql_apt_key_url }}"
     state: present
+  when: ansible_os_family|lower == 'debian'
 
 - name: Add postgresql apt repository definition to apt sources list
   apt_repository:
     repo: "{{ postgresql_apt_repo }}"
     update_cache: yes
     state:  present
+  when: ansible_os_family|lower == 'debian'
+
+- name: Add postgresql yum respository
+  yum:
+    name: "{{ postgresql_yum_repo_package }}"
+    state: present
+  when: ansible_os_family|lower == 'redhat'
 
 - name: Install postgresql client package
   package:
