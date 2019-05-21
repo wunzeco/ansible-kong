@@ -1,4 +1,4 @@
-require 'spec_helper'
+require '/tmp/kitchen/spec/spec_helper.rb'
 
 kong_conf_dir = '/etc/kong/'
 kong_nginx_working_dir = '/usr/local/kong'

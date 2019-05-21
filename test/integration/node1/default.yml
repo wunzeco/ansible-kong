@@ -6,11 +6,11 @@
     kong_database:         postgres
     kong_version: 0.13.1
     kong_version_current: 0.0.0
-    kong_host:  "{{ ansible_eth1.ipv4.address }}"
-    kong_pg_host:          "172.29.129.11"
-    kong_proxy_listen:     "{{ kong_host }}:8000"
-    kong_proxy_listen_ssl: "{{ kong_host }}:8443"
-    kong_cluster_listen:   "{{ kong_host }}:7946"
+    kong_host:  "node1.internal"
+    kong_pg_host:          "node0.internal"
+    kong_proxy_listen:     "node1.internal:8000"
+    kong_proxy_listen_ssl: "node1.internal:8443"
+    kong_cluster_listen:   "node1.internal:7946"
     kong_db_update_propagation: 1
     kong_proxy_set_headers:
       "X-Forwarded-Prefix": '$http_x_forwarded_prefix'
@@ -22,7 +22,7 @@
       when: ansible_os_family|lower == 'debian'
 
     - name: Set kong host | RedHat
-      set_fact: kong_host="{{ ansible_enp0s8.ipv4.address }}"
+      set_fact: kong_host="{{ ansible_eth0.ipv4.address }}"
       when: ansible_service_mgr == 'systemd'
 
     #- pause: minutes=1

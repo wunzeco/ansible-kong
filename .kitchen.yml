@@ -1,49 +1,60 @@
 ---
 driver:
-  name: vagrant
+  name: docker
 
 provisioner:
   name: ansible_playbook
   hosts: test-kitchen
-  requirements_path: requirements.yml
-  require_pip: true
+  require_chef_for_busser: false
+  require_ansible_omnibus: false
   require_ansible_repo: false
-  ansible_version:  2.6.2.0
-  ansible_verbose:  false
+  ansible_version: 2.5.6.0
+  ansible_verbose: false
   ansible_verbosity: 2
-  ansible_diff: true
   ansible_extra_flags: <%= ENV['ANSIBLE_EXTRA_FLAGS'] %>
+  requirements_path: requirements.yml
   ignore_paths_from_root:
     - .kitchen
+  ssh_known_hosts:
+    - github.com
 
 platforms:
-  - name: ubuntu-14.04
-    driver:
-      box: ubuntu/trusty64
   - name: ubuntu-16.04
-    driver:
-      box: ubuntu/xenial64
+    driver_config:
+      image: solita/ubuntu-systemd
+      platform: ubuntu
+      privileged: true
+      run_command: /sbin/init
+      provision_command:
+        - apt-get update --fix-missing
+        - apt-get install -y apt-transport-https iproute git python-pip curl
+        - pip install ansible pyopenssl
   - name: centos-7.2
-    driver:
-      box: bento/centos-7.2
+    driver_config:
+      image: centos/systemd
+      platform: centos
+      privileged: true
+      run_command: /sbin/init
+      provision_command:
+        - yum install -y iproute tuned epel-release ansible git
+        # https://github.com/CentOS/CentOS-Dockerfiles/issues/173
+        - systemctl enable systemd-user-sessions.service && ln -s /usr/lib/systemd/system/systemd-user-sessions.service /etc/systemd/system/default.target.wants/systemd-user-sessions.service
+
+verifier:
+  name: serverspec
+  default_pattern: true
 
 suites:
   - name: node0
-    driver:
-      customize:
-        memory: 1024
-      network:
-        - ["private_network", { ip: "172.29.129.11" }]
+    driver_config:
+      hostname: node0.internal
+      instance_name: node0
+
   - name: node1
-    driver:
-      network:
-        - ["private_network", { ip: "172.29.129.12" }]
-  - name: node0.12.x
-    driver:
-      customize:
-        memory: 1024
-      network:
-        - ["private_network", { ip: "172.29.129.21" }]
+    driver_config:
+      hostname: node1.internal
+      instance_name: node1
+      links: node0
 
 transport:
-  max_ssh_sessions: 4
+  forward_agent: true
