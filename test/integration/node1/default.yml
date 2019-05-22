@@ -21,12 +21,6 @@
       include_tasks: "roles/ansible-kong/test/integration/node1/kong-migration.yml"
       when: ansible_os_family|lower == 'debian'
 
-    - name: Set kong host | RedHat
-      set_fact: kong_host="{{ ansible_eth0.ipv4.address }}"
-      when: ansible_service_mgr == 'systemd'
-
-    #- pause: minutes=1
-
   roles:
     - ansible-kong
 
@@ -372,5 +366,3 @@
         name: acl
         service: svcTwo
         config: { whitelist: svcTwo-user-group }
-
-#- include_tasks: roles/ansible-kong/test/integration/node1/deprecated-config-format.yml

@@ -58,17 +58,8 @@
               }
 
   pre_tasks:
-    - name: START HERE
-      debug: msg=starting
-
-    - name: Set kong host
-      set_fact: kong_host="{{ ansible_eth0.ipv4.address }}"
-      when: ansible_service_mgr == 'systemd'
-
     - include_tasks: "roles/ansible-kong/test/integration/node0/kong-migration.yml"
       when: ansible_os_family|lower == 'debian'
-
-    #- pause: minutes=10
 
   roles:
     - ansible-kong
