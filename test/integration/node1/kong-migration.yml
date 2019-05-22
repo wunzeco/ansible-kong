@@ -12,10 +12,3 @@
   when: v is success
 
 - debug: msg="Installed kong version - {{ kong_version_current }}"
-
-#- name: Stop kong | pre kong v{{ kong_version_current }} upgrade
-#  shell: kong stop
-#  environment:
-#    PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
-#  ignore_errors: true
-#  when: v.stdout is match(kong_version_current) and kong_version is version_compare(kong_version_current, '>')
