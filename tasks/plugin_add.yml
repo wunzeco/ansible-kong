@@ -8,7 +8,7 @@
   uri:
     url:    "{{ kong_admin_api_url|default('http://localhost:8001') }}/plugins/"
     method: POST
-    body:   "{{ lookup('file', '/tmp/' + kong_plugin_config.name + '_plugin.obj') }}"
+    body:   "{{ lookup('file', plugin_obj.path) }}"
     status_code: "201"
     body_format: json
   register: p_add
@@ -18,7 +18,7 @@
   uri:
     url:    "{{ kong_admin_api_url|default('http://localhost:8001') }}/plugins/{{ matched_plugin_id }}"
     method: PATCH
-    body:   "{{ lookup('file', '/tmp/' + kong_plugin_config.name + '_plugin.obj') }}"
+    body:   "{{ lookup('file', plugin_obj.path) }}"
     status_code: "200"
     body_format: json
   register: p_update

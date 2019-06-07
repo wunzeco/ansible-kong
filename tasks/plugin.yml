@@ -52,10 +52,18 @@
 
 #- debug: var=plugin_route_id
 
+- name: create temporary file
+  tempfile:
+    state: file
+    suffix: plugin.obj
+  register: plugin_obj
+
+- debug: var=plugin_obj
+
 - name: Create temp request data file for kong plugin object
   template:
     src:  plugin_obj.j2
-    dest: "/tmp/{{ kong_plugin_config.name }}_plugin.obj"
+    dest: "{{ plugin_obj.path }}"
   delegate_to: 127.0.0.1
   become: false
 
@@ -63,16 +71,24 @@
 #- debug: var=service
 #- debug: var=consumer
 
+- name: create temporary file
+  tempfile:
+    state: file
+    suffix: matched_plugin.id
+  register: matched_plugin_id
+
+- debug: var=matched_plugin_id
+
 - name: Find existing kong plugin that match config
   template:
     src:  matched_plugin_id.j2
-    dest: "/tmp/matched_plugin.id"
+    dest: "{{ matched_plugin_id.path }}"
   delegate_to: 127.0.0.1
   become: false
 
 - name: Get matched plugin id
   set_fact:
-    matched_plugin_id: "{{ lookup('file', '/tmp/matched_plugin.id') }}"
+    matched_plugin_id: "{{ lookup('file', matched_plugin_id.path) }}"
 
 - debug: msg="Plugin - {{ kong_plugin_config.name }}"
 
