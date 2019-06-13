@@ -3,8 +3,6 @@ kong_task:      server        # influences task file to apply. Options - server,
 kong_conf_dir: /etc/kong
 kong_log_dir:  /usr/local/kong/logs
 
-kong_manage_init_script: true
-
 ############
 ##  Package
 kong_prereqs: [ openssl, libpcre3, procps, perl ]

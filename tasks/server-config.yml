@@ -13,7 +13,7 @@
     mode:  0644
   notify:
     - Validate kong config
-    - "{{ kong_restart }}"
+    - Restart kong
   when: kong_version|version_compare('0.13.0', '<')
 
 - name: Create kong config file | v0.13.x or later
@@ -26,7 +26,7 @@
   when: kong_version|version_compare('0.13.0', '>=')
   notify:
     - Validate kong config
-    - "{{ kong_restart }}"
+    - Restart kong
 
 # "Reload kong" handler sometimes fails for instance when access_log config
 # This is an edge case when custom log format is configured and name of log format
@@ -44,7 +44,7 @@
     mode:  0644
   notify:
     - Validate kong config
-    - "{{ kong_restart }}"
+    - Restart kong
 
 - name: Prepare kong prefix directory
   shell: >
@@ -82,17 +82,6 @@
   run_once: true
   register: migration
 
-- name: Copy over kong init script
-  template:
-    src: kong.init.j2
-    dest: "/etc/init.d/kong"
-    owner: root
-    group: root
-    mode:  0744
-  when: kong_manage_init_script and ansible_service_mgr == 'upstart'
-  notify:
-    - "{{ kong_restart }}"
-
 - name: Copy over kong systemd service unit
   template:
     src: kong.service.j2
@@ -100,39 +89,16 @@
     owner: root
     group: root
     mode:  0644
-  when: kong_manage_init_script and ansible_service_mgr == 'systemd'
   notify:
     - Reload systemd
-    - "{{ kong_restart }}"
-
-## next two tasks below to be removed post deprecation of 0.12.x support
-- name: Ensure kong init script does not clash with systemd service unit file
-  file:
-    path:  "/etc/init.d/kong"
-    state: absent
-  when: kong_manage_init_script and ansible_service_mgr == 'systemd'
-  register: del_init_script
-
-- name: Reload systemd if init script is deleted
-  systemd:
-    daemon_reload: yes
-  when: del_init_script|changed
-
-- name: Start kong natively
-  shell: >
-      ulimit -n "{{ kong_max_files_limit }}" && \
-        kong start --conf {{ kong_conf_dir }}/kong.conf --nginx-conf {{ kong_conf_dir }}/custom-nginx.template
-  environment:
-    PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
-  when: run_status == "down" and not kong_manage_init_script
-  register: start
+    - Restart kong
 
 - name: Start kong via init
   service:
     name: kong
     enabled: yes
     state: started
-  when: run_status == "down" and kong_manage_init_script
+  when: run_status == "down"
 
 - include_tasks: postgres_helper_script.yml
   when: kong_database == "postgres"

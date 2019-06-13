@@ -1,17 +1,4 @@
 ---
-
-- name: Set init script handlers for playbook
-  set_fact:
-    kong_reload: "Reload kong with init script"
-    kong_restart: "Restart kong with init script"
-  when: kong_manage_init_script
-
-- name: Set native kong service handlers for playbook
-  set_fact:
-    kong_reload: "Reload kong"
-    kong_restart: "Restart kong"
-  when: not kong_manage_init_script
-
 - name: Set kong pkg download variables
   set_fact:
     kong_deb_pkg_url: "{{ kong_deb_pkg_url_pre_0_11_x }}"
@@ -42,7 +29,7 @@
     deb:   "/var/tmp/{{ kong_deb_pkg }}"
     state: present
   notify:
-    - "{{ kong_restart }}"
+    - Restart kong
   when: ansible_os_family|lower == 'debian'
 
 # RedHat
@@ -56,7 +43,7 @@
     disable_gpg_check: yes
     state: present
   notify:
-    - "{{ kong_restart }}"
+    - Restart kong
   when: ansible_os_family|lower == 'redhat'
 
 - name: Create logrotate config for kong logs

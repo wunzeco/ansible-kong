@@ -45,7 +45,6 @@
     kong_nginx_custom_log_fields: [ realip_remote_addr, http_x_forwarded_prefix, http_x_forwarded_for, http_x_forwarded_proto ]
     kong_nginx_json_log_format_enable: true
     kong_db_update_propagation: 1
-    kong_manage_init_script: true
     kong_nginx_custom_configs: 
         - |-
           # OpenID Connect config
