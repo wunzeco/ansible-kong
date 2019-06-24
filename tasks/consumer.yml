@@ -9,6 +9,7 @@
     url: "{{ kong_admin_api_url }}/consumers"
   register: consumers
 
+- debug: msg="{{ consumers.json }}"
 
 # Move to README:
 #
