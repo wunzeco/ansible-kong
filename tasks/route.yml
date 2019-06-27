@@ -7,7 +7,12 @@
   when: kong_version is version_compare('0.13', '<')
 
 - name: Verify kong admin api available | route
-  uri: url="{{ kong_admin_api_url|default('http://localhost:8001') }}"
+  uri: 
+    url: "{{ kong_admin_api_url|default('http://localhost:8001') }}"
+  register: api_available
+  until: api_available is succeeded
+  retries: 10
+  delay: 5
 
 - name: Initialise get_routes_status_code
   set_fact:
@@ -19,6 +24,9 @@
     url: "{{ kong_admin_api_url|default('http://localhost:8001') }}/services/{{ kong_route_config.service }}/routes"
     status_code: "{{ get_routes_status_code|default('200') }}"
   register: routes
+  until: routes is succeeded
+  retries: 10
+  delay: 5
 
 #- debug: var=routes
 
@@ -26,6 +34,9 @@
   uri:
     url: "{{ kong_admin_api_url|default('http://localhost:8001') }}/services/{{ kong_route_config.service }}"
   register: svc
+  until: svc is succeeded
+  retries: 10
+  delay: 5
 
 #- debug: var=svc
 

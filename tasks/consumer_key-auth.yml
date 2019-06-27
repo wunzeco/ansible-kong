@@ -5,6 +5,9 @@
   uri:
     url: "{{ kong_admin_api_url }}/consumers/{{ kong_consumer_config.username }}/{{ outer_item.name }}"
   register: current_key_auth_creds
+  until: current_key_auth_creds is succeeded
+  retries: 10
+  delay: 5
 
 #- debug: var=current_key_auth_creds
 
@@ -17,6 +20,9 @@
      body_format: json
   register: created
   when: not outer_item.parameters.key in current_key_auth_creds.json.data|map(attribute='key')|list
+  until: created is succeeded
+  retries: 10
+  delay: 5
 
 - name: Get authentication credentials id | {{ outer_item.name }}
   template:
@@ -35,6 +41,9 @@
      body_format: json
   register: updated
   when: outer_item.parameters.key in current_key_auth_creds.json.data|map(attribute='key')|list
+  until: updated is succeeded
+  retries: 10
+  delay: 5
 
 - name: Identify authentication credentials configs for key-auth
   set_fact: key={{ item.parameters.key }}
@@ -53,3 +62,6 @@
   with_items: "{{ current_key_auth_creds.json.data|default([]) }}"
   register: deleted
   when: not item.key in key_auth_keys
+  until: deleted is succeeded
+  retries: 10
+  delay: 5

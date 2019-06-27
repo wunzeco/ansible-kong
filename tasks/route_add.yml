@@ -33,6 +33,9 @@
     body_format: json
   register: route
   when: not route_exists
+  until: route is succeeded
+  retries: 10
+  delay: 5
 
 #- debug: var=route
 
@@ -57,3 +60,6 @@
     body_format: json
   register: route
   when: route_exists
+  until: route is succeeded
+  retries: 10
+  delay: 5

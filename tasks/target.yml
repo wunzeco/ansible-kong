@@ -3,7 +3,12 @@
 - debug: msg="TARGET | Kong Version - {{ kong_version }}"
 
 - name: Verify kong admin api available | target
-  uri: url="{{ kong_admin_api_url|default('http://localhost:8001') }}"
+  uri: 
+    url: "{{ kong_admin_api_url|default('http://localhost:8001') }}"
+  register: api_available
+  until: api_available is succeeded
+  retries: 10
+  delay: 5
 
 - set_fact: _cmd=add
 

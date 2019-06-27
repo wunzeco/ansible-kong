@@ -7,6 +7,9 @@
   uri:
     url: "{{ kong_admin_api_url }}/consumers/{{ kong_consumer_config.username }}/acls"
   register: current_acl_groups
+  until: current_acl_groups is succeeded
+  retries: 10
+  delay: 5
 
 #- debug: var=current_acl_groups
 
@@ -19,6 +22,9 @@
   with_items: "{{ outer_item.parameters.groups }}"
   register: created
   when: not item in current_acl_groups.json.data|map(attribute='group')|list
+  until: created is succeeded
+  retries: 10
+  delay: 5
 
 - name: Dissociate acl group from consumer
   uri:
@@ -28,3 +34,6 @@
   with_items: "{{ current_acl_groups.json.data|default([]) }}"
   register: deleted
   when: not item.group in outer_item.parameters.groups
+  until: deleted is succeeded
+  retries: 10
+  delay: 5

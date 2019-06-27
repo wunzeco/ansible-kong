@@ -7,6 +7,9 @@
   uri:
     url: "{{ kong_admin_api_url }}/consumers/{{ kong_consumer_config.username }}/{{ outer_item.name }}"
   register: current_hmac_auth_creds
+  until: current_hmac_auth_creds is succeeded
+  retries: 10
+  delay: 5
 
 #- debug: var=current_hmac_auth_creds
 
@@ -19,6 +22,9 @@
      body_format: json
   register: created
   when: not outer_item.parameters.username in current_hmac_auth_creds.json.data|map(attribute='username')|list
+  until: created is succeeded
+  retries: 10
+  delay: 5
 
 - name: Get authentication credentials id | {{ outer_item.name }}
   template:
@@ -37,6 +43,9 @@
      body_format: json
   register: updated
   when: outer_item.parameters.username in current_hmac_auth_creds.json.data|map(attribute='username')|list
+  until: updated is succeeded
+  retries: 10
+  delay: 5
 
 - name: Identify authentication credentials configs of hmac-auth
   set_fact: username={{ item.parameters.username }}
@@ -55,3 +64,6 @@
   with_items: "{{ current_hmac_auth_creds.json.data|default([]) }}"
   register: deleted
   when: not item.username in hmac_auth_usernames
+  until: deleted is succeeded
+  retries: 10
+  delay: 5

@@ -13,6 +13,9 @@
   uri:
     url: "{{ kong_admin_api_url|default('http://localhost:8001') }}/plugins?size=1000"
   register: plugins
+  until: plugins is succeeded
+  retries: 10
+  delay: 5
 
 #- debug: var=plugins
 
@@ -27,6 +30,9 @@
     status_code: "200,404"
   when: kong_plugin_config.service|default(false)
   register: service
+  until: service is succeeded
+  retries: 10
+  delay: 5
 
 - name: Get consumer id if required to add plugin for a kong consumer object
   uri:
@@ -34,6 +40,9 @@
     status_code: "200,404"
   when: kong_plugin_config.consumer|default(false)
   register: consumer
+  until: consumer is succeeded
+  retries: 10
+  delay: 5
 
 - name: Initialise plugin_route_id
   set_fact:

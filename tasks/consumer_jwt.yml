@@ -7,6 +7,9 @@
   uri:
     url: "{{ kong_admin_api_url }}/consumers/{{ kong_consumer_config.username }}/{{ outer_item.name }}"
   register: current_jwt_creds
+  until: current_jwt_creds is succeeded
+  retries: 10
+  delay: 5
 
 #- debug: var=current_jwt_creds
 
@@ -19,6 +22,9 @@
      body_format: json
   register: created
   when: not outer_item.parameters.key in current_jwt_creds.json.data|map(attribute='key')|list
+  until: created is succeeded
+  retries: 10
+  delay: 5
 
 - name: Get authentication credentials id | {{ outer_item.name }}
   template:
@@ -37,6 +43,9 @@
      body_format: json
   register: updated
   when: outer_item.parameters.key in current_jwt_creds.json.data|map(attribute='key')|list
+  until: updated is succeeded
+  retries: 10
+  delay: 5
 
 - name: Identify authentication credentials configs for jwt
   set_fact: key={{ item.parameters.key }}
@@ -55,3 +64,6 @@
   with_items: "{{ current_jwt_creds.json.data|default([]) }}"
   register: deleted
   when: not item.key in jwt_keys
+  until: deleted is succeeded
+  retries: 10
+  delay: 5

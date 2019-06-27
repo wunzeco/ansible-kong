@@ -26,6 +26,9 @@
     body_format: json
   register: c_add
   when: not consumer_exists
+  until: c_add is succeeded
+  retries: 10
+  delay: 5
 
 #- debug: var=c_add
 
@@ -42,9 +45,11 @@
     body_format: json
   register: c_update
   when: consumer_exists
+  until: c_update is succeeded
+  retries: 10
+  delay: 5
 
 #- debug: var=c_update
-
 
 # Configure plugins for Consumer
 - name: Consumer Plugin Config | {{ outer_item.plugin|upper }}

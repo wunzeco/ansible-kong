@@ -18,5 +18,8 @@
     status_code: "201"
     body_format: json
   register: t_add
+  until: t_add is succeeded
+  retries: 10
+  delay: 5
 
 #- debug: var=t_add

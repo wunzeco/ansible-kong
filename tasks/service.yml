@@ -7,12 +7,20 @@
   when: kong_version is version_compare('0.13', '<')
 
 - name: Verify kong admin api available
-  uri: url="{{ kong_admin_api_url|default('http://localhost:8001') }}"
+  uri: 
+    url: "{{ kong_admin_api_url|default('http://localhost:8001') }}"
+  register: api_available
+  until: api_available is succeeded
+  retries: 10
+  delay: 5
 
 - name: Get list of service objects configured in kong
   uri:
     url: "{{ kong_admin_api_url|default('http://localhost:8001') }}/services"
   register: services
+  until: services is succeeded
+  retries: 10
+  delay: 5
 
 #- debug: var=services
 

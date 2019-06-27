@@ -7,6 +7,9 @@
     status_code: "204,404"
   register: upstream
   when: kong_upstream_config.name in upstreams.json.data|map(attribute='name')
+  until: upstream is succeeded
+  retries: 10
+  delay: 5
 
 #- debug: var=upstream
 

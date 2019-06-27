@@ -7,6 +7,9 @@
     status_code: "204,404"
   register: consumer
   when: kong_consumer_config.username in consumers.json.data|map(attribute='username')
+  until: consumer is succeeded
+  retries: 10
+  delay: 5
 
 #- debug: var=consumer
 

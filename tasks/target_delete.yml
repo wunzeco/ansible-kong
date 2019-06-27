@@ -7,5 +7,8 @@
     status_code: "204,404"
   register: target_del
   when: kong_target_config.upstream != '' and kong_target_config.target != ''
+  until: target_del is succeeded
+  retries: 10
+  delay: 5
 
 #- debug: var=target_del

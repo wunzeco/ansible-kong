@@ -18,6 +18,9 @@
     body_format: json
   register: u_add
   when: not upstream_exists
+  until: u_add is succeeded
+  retries: 10
+  delay: 5
 
 #- debug: var=u_add
 
@@ -49,12 +52,15 @@
 
 - name: Update upstream object configured in kong
   uri:
-    url:    "{{ kong_admin_api_url|default('http://localhost:8001') }}/upstreams/{{ kong_upstream_config.name }}"
+    url: "{{ kong_admin_api_url|default('http://localhost:8001') }}/upstreams/{{ kong_upstream_config.name }}"
     method: PATCH
-    body:   "{{ kong_upstream_obj_update }}"
+    body: "{{ kong_upstream_obj_update }}"
     status_code: "200"
     body_format: json
   register: u_update
   when: upstream_exists
+  until: u_update is succeeded
+  retries: 10
+  delay: 5
 
 #- debug: var=u_update

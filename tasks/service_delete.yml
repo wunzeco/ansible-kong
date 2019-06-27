@@ -11,6 +11,9 @@
     url: "{{ kong_admin_api_url|default('http://localhost:8001') }}/services/{{ kong_service_config.name }}/routes"
     status_code: "200,404"
   register: all_routes
+  until: all_routes is succeeded
+  retries: 10
+  delay: 5
 
 #- debug: var=all_routes
 
@@ -28,6 +31,9 @@
     status_code: "204,404"
   register: service
   when: kong_service_config.name in services.json.data|map(attribute='name')
+  until: service is succeeded
+  retries: 10
+  delay: 5
 
 #- debug: var=service
 

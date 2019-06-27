@@ -12,5 +12,8 @@
     status_code: "204,404"
   register: route_del
   when: matched_route_id != ''
+  until: route_del is succeeded
+  retries: 10
+  delay: 5
 
 #- debug: var=route_del

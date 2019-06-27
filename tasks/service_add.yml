@@ -11,13 +11,16 @@
 
 - name: Add service object to kong
   uri:
-    url:    "{{ kong_admin_api_url|default('http://localhost:8001') }}/services/"
+    url: "{{ kong_admin_api_url|default('http://localhost:8001') }}/services/"
     method: POST
     body:   "{{ kong_service_config }}"
     status_code: "201"
     body_format: json
   register: s_add
   when: not service_exists
+  until: s_add is succeeded
+  retries: 10
+  delay: 5
 
 #- debug: var=s_add
 
@@ -56,5 +59,8 @@
     body_format: json
   register: s_update
   when: service_exists
+  until: s_update is succeeded
+  retries: 10
+  delay: 5
 
 #- debug: var=s_update

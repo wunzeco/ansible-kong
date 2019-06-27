@@ -1,13 +1,21 @@
 ---
 
 - name: Verify kong admin api available
-  uri: url="{{ kong_admin_api_url|default('http://localhost:8001') }}"
+  uri: 
+    url: "{{ kong_admin_api_url|default('http://localhost:8001') }}"
+  register: api_available
+  until: api_available is succeeded
+  retries: 10
+  delay: 5
 
 # Get list of consumer objects
 - name: Get list of kong consumer objects
   uri:
     url: "{{ kong_admin_api_url }}/consumers"
   register: consumers
+  until: consumers is succeeded
+  retries: 10
+  delay: 5
 
 - debug: msg="{{ consumers.json }}"
 

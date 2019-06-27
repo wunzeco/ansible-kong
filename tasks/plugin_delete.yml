@@ -11,5 +11,8 @@
     status_code: "204,404"
   register: p_delete
   when: plugin_exists
+  until: p_delete is succeeded
+  retries: 10
+  delay: 5
 
 #- debug: var=p_delete

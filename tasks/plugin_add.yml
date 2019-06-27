@@ -13,6 +13,9 @@
     body_format: json
   register: p_add
   when: not plugin_exists
+  until: p_add is succeeded
+  retries: 10
+  delay: 5
 
 - debug: msg="WARN - 409 Conflict detected - {{ p_add }}"
   when: p_add.status is defined and p_add.status == 409
@@ -26,5 +29,8 @@
     body_format: json
   register: p_update
   when: plugin_exists
+  until: p_update is succeeded
+  retries: 10
+  delay: 5
 
 #- debug: var=p_update
