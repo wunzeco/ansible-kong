@@ -14,13 +14,16 @@
     url:    "{{ kong_admin_api_url|default('http://localhost:8001') }}/upstreams/"
     method: POST
     body:   "{{ kong_upstream_config }}"
-    status_code: "201"
+    status_code: "201,409"
     body_format: json
   register: u_add
   when: not upstream_exists
   until: u_add is succeeded
   retries: 10
   delay: 5
+
+- debug: msg="WARN - 409 Conflict detected - {{ u_add }}"
+  when: u_add.status is defined and u_add.status == 409
 
 #- debug: var=u_add
 

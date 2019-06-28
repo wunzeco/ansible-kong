@@ -15,11 +15,15 @@
     url:    "{{ kong_admin_api_url|default('http://localhost:8001') }}/upstreams/{{ kong_target_config.upstream }}/targets"
     method: POST
     body:   "{{ kong_target_config_new }}"
-    status_code: "201"
+    status_code: "201,409"
     body_format: json
   register: t_add
   until: t_add is succeeded
   retries: 10
   delay: 5
+
+- debug: msg="WARN - 409 Conflict detected - {{ t_add }}"
+  when: t_add.status is defined and t_add.status == 409
+
 
 #- debug: var=t_add

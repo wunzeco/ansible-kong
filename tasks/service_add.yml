@@ -14,13 +14,16 @@
     url: "{{ kong_admin_api_url|default('http://localhost:8001') }}/services/"
     method: POST
     body:   "{{ kong_service_config }}"
-    status_code: "201"
+    status_code: "201,409"
     body_format: json
   register: s_add
   when: not service_exists
   until: s_add is succeeded
   retries: 10
   delay: 5
+
+- debug: msg="WARN - 409 Conflict detected - {{ s_add }}"
+  when: s_add.status is defined and s_add.status == 409
 
 #- debug: var=s_add
 

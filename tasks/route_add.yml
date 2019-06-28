@@ -29,13 +29,16 @@
     url:    "{{ kong_admin_api_url|default('http://localhost:8001') }}/routes/"
     method: POST
     body:   "{{ _kong_route_obj }}"
-    status_code: "201"
+    status_code: "201,409"
     body_format: json
   register: route
   when: not route_exists
   until: route is succeeded
   retries: 10
   delay: 5
+
+- debug: msg="WARN - 409 Conflict detected - {{ route }}"
+  when: route.status is defined and route.status == 409
 
 #- debug: var=route
 

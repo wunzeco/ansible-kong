@@ -22,13 +22,16 @@
     method: POST
     #body:   "{{ kong_consumer_config }}"
     body:   "{{ lookup('file','/tmp/' + kong_consumer_config.username + '_consumer.json') }}"
-    status_code: "201"
+    status_code: "201,409"
     body_format: json
   register: c_add
   when: not consumer_exists
   until: c_add is succeeded
   retries: 10
   delay: 5
+
+- debug: msg="WARN - 409 Conflict detected - {{ c_add }}"
+  when: c_add.status is defined and c_add.status == 409
 
 #- debug: var=c_add
 
