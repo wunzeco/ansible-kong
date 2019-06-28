@@ -6,6 +6,11 @@
   fail: msg="Service object requires v0.13+"
   when: kong_version is version_compare('0.13', '<')
 
+- name: Ensure Kong is started
+  service:
+    name: kong
+    state: started
+
 - name: Verify kong admin api available
   uri: 
     url: "{{ kong_admin_api_url|default('http://localhost:8001') }}"
