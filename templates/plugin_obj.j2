@@ -9,12 +9,12 @@
 {% endif %}
 {% endfor %}
 {% if service.status|default(false) == 200 %}
-{% if plugin_obj.update({'service_id': service.json.id}) %}{% endif %}
+{% if plugin_obj.update({'service': {'id':service.json.id}}) %}{% endif %}
 {% endif %}
 {% if plugin_route_id|default(false) %}
-{% if plugin_obj.update({'route_id': plugin_route_id}) %}{% endif %}
+{% if plugin_obj.update({'route': {'id':plugin_route_id}}) %}{% endif %}
 {% endif %}
 {% if consumer.status|default(false) == 200 %}
-{% if plugin_obj.update({'consumer_id': consumer.json.id}) %}{% endif %}
+{% if plugin_obj.update({'consumer': {'id': consumer.json.id}) %}{% endif %}
 {% endif %}
 {{ plugin_obj|to_nice_json }}
