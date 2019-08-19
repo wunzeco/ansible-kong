@@ -146,7 +146,7 @@ kong_dns_no_sync:       "off"
 kong_lua_ssl_trusted_certificate: ""
 kong_lua_ssl_verify_depth:        1
 kong_lua_code_cache:              "on"  # 0.10.x ONLY
-kong_lua_package_path:            ""
+kong_lua_package_path:            "/usr/local/share/lua/5.1/?.lua;/usr/share/lua/5.1/?.lua;;"
 kong_lua_package_cpath:           ""
 kong_lua_socket_pool_size:        30
 
