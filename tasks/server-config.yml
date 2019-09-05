@@ -75,7 +75,7 @@
 
 - name: Update kong database schema
   shell: >
-      kong migrations up --conf {{ kong_conf_dir }}/kong.conf
+      kong migrations bootstrap --conf {{ kong_conf_dir }}/kong.conf
   environment:
     PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
   when: run_status == "down"
