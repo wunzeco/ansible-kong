@@ -7,7 +7,12 @@
   when: kong_version is version_compare('0.13', '<')
 
 - name: Verify kong admin api available
-  uri: url="{{ kong_admin_api_url|default('http://localhost:8001') }}"
+  uri: 
+    url: "{{ kong_admin_api_url|default('http://localhost:8001') }}"
+  register: api_available
+  until: api_available is succeeded
+  retries: 30
+  delay: 5
 
 - name: Get list of plugin objects configured in kong
   uri:
