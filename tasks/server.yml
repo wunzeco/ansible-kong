@@ -46,6 +46,12 @@
     - Restart kong
   when: ansible_os_family|lower == 'redhat'
 
+- name: Start firewalld
+  systemd:
+    name: firewalld
+    state: started
+  when: ansible_os_family|lower == 'redhat'
+
 - name: Configure firewalld for kong
   firewalld:
     port: 8000/tcp
