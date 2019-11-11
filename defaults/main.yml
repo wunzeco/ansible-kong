@@ -52,7 +52,7 @@ kong_admin_ssl:                "off"            # for 0.12.x and earlier. Deprec
 kong_admin_ssl_cert:
 kong_admin_ssl_cert_key:
 kong_upstream_keepalive:       60
-kong_server_tokens:            "on"
+kong_server_tokens:            "off"
 kong_latency_tokens:           "on"
 # Config properties new in 0.11.x
 kong_nginx_user:              "nobody nobody"
