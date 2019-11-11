@@ -68,6 +68,16 @@
     group: root
     mode: 0644
 
+- name: Set SELinux context for log files for logrotate
+  sefcontext:
+    ftype: a
+    target: "{{ kong_log_dir}}(/.*)?"
+    setype: var_log_t
+    state: present
+
+- name: Apply new SELinux file context to filesystem
+  command: "restorecon -irv {{ kong_log_dir }}"
+
 - name: Check for supported kong versions
   fail: msg="Kong {{ kong_version }} no longer supported"
   when: kong_version is version_compare('0.11.0', '<')
