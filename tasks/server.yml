@@ -71,7 +71,7 @@
 - name: Set SELinux context for log files for logrotate
   sefcontext:
     ftype: a
-    target: "{{ kong_log_dir}}(/.*)?"
+    target: "{{ kong_log_dir }}(/.*)?"
     setype: var_log_t
     state: present
 
