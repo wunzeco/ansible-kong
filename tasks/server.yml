@@ -76,7 +76,7 @@
     state: present
 
 - name: Apply new SELinux file context to filesystem
-  command: "restorecon -irv {{ kong_log_dir }}"
+  command: "restorecon -rv {{ kong_log_dir }}"
 
 - name: Check for supported kong versions
   fail: msg="Kong {{ kong_version }} no longer supported"
