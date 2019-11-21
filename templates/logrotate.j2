@@ -3,6 +3,7 @@
     rotate {{ kong_logrotate_rotate|default(5) }}
     missingok
     maxsize {{ kong_logrotate_maxsize|default('500M') }}
+    nodateext
     notifempty
     sharedscripts
     compress
