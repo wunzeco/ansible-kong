@@ -28,10 +28,10 @@ kong_prefix_dir:               /usr/local/kong
 kong_nginx_working_dir:        "{{ kong_prefix_dir }}"
 kong_log_dir:                  /usr/local/kong/logs
 kong_log_level:                notice
-kong_proxy_access_log:         "logs/access.log"
-kong_proxy_error_log:          "logs/error.log"
-kong_admin_access_log:         "logs/access.log"
-kong_admin_error_log:          "logs/error.log"
+kong_proxy_access_log:         "{{ kong_log_dir }}/access.log"
+kong_proxy_error_log:          "{{ kong_log_dir }}/error.log"
+kong_admin_access_log:         "{{ kong_log_dir }}/access.log"
+kong_admin_error_log:          "{{ kong_log_dir }}/error.log"
 kong_custom_plugins:           []
 kong_anonymous_reports:        "on"
 kong_proxy_listen:             "0.0.0.0:8000"  # Or an array - [ "0.0.0.0:8000" ]
