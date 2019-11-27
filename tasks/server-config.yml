@@ -93,12 +93,11 @@
     - Reload systemd
     - Restart kong
 
-- name: Start kong via init
+- name: Start kong
   service:
     name: kong
     enabled: yes
     state: started
-  when: run_status == "down"
 
 - include_tasks: postgres_helper_script.yml
   when: kong_database == "postgres"
