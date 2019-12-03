@@ -49,6 +49,7 @@
 - name: Start firewalld
   systemd:
     name: firewalld
+    enabled: yes
     state: started
   when: ansible_os_family|lower == 'redhat'
 
