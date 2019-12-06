@@ -68,6 +68,15 @@
     owner: root
     group: root
 
+
+- name: Update logrotate cron script
+  template:
+    src:  cron.logrotate.j2
+    dest: /etc/cron.daily/logrotate
+    owner: root
+    group: root
+    mode: 0700
+
 - name: Create logrotate config for kong logs
   template:
     src:  logrotate.j2
