@@ -77,6 +77,19 @@
     group: root
     mode: 0700
 
+# By default, logrotate is configured to be run by cron daily. This task enables
+# logrotate to run hourly to be able to really rotate logs hourly.
+# This is particularly useful for high traffic environments like prod and perf 
+# where we might want to rotate nginx logs more agressively since the logs
+# are shipped to ELK stack so does not need to fill up disk space.
+- name: Copy logrotate script to /etc/cron.hourly
+  template:
+    src:  cron.logrotate.j2
+    dest: /etc/cron.hourly/logrotate
+    owner: root
+    group: root
+    mode: 0700
+
 - name: Create logrotate config for kong logs
   template:
     src:  logrotate.j2
