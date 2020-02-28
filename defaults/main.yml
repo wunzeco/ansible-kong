@@ -72,7 +72,8 @@ kong_nginx_json_log_format_enable: false
 kong_logrotate_frequency: daily    # weekly, daily, monthly
 kong_logrotate_rotate:    5        # rotate count
 kong_logrotate_maxsize:   500M
-
+kong_configure_selinux: true
+kong_configure_firewalld: true
 
 ##------------------
 ## DATASTORE

@@ -4,6 +4,9 @@
 
   vars:
     docker_package_version: '*'
+    configure_firewalld: false
+    docker_configure_selinux: false
+
 
   roles:
     - o2-priority.docker
@@ -12,13 +15,14 @@
     - name: Start postgresql container for kong
       docker_container:
         name:  kong-database
-        image: "postgres:10"
+        image: "postgres:11"
         state: started
         published_ports:
           - 5432:5432
         env:
           POSTGRES_USER: kong
           POSTGRES_DB:   kong
+          POSTGRES_PASSWORD: kong
       register: pgdb
 
     - name: Wait for postgresql container to start
@@ -31,7 +35,8 @@
   vars:
     kong_version: 0.13.1
     kong_version_current: 0.0.0
-
+    kong_configure_selinux: false
+    kong_configure_firewalld: false
     kong_conf_dir: /etc/kong
     kong_host:  "node0.internal"
     kong_database:         postgres
@@ -45,7 +50,7 @@
     kong_nginx_custom_log_fields: [ realip_remote_addr, http_x_forwarded_prefix, http_x_forwarded_for, http_x_forwarded_proto ]
     kong_nginx_json_log_format_enable: true
     kong_db_update_propagation: 1
-    kong_nginx_custom_configs: 
+    kong_nginx_custom_configs:
         - |-
           # OpenID Connect config
         - lua_shared_dict discovery 1m;

@@ -51,7 +51,7 @@
     name: firewalld
     enabled: yes
     state: started
-  when: ansible_os_family|lower == 'redhat'
+  when: ansible_os_family|lower == 'redhat' and kong_configure_firewalld
 
 - name: Configure firewalld for kong
   firewalld:
@@ -59,7 +59,7 @@
     permanent: yes
     immediate: yes
     state: enabled
-  when: ansible_os_family|lower == 'redhat'
+  when: ansible_os_family|lower == 'redhat' and kong_configure_firewalld
 
 - name: Create logs directory
   file:
@@ -79,7 +79,7 @@
 
 # By default, logrotate is configured to be run by cron daily. This task enables
 # logrotate to run hourly to be able to really rotate logs hourly.
-# This is particularly useful for high traffic environments like prod and perf 
+# This is particularly useful for high traffic environments like prod and perf
 # where we might want to rotate nginx logs more agressively since the logs
 # are shipped to ELK stack so does not need to fill up disk space.
 - name: Copy logrotate script to /etc/cron.hourly
@@ -104,9 +104,11 @@
     target: "{{ kong_log_dir }}(/.*)?"
     setype: var_log_t
     state: present
+  when: ansible_os_family|lower == 'redhat' and kong_configure_selinux
 
 - name: Apply new SELinux file context to filesystem
   command: "restorecon -rv {{ kong_log_dir }}"
+  when: ansible_os_family|lower == 'redhat' and kong_configure_selinux
 
 - name: Check for supported kong versions
   fail: msg="Kong {{ kong_version }} no longer supported"

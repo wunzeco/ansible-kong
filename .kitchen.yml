@@ -36,7 +36,7 @@ platforms:
       privileged: true
       run_command: /sbin/init
       provision_command:
-        - yum install -y iproute tuned epel-release ansible git
+        - yum install -y iproute tuned epel-release ansible git cronie libselinux-python policycoreutils-python
         # https://github.com/CentOS/CentOS-Dockerfiles/issues/173
         - systemctl enable systemd-user-sessions.service && ln -s /usr/lib/systemd/system/systemd-user-sessions.service /etc/systemd/system/default.target.wants/systemd-user-sessions.service
 
@@ -57,4 +57,5 @@ suites:
       links: node0
 
 transport:
+  max_ssh_sessions: 4
   forward_agent: true

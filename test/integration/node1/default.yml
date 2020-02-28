@@ -15,8 +15,14 @@
     kong_proxy_set_headers:
       "X-Forwarded-Prefix": '$http_x_forwarded_prefix'
     kong_admin_listen:     "0.0.0.0:8001"  # DELETEME PLS (Testing purpose ONLY)
+    kong_configure_selinux: false
+    kong_configure_firewalld: false
 
   pre_tasks:
+
+
+
+
     - name: Kong Migrations
       include_tasks: "roles/ansible-kong/test/integration/node1/kong-migration.yml"
       when: ansible_os_family|lower == 'debian'
